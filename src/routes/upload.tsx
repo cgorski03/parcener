@@ -45,7 +45,7 @@ function UploadComponent() {
             formData.append('createdBy', name);
 
             const { receiptId } = await uploadReceipt({ data: formData });
-            router.navigate({ to: `/receipt/${receiptId}` });
+            router.navigate({ to: `/receipts/${receiptId}` });
         } catch (err) {
             const message = err instanceof Error ? err.message : 'Upload failed';
             setError(message);
