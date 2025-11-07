@@ -23,3 +23,4 @@ export const receiptItem = pgTable('receipt_item', {
 export type ReceiptItemSelect = typeof receiptItem.$inferSelect;
 export type ReceiptItemInsert = typeof receiptItem.$inferInsert;
 
+

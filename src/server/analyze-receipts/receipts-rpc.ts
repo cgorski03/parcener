@@ -33,9 +33,10 @@ export const uploadReceipt = createServerFn({ method: 'POST' })
                 receiptId: receiptId,
                 price: item.price?.toString() ?? null,
                 rawText: item.rawText,
-                interpretedText: item.interpreted
+                interpretedText: item.interpreted,
+                quantity: item.quantity.toString(),
             }
         ))
         await db.insert(receiptItem).values(itemDbObject);
-        return { url: `${process.env.VITE_PUBLIC_APPLICATION_URL}/receipt/${receiptId}` }
+        return { receiptId: receiptId }
     });
