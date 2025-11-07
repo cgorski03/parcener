@@ -1,8 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { db } from "../db";
-import { receipt, receiptItem, ReceiptItemInsert } from "../db/schema";
-import { google } from "../llm";
-import { parseReceiptItems } from "./processing-service";
+import { processReceipt } from "./processing-service";
 
 export const uploadReceipt = createServerFn({ method: 'POST' })
     .inputValidator((data: FormData) => data)
@@ -14,29 +11,7 @@ export const uploadReceipt = createServerFn({ method: 'POST' })
         if (!file) throw new Error('No file provided');
         if (!createdBy) throw new Error('Name required');
 
-        const ai = google();
-        const parsed = await parseReceiptItems(ai, buffer);
-        const receiptId = crypto.randomUUID();
+        const result = await processReceipt(buffer);
+        return result;
 
-        await db.insert(receipt).values({
-            id: receiptId,
-            title: parsed.metadata.restaurant ?? 'No Title',
-            subtotal: parsed.subtotal?.toString() ?? null,
-            tax: parsed.tax?.toString() ?? null,
-            tip: parsed.tip?.toString() ?? null,
-            grandTotal: parsed.total?.toString() ?? null,
-            rawResponse: JSON.stringify(parsed),
-        });
-
-        const itemDbObject: ReceiptItemInsert[] = parsed.items.map((item) => (
-            {
-                receiptId: receiptId,
-                price: item.price?.toString() ?? null,
-                rawText: item.rawText,
-                interpretedText: item.interpreted,
-                quantity: item.quantity.toString(),
-            }
-        ))
-        await db.insert(receiptItem).values(itemDbObject);
-        return { receiptId: receiptId }
     });

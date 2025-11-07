@@ -11,7 +11,7 @@
     "format": "prettier",
     "check": "prettier --write . && eslint --fix",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "pnpm run dotenv && drizzle-kit migrate"
+    "db:migrate": "pnpm dotenv -e .env.local -- drizzle-kit migrate"
   },
   "dependencies": {
     "@ai-sdk/google": "^2.0.28",

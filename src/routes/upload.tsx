@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { uploadReceipt } from '@/server/analyze-receipts/receipts-rpc';
+import { uploadReceipt } from '@/server/processing/rpc-processing';
 
 export const Route = createFileRoute('/upload')({
     component: UploadComponent,

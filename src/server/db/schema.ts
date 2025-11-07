@@ -1,7 +1,9 @@
-import { jsonb, numeric, pgTable, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
+import { integer, jsonb, numeric, pgEnum, pgTable, text, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
+
+export const receiptProcessingEnum = pgEnum('processing_status', ['processing', 'failed', 'success']);
 
 export const receipt = pgTable('receipt', {
-    id: uuid().primaryKey().defaultRandom(),
+    id: uuid('id').primaryKey().defaultRandom(),
     title: varchar('title', { length: 255 }),
     subtotal: numeric('subtotal', { precision: 10, scale: 2 }),
     tip: numeric('tip', { precision: 10, scale: 2 }),
@@ -9,6 +11,19 @@ export const receipt = pgTable('receipt', {
     grandTotal: numeric('grand_total', { precision: 10, scale: 2 }),
     rawResponse: jsonb('raw_parsing_response'),
     createdAt: timestamp('created_at').defaultNow(),
+})
+
+export const receiptProcessingInformation = pgTable('receipt_processing_information', {
+    id: uuid('id').primaryKey().defaultRandom(),
+    receiptId: uuid("receipt_id").notNull().references(() => receipt.id, { onDelete: "cascade" }),
+    processingStatus: receiptProcessingEnum('processing_status').notNull(),
+    startedAt: timestamp('started_at').defaultNow(),
+    endedAt: timestamp('ended_at').defaultNow(),
+    // Information for error if exists
+    errorMessage: text('error_message'),
+    errorDetails: jsonb('error_details'),
+    model: varchar('model', { length: 30 }),
+    processingTokens: integer('processing_tokens'),
 })
 
 export const receiptItem = pgTable('receipt_item', {

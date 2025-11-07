@@ -1,4 +1,3 @@
-// src/server/utils/jsonParser.ts
 import { z } from 'zod';
 
 
@@ -123,3 +122,51 @@ function formatZodError(error: z.ZodError): string {
         })
         .join('; ');
 }
+
+
+
+export interface UsageMetadata {
+    promptTokenCount: number;
+    candidatesTokenCount: number;
+    totalTokenCount: number;
+}
+
+export function parseProviderMetadata(
+    providerMetadata: unknown
+): UsageMetadata | null {
+    if (!providerMetadata || typeof providerMetadata !== "object") {
+        return null;
+    }
+
+    const data = providerMetadata as Record<string, unknown>;
+    const google = data.google;
+
+    if (!google || typeof google !== "object") {
+        return null;
+    }
+
+    const googleData = google as Record<string, unknown>;
+    const usage = googleData.usageMetadata;
+
+    if (!usage || typeof usage !== "object") {
+        return null;
+    }
+
+    const usageData = usage as Record<string, unknown>;
+
+    // Validate all required fields are numbers
+    if (
+        typeof usageData.promptTokenCount !== "number" ||
+        typeof usageData.candidatesTokenCount !== "number" ||
+        typeof usageData.totalTokenCount !== "number"
+    ) {
+        return null;
+    }
+
+    return {
+        promptTokenCount: usageData.promptTokenCount,
+        candidatesTokenCount: usageData.candidatesTokenCount,
+        totalTokenCount: usageData.totalTokenCount,
+    };
+}
+
