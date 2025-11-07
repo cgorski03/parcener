@@ -1,6 +1,4 @@
-import { getReceipt } from '@/server/get-receipt/rpc-get-receipt'
 import { createFileRoute } from '@tanstack/react-router'
-import { useSuspenseQuery } from '@tanstack/react-query'
 import { useGetReceipt } from '@/lib/hooks/useGetReceipt'
 
 export const Route = createFileRoute('/receipts/$receiptId')({

@@ -2,7 +2,14 @@ import { getAllReceiptInfo } from "./repository";
 
 type processingStatus = { status: 'processing' }
 type failedStatus = { attempts: number }
-type receiptDto = {
+export type ReceiptItemDto = {
+    id: string;
+    rawText: string;
+    interpretedText: string;
+    price: string;
+    quantity: string;
+}
+export type ReceiptDto = {
     id: string;
     title: string | null;
     subtotal: string | null;
@@ -10,16 +17,10 @@ type receiptDto = {
     tip: string | null;
     grandTotal: string | null;
     createdAt: Date | null;
-    items: {
-        id: string;
-        rawText: string;
-        interpretedText: string;
-        price: string;
-        quantity: string;
-    }[]
+    items: ReceiptItemDto[]
 
 } | null
-const generateReceiptDtoFromDbReceipt = (receipt: Awaited<ReturnType<typeof getAllReceiptInfo>>): receiptDto => {
+const generateReceiptDtoFromDbReceipt = (receipt: Awaited<ReturnType<typeof getAllReceiptInfo>>): ReceiptDto => {
     if (!receipt) return null;
     return {
         id: receipt.id,
@@ -40,7 +41,7 @@ const generateReceiptDtoFromDbReceipt = (receipt: Awaited<ReturnType<typeof getA
     }
 }
 
-type GetReceiptResponse = processingStatus | failedStatus | receiptDto;
+export type GetReceiptResponse = processingStatus | failedStatus | ReceiptDto;
 export async function getReceiptWithItems(receiptId: string): Promise<GetReceiptResponse> {
     const receiptInformation = await getAllReceiptInfo(receiptId);
     if (receiptInformation?.processingInfo.some(x => x.processingStatus === 'success')) {
