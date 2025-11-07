@@ -55,7 +55,7 @@ function UploadComponent() {
     };
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-primary p-4">
+        <div className="flex items-center justify-center min-h-screen bg-primary-foreground p-4">
             <Card className="w-full max-w-md">
                 <CardHeader>
                     <CardTitle>Split a Receipt</CardTitle>
@@ -105,7 +105,7 @@ function UploadComponent() {
                         <Button
                             type="submit"
                             disabled={loading || !file || !name}
-                            className="w-full"
+                            className="w-full bg-primary"
                         >
                             {loading ? 'Uploading...' : 'Split Receipt'}
                         </Button>

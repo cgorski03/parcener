@@ -1,8 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { db } from "../db";
 import { receipt, receiptItem, ReceiptItemInsert } from "../db/schema";
-import { google } from "./google";
-import { parseReceiptItems } from "./parse";
+import { google } from "../llm";
+import { parseReceiptItems } from "./processing-service";
 
 export const uploadReceipt = createServerFn({ method: 'POST' })
     .inputValidator((data: FormData) => data)
