@@ -91,11 +91,27 @@ function RouteComponent() {
                 </Button>
 
                 {/* Summary Card */}
-                <Card className="mb-6 md:mb-0 py-0 overflow-hidden">
+                <Card className="mb-6 md:mb-0 py-0 gap-0 overflow-hidden">
                     <div className="bg-gradient-to-br from-primary/5 to-primary/10 p-4 border-b">
                         <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium text-muted-foreground">Subtotal</span>
+                            <span className="text-sm font-medium text-muted-foreground">Parsed Subtotal</span>
+                            <span className="text-2xl font-bold">${receipt.subtotal?.toFixed(2)}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium text-muted-foreground">Computed Subtotal</span>
                             <span className="text-2xl font-bold">${subtotal}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium text-muted-foreground">Tip</span>
+                            <span className="text-2xl font-bold">${receipt.tip?.toFixed(2)}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium text-muted-foreground">Tax</span>
+                            <span className="text-2xl font-bold">${receipt.tax?.toFixed(2)}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium text-muted-foreground">Grand Total</span>
+                            <span className="text-2xl font-bold">${receipt.grandTotal?.toFixed(2)}</span>
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">
                             Tax & tip will be split proportionally
