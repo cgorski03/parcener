@@ -1,10 +1,10 @@
-import { ReceiptItemDto } from "@/server/get-receipt/types";
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Button } from "./ui/button";
 import { Trash2 } from "lucide-react";
 import { useState } from "react";
+import { ReceiptItemDto } from '@/server/dtos';
 
 export function EditItemSheet(props: {
     item: ReceiptItemDto | null,
@@ -36,7 +36,7 @@ export function EditItemSheet(props: {
             setTotalPrice(unitPrice * value);
         }
     };
-
+    // TODO set up some desktop logic to mkae t
     return (
         <Sheet
             open={!!item}
@@ -44,18 +44,18 @@ export function EditItemSheet(props: {
         >
             <SheetContent
                 side="bottom"
-                className="rounded-t-2xl px-6 py-6 duration-200"
+                className="rounded-t-2xl px-4 py-4 !duration-250"
             >
                 {item && (
                     <>
-                        <SheetHeader >
-                            <SheetTitle className="text-2xl">Edit Item</SheetTitle>
-                            <SheetDescription >Change any item details</SheetDescription>
+                        <SheetHeader>
+                            <SheetTitle className="text-xl">Edit Item</SheetTitle>
+                            <SheetDescription className="text-xs">Change details</SheetDescription>
                         </SheetHeader>
 
-                        <div className="space-y-6">
+                        <div className="space-y-4">
                             {/* Item Name */}
-                            <div className="space-y-3">
+                            <div className="space-y-2">
                                 <Label htmlFor="itemName" className="text-base font-medium">
                                     Item Name
                                 </Label>
@@ -63,13 +63,13 @@ export function EditItemSheet(props: {
                                     id="itemName"
                                     type="text"
                                     defaultValue={item.interpretedText}
-                                    className="text-lg h-14 px-4"
+                                    className="text-lg h-11 px-4"
                                     placeholder="e.g., Cheeseburger"
                                 />
                             </div>
 
                             {/* Price Mode Toggle */}
-                            <div className="space-y-3">
+                            <div className="space-y-2">
                                 <Label className="text-base font-medium">
                                     Price Input Mode
                                 </Label>
@@ -99,7 +99,7 @@ export function EditItemSheet(props: {
 
                             {/* Price and Quantity Row */}
                             <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-3">
+                                <div className="space-y-2">
                                     <Label htmlFor="price" className="text-base font-medium">
                                         {priceMode === 'unit' ? 'Unit Price' : 'Total Price'}
                                     </Label>
@@ -114,13 +114,13 @@ export function EditItemSheet(props: {
                                             min="0"
                                             value={priceMode === 'unit' ? unitPrice.toFixed(2) : totalPrice.toFixed(2)}
                                             onChange={(e) => handlePriceChange(parseFloat(e.target.value) || 0)}
-                                            className="text-lg h-14 pl-8 pr-4"
+                                            className="text-lg h-11 pl-8 pr-4"
                                             placeholder="0.00"
                                         />
                                     </div>
                                 </div>
 
-                                <div className="space-y-3">
+                                <div className="space-y-2">
                                     <Label htmlFor="quantity" className="text-base font-medium">
                                         Quantity
                                     </Label>
@@ -131,14 +131,14 @@ export function EditItemSheet(props: {
                                         min="0.00"
                                         value={quantity}
                                         onChange={(e) => handleQuantityChange(parseFloat(e.target.value))}
-                                        className="text-lg h-14 px-4"
+                                        className="text-lg h-11 px-4"
                                         placeholder="1"
                                     />
                                 </div>
                             </div>
 
                             {/* Calculated Summary */}
-                            <div className="p-5 bg-muted/50 rounded-xl border border-border space-y-2">
+                            <div className="p-3 bg-muted/50 rounded-xl border border-border space-y-1.5">
                                 <div className="flex items-center justify-between">
                                     <span className="text-sm font-medium text-muted-foreground">
                                         {priceMode === 'unit' ? 'Total Price' : 'Unit Price'}
@@ -148,18 +148,17 @@ export function EditItemSheet(props: {
                                     </span>
                                 </div>
                                 <div className="flex items-center justify-between pt-2 border-t border-border">
-                                    <span className="text-sm font-medium text-muted-foreground">
-                                        Item Total
+                                    <span className="flex items-center text-sm font-medium text-muted-foreground">
+                                        Total
+                                        {quantity > 1 && (
+                                            `    (${unitPrice.toFixed(2)} × ${quantity})`
+                                        )}
+
                                     </span>
                                     <span className="text-2xl font-bold text-foreground">
                                         ${totalPrice.toFixed(2)}
                                     </span>
                                 </div>
-                                {quantity > 1 && (
-                                    <p className="text-xs text-muted-foreground pt-1">
-                                        ${unitPrice.toFixed(2)} × {quantity}
-                                    </p>
-                                )}
                             </div>
 
                             {/* Raw OCR Text */}
@@ -176,19 +175,19 @@ export function EditItemSheet(props: {
                             </details>
 
                             {/* Action Buttons */}
-                            <div className="space-y-3 pt-6">
+                            <div className="space-y-2 pt-6">
                                 <div className="flex gap-3">
                                     <Button
                                         variant="outline"
                                         size="lg"
-                                        className="flex-1 h-14 text-base"
+                                        className="flex-1 h-11 text-base"
                                         onClick={() => setCurrentlyEditingItem(null)}
                                     >
                                         Cancel
                                     </Button>
                                     <Button
                                         size="lg"
-                                        className="flex-1 h-14 text-base"
+                                        className="flex-1 h-11 text-base"
                                         onClick={() => {
                                             // TODO: Save with totalPrice and quantity
                                             setCurrentlyEditingItem(null)
@@ -201,7 +200,7 @@ export function EditItemSheet(props: {
                                 <Button
                                     variant="destructive"
                                     size="lg"
-                                    className="w-full h-14 text-base"
+                                    className="w-full h-11 text-base"
                                     onClick={() => {
                                         // TODO: Delete item
                                         setCurrentlyEditingItem(null)

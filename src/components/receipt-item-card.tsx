@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { ReceiptItemDto } from "@/server/get-receipt/types";
+import { ReceiptItemDto } from "@/server/dtos";
 import { DollarSign } from "lucide-react";
 
 export function ReceiptItemCard(props: {
