@@ -144,10 +144,10 @@ function RouteComponent() {
                     </div>
                 </Card>
 
-                <EditItemSheet item={currentlyEditingItem} setCurrentlyEditingItem={setCurrentlyEditingItem} />
                 {/* Mobile bottom padding for fixed button alternative */}
                 <div className="h-4 md:hidden" />
             </div>
+            <EditItemSheet key={currentlyEditingItem?.id} item={currentlyEditingItem} setCurrentlyEditingItem={setCurrentlyEditingItem} />
         </div>
     )
 }
