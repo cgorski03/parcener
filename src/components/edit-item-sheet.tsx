@@ -3,28 +3,26 @@ import { Label } from '@/components/ui/label'
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Button } from "./ui/button";
 import { Trash2 } from "lucide-react";
-import { useState } from "react";
+import React, { useState } from "react";
 import { ReceiptItemDto } from '@/server/dtos';
 
-export function EditItemSheet(props: {
+function ReceiptItemSheet(props: {
     item: ReceiptItemDto | null,
-    setCurrentlyEditingItem: (item: ReceiptItemDto | null) => void
+    setCurrentlyEditingItem: (item: ReceiptItemDto | null) => void,
+    handleSaveItem: (item: ReceiptItemDto) => void,
 }) {
     const { item, setCurrentlyEditingItem } = props;
     const [priceMode, setPriceMode] = useState<'unit' | 'total'>('total');
     const [quantity, setQuantity] = useState(item?.quantity ?? 1);
     const [totalPrice, setTotalPrice] = useState(item?.price ?? 0);
-
     const unitPrice = quantity > 0 ? totalPrice / quantity : 0;
-
-    console.log(item)
-    console.log(quantity, priceMode, totalPrice, unitPrice);
+    const [priceInput, setPriceInput] = useState(
+        (priceMode === 'unit' ? unitPrice : totalPrice).toString()
+    );
     const handlePriceChange = (value: number) => {
-        value *= 10;
         if (priceMode === 'unit') {
             setTotalPrice(value * quantity);
         } else {
-            console.log(value)
             setTotalPrice(value);
         }
     };
@@ -48,7 +46,7 @@ export function EditItemSheet(props: {
             >
                 {item && (
                     <>
-                        <SheetHeader>
+                        <SheetHeader className='pl-0'>
                             <SheetTitle className="text-xl">Edit Item</SheetTitle>
                             <SheetDescription className="text-xs">Change details</SheetDescription>
                         </SheetHeader>
@@ -112,8 +110,11 @@ export function EditItemSheet(props: {
                                             type="number"
                                             step="0.01"
                                             min="0"
-                                            value={priceMode === 'unit' ? unitPrice.toFixed(2) : totalPrice.toFixed(2)}
-                                            onChange={(e) => handlePriceChange(parseFloat(e.target.value) || 0)}
+                                            value={priceInput}
+                                            onChange={(e) => {
+                                                setPriceInput(e.target.value);
+                                                handlePriceChange(parseFloat(e.target.value) || 0);
+                                            }}
                                             className="text-lg h-11 pl-8 pr-4"
                                             placeholder="0.00"
                                         />
@@ -217,3 +218,5 @@ export function EditItemSheet(props: {
         </Sheet>
     )
 }
+
+export default React.memo(ReceiptItemSheet);
