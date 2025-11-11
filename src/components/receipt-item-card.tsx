@@ -26,9 +26,9 @@ export function ReceiptItemCard(props: {
                                 {hasMultiple && item.quantity} {item.interpretedText}
                             </h3>
                         </div>
-                        <p className="text-xs text-muted-foreground font-mono bg-muted/50 px-2 py-0.5 rounded inline-block">
+                        {item.rawText && <p className="text-xs text-muted-foreground font-mono bg-muted/50 px-2 py-0.5 rounded inline-block">
                             Raw: {item.rawText}
-                        </p>
+                        </p>}
                     </div>
                 </div>
 

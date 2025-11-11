@@ -9,6 +9,11 @@ export type ReceiptItemDto = {
     price: number;
     quantity: number;
 }
+
+export type SaveReceiptItemDto = Omit<ReceiptItemDto, 'id'> & {
+    id: string | null;
+};
+
 export type ReceiptDto = {
     id: string;
     title: string | null;

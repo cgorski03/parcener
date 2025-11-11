@@ -7,8 +7,8 @@ import { Card } from '@/components/ui/card'
 import { Plus, Share2, Loader2, Receipt } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import ReceiptItemSheet from '@/components/edit-item-sheet'
-import { ReceiptItemDto } from '@/server/dtos'
-import { useDeleteReceiptItem, useEditReceiptItem } from '@/lib/hooks/useEditReceipt'
+import { ReceiptItemDto, SaveReceiptItemDto } from '@/server/dtos'
+import { useCreateReceiptItem, useDeleteReceiptItem, useEditReceiptItem } from '@/lib/hooks/useEditReceipt'
 
 export const Route = createFileRoute('/receipts/review/$receiptId')({
     loader: async ({ params }) => {
@@ -58,38 +58,55 @@ function RouteComponent() {
     }
     const { mutateAsync: editReceiptItem } = useEditReceiptItem(receipt.id);
     const { mutateAsync: deleteReceiptItem } = useDeleteReceiptItem(receipt.id);
+    const { mutateAsync: createReceiptItem } = useCreateReceiptItem(receipt.id);
     const [receiptItems, setReceiptItems] = useState(receipt.items);
     const [isCreatingRoom, setIsCreatingRoom] = useState(false)
-    const [currentlyEditingItem, setCurrentlyEditingItem] = useState<ReceiptItemDto | null>(null);
+    const [showingItemSheet, setShowingItemSheet] = useState<boolean>(false);
+    const [receiptItemForSheet, setReceiptItemForSheet] = useState<ReceiptItemDto | null>(null);
 
     const handleDeleteItem = async (updatedItem: ReceiptItemDto) => {
         // Optimistically update
         setReceiptItems(receiptItems.filter(i =>
             i.id !== updatedItem.id
         ));
-        setCurrentlyEditingItem(null);
+        closeSheet();
         deleteReceiptItem(updatedItem, {
             onError: () => setReceiptItems(receipt.items)
         });
     };
-    const saveEditItem = async (updatedItem: ReceiptItemDto) => {
-        setReceiptItems(receiptItems.map(i =>
-            i.id === updatedItem.id
-                ? updatedItem
-                : i
-        ));
-        setCurrentlyEditingItem(null);
-        editReceiptItem(updatedItem, {
-            onError: () => setReceiptItems(receipt.items)
-        });
+
+    const saveReceiptItem = async (updatedItem: ReceiptItemDto, isCreated: boolean) => {
+        closeSheet();
+        if (isCreated) {
+            setReceiptItems([...receiptItems, updatedItem]);
+            createReceiptItem(updatedItem);
+        } else {
+            setReceiptItems(receiptItems.map(i =>
+                i.id === updatedItem.id
+                    ? updatedItem
+                    : i
+            ));
+            editReceiptItem(updatedItem, {
+                onError: () => setReceiptItems(receipt.items)
+            });
+        }
     };
 
+    const handleCreateCustomItem = () => {
+        setShowingItemSheet(true);
+        setReceiptItemForSheet(null);
+    };
     const handleEditItem = useCallback((item: ReceiptItemDto) => {
-        setCurrentlyEditingItem(item);
+        setReceiptItemForSheet(item);
+        setShowingItemSheet(true);
     }, []);
 
+    const closeSheet = useCallback(() => {
+        setShowingItemSheet(false);
+        setReceiptItemForSheet(null);
+    }, []);
 
-    const subtotal = receipt.items
+    const subtotal = receiptItems
         .reduce((sum, item) => sum + item.price, 0)
         .toFixed(2);
 
@@ -105,7 +122,7 @@ function RouteComponent() {
                         <div>
                             <h1 className="text-2xl md:text-3xl font-bold">Review Receipt</h1>
                             <p className="text-sm text-muted-foreground">
-                                {receipt.items.length} items • ${subtotal}
+                                {receiptItems.length} items • ${subtotal}
                             </p>
                         </div>
                     </div>
@@ -126,7 +143,7 @@ function RouteComponent() {
                 <Button
                     variant="outline"
                     className="w-full mb-6 border-dashed"
-                    onClick={() => {/* TODO: Add custom item */ }}
+                    onClick={handleCreateCustomItem}
                 >
                     <Plus className="h-4 w-4 mr-2" />
                     Add Custom Item
@@ -184,11 +201,12 @@ function RouteComponent() {
                 <div className="h-4 md:hidden" />
             </div>
             <ReceiptItemSheet
-                key={currentlyEditingItem?.id}
-                item={currentlyEditingItem}
-                setCurrentlyEditingItem={setCurrentlyEditingItem}
+                key={receiptItemForSheet?.id}
+                item={receiptItemForSheet}
+                showSheet={showingItemSheet}
+                closeSheet={closeSheet}
                 handleDeleteItem={handleDeleteItem}
-                handleSaveItem={saveEditItem} />
-        </div>
+                handleSaveItem={saveReceiptItem} />
+        </div >
     )
 }

@@ -14,6 +14,18 @@ export async function editReceiptItem(item: ReceiptItemDto) {
     return receiptItemEntityToDtoHelper(updatedItem);
 }
 
+export async function createReceiptItem(item: ReceiptItemDto, receiptId: string) {
+    const [insertedItem] = await db.insert(receiptItem).values({
+        id: item.id,
+        receiptId: receiptId,
+        interpretedText: item.interpretedText,
+        price: item.price.toString(),
+        quantity: item.quantity.toString(),
+    })
+        .returning();
+    return receiptItemEntityToDtoHelper(insertedItem);
+}
+
 export async function deleteReceiptItem(item: ReceiptItemDto) {
     await db.delete(receiptItem)
         .where(eq(receiptItem.id, item.id));
