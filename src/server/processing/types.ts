@@ -3,7 +3,7 @@ import z from "zod";
 export const ReceiptItemSchema = z.object({
     rawText: z.string().min(1),
     interpreted: z.string().min(1),
-    price: z.number().positive(),
+    price: z.number().nonnegative(),
     quantity: z.number().positive().default(1),
 });
 

@@ -31,7 +31,7 @@ export async function finishReceiptProcessingRunSuccess(runId: string, request: 
 export async function createProcessingError(request: {
     runId: string,
     model?: string,
-    processingTokens?: number
+    processingTokens?: number,
 }, err: Error | unknown) {
     await db.update(receiptProcessingInformation).set({
         endedAt: new Date(),

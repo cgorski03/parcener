@@ -26,5 +26,5 @@ Rules:
 - If quantity appears on receipt, extract it; otherwise default to 1
 - Prices must be numbers, not strings
 - If tax/tip aren't visible, use 0
-- If items are discounted ONLY include the price that was actually charged towards the total
+- If items are discounted ONLY include the price that was actually charged towards the total - provided price should NEVER be negative
 - Only include metadata fields if clearly visible on receipt`;

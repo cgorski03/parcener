@@ -172,10 +172,6 @@ function RouteComponent() {
                         className="w-full bg-gradient-to-br from-primary/5 to-primary/10 p-4 border-b rounded-t-lg text-left hover:from-primary/10 hover:to-primary/15 transition-all h-auto"
                     >
                         <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium text-muted-foreground">Parsed Subtotal</span>
-                            <span className="text-2xl font-bold">${receipt.subtotal?.toFixed(2)}</span>
-                        </div>
-                        <div className="flex items-center justify-between">
                             <span className="text-sm font-medium text-muted-foreground">Computed Subtotal</span>
                             <span className="text-2xl font-bold">${subtotal}</span>
                         </div>

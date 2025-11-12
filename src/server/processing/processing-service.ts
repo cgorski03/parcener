@@ -15,8 +15,10 @@ export async function processReceipt(imageBuffer: ArrayBuffer) {
     // Insert the stub records to the database
     const runId = await beginReceiptProcessingRun(receiptId);
     let metadata: UsageMetadata | null = null;
+    let rawResponse: string | null = null;
     try {
         const { text, providerMetadata } = await processReceiptItems(ai, imageBuffer);
+        rawResponse = text;
         if (providerMetadata) {
             metadata = parseProviderMetadata(providerMetadata);
         }
