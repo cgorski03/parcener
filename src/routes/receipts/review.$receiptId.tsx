@@ -231,6 +231,7 @@ function RouteComponent() {
             <ReceiptSummarySheet
                 showSheet={showSummarySheet}
                 receipt={receipt}
+                subtotal={subtotal}
                 closeSheet={() => setShowSummarySheet(false)}
                 handleSaveSummary={async (_) => {
                     // Save to backend

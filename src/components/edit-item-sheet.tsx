@@ -86,7 +86,7 @@ function ReceiptItemSheet(props: {
                         <SheetTitle className="text-xl">
                             {isCreate ? 'Add New Item' : 'Edit Item'}
                         </SheetTitle>
-                        <SheetDescription className="text-xs">
+                        <SheetDescription className="text-sm">
                             {isCreate ? 'Enter item details' : 'Change details'}
                         </SheetDescription>
                     </SheetHeader>
