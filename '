@@ -4,7 +4,8 @@ import { receipt, receiptItem } from "../db/schema";
 import { ReceiptItemDto, receiptItemEntityToDtoHelper, ReceiptTotalsDto } from "../dtos";
 import { getReceiptWithItems, } from "../get-receipt/get-receipt-service";
 import { isFailed, receiptNotFound, isProcessing } from "@/lib/receipt-utils";
-import { RECEIPT_PROCESSING_FAILED, RECEIPT_NOT_FOUND, RECEIPT_PROCESSING, ReceiptNotFoundResponse, ReceiptProcessingFailedResponse, ReceiptProcessingResponse, ReceiptGrandTotalMismatchResponse, ReceiptSubtotalMismatchResponse } from "../response-types";
+import { RECEIPT_PROCESSING_FAILED, RECEIPT_NOT_FOUND, RECEIPT_PROCESSING, ReceiptNotFoundResponse, ReceiptProcessingFailedResponse, ReceiptProcessingResponse } from "../response-types";
+import { NOTFOUND } from "dns";
 import { calculateItemTotal, moneyValuesEqual } from "../money-math";
 
 export async function editReceiptItem(item: ReceiptItemDto) {
@@ -38,11 +39,9 @@ export async function deleteReceiptItem(item: ReceiptItemDto) {
 
 type FinalizeReceiptResponse =
     | { success: true }
-    | ReceiptSubtotalMismatchResponse
-    | ReceiptGrandTotalMismatchResponse
-    | ReceiptProcessingResponse
-    | ReceiptProcessingFailedResponse
-    | ReceiptNotFoundResponse;
+    | { error: true; code: 'SUBTOTAL_MISMATCH'; clientSubtotal: number; serverSubtotal: number }
+    | { error: true; code: 'GRANDTOTAL_MISMATCH'; clientGrandTotal: number; serverGrandTotal: number }
+    | ReceiptProcessingResponse | ReceiptProcessingFailedResponse | ReceiptNotFoundResponse;
 
 export async function finalizeReceiptTotals(receiptTotals: ReceiptTotalsDto): Promise<FinalizeReceiptResponse> {
     // Truthfully, I don't know how I really want this behavior to be enforced.
@@ -85,7 +84,8 @@ export async function finalizeReceiptTotals(receiptTotals: ReceiptTotalsDto): Pr
 
     // The clients desired grand total must match what the server calculates it to be 
     // If it exists. The client is also free to just submit a request and have the server do the math
-    if (!moneyValuesEqual(calculatedGrandTotal, grandTotal)) {
+    moneyValuesEqual(calculatedGrandTotal, grandTotal)
+    if (moneyValuesEqual(calculatedGrandTotal, grandTotal)) {
         return {
             error: true,
             code: 'GRANDTOTAL_MISMATCH',

@@ -17,10 +17,10 @@ export type SaveReceiptItemDto = Omit<ReceiptItemDto, 'id'> & {
 export type ReceiptDto = {
     id: string;
     title: string | null;
-    subtotal: number | null;
-    tax: number | null;
-    tip: number | null;
-    grandTotal: number | null;
+    subtotal: number;
+    tax: number;
+    tip: number;
+    grandTotal: number;
     createdAt: Date | null;
     items: ReceiptItemDto[]
 
@@ -41,10 +41,10 @@ export const receiptEntityWithReferencesToDtoHelper = (
     return {
         id: receipt.id,
         title: receipt.title,
-        subtotal: parseNullable(receipt.subtotal),
-        tax: parseNullable(receipt.tax),
-        tip: parseNullable(receipt.tip),
-        grandTotal: parseNullable(receipt.grandTotal),
+        subtotal: parseNullable(receipt.subtotal) ?? 0,
+        tax: parseNullable(receipt.tax) ?? 0,
+        tip: parseNullable(receipt.tip) ?? 0,
+        grandTotal: parseNullable(receipt.grandTotal) ?? 0,
         createdAt: receipt.createdAt,
         items: receipt.items.map((item) => (receiptItemEntityToDtoHelper(item))),
     }

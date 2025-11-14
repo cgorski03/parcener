@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { getReceipt } from '@/server/get-receipt/rpc-get-receipt'
+import { getReceiptRpc } from '@/server/get-receipt/rpc-get-receipt'
 import { isFailed, isProcessing, receiptNotFound } from '@/lib/receipt-utils'
 import { ReceiptItemCard } from '@/components/receipt-item-card'
 import { Button } from '@/components/ui/button'
@@ -12,11 +12,11 @@ import { useCreateReceiptItem, useDeleteReceiptItem, useEditReceiptItem } from '
 import { ReceiptSummarySheet } from '@/components/receipt-summary-sheet'
 import { ReviewReceiptHeader } from '@/components/review/receipt-header'
 import { ErrorReceipt, NotFoundReceipt, ProcessingReceipt } from '@/components/processing-errors'
-import { useGetReceiptReview } from '@/lib/hooks/useGetReceipt'
+import { useGetReceiptReview, useReceiptIsValid } from '@/lib/hooks/useGetReceipt'
 
 export const Route = createFileRoute('/receipts/review/$receiptId')({
     loader: async ({ params }) => {
-        return await getReceipt({ data: params.receiptId })
+        return await getReceiptRpc({ data: params.receiptId })
     },
     component: RouteComponent,
 })
@@ -28,6 +28,7 @@ function RouteComponent() {
     const { receiptId } = Route.useParams();
 
     const { data: receipt } = useGetReceiptReview(receiptId, receiptInfoFromServer);
+    const { isError: receiptNotValid, isFetching: receiptValidFetching } = useReceiptIsValid(receiptId);
 
     if (receipt == null || receiptNotFound(receipt)) {
         return <NotFoundReceipt />
@@ -46,9 +47,9 @@ function RouteComponent() {
     const [showSummarySheet, setShowSummarySheet] = useState<boolean>(false);
     const [receiptItemForSheet, setReceiptItemForSheet] = useState<ReceiptItemDto | null>(null);
 
-    const { mutateAsync: editReceiptItem } = useEditReceiptItem(receipt.id);
-    const { mutateAsync: deleteReceiptItem } = useDeleteReceiptItem(receipt.id);
-    const { mutateAsync: createReceiptItem } = useCreateReceiptItem(receipt.id);
+    const { mutateAsync: editReceiptItem } = useEditReceiptItem();
+    const { mutateAsync: deleteReceiptItem } = useDeleteReceiptItem();
+    const { mutateAsync: createReceiptItem } = useCreateReceiptItem();
 
     const handleDeleteItem = async (updatedItem: ReceiptItemDto) => {
         // Optimistically update
@@ -56,7 +57,7 @@ function RouteComponent() {
             i.id !== updatedItem.id
         ));
         closeSheet();
-        deleteReceiptItem(updatedItem, {
+        deleteReceiptItem({ id: receiptId, item: updatedItem }, {
             onError: () => setReceiptItems(receipt.items)
         });
     };
@@ -65,7 +66,7 @@ function RouteComponent() {
         closeSheet();
         if (isCreated) {
             setReceiptItems([...receiptItems, updatedItem]);
-            createReceiptItem(updatedItem);
+            createReceiptItem({ id: receiptId, item: updatedItem });
         } else {
             setReceiptItems(receiptItems.map(i =>
                 i.id === updatedItem.id
@@ -112,6 +113,8 @@ function RouteComponent() {
                 title={receipt.title ?? "Set Title"}
                 itemCount={receiptItems.length}
                 grandTotal={receipt.grandTotal ?? 0}
+                receiptIsInvalid={receiptNotValid}
+                receiptIsValidPending={receiptValidFetching}
             />
             <div className="container max-w-2xl mx-auto px-4 py-6 md:py-12">
                 {/* Header */}
