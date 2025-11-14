@@ -10,13 +10,12 @@ export function useDeleteReceiptItem() {
         mutationFn: async (args: { id: string, item: ReceiptItemDto }) => {
             return await deleteReceiptItemRpc({ data: args.item });
         },
-        onSuccess: (_, variables) => {
-            if (variables == null) return;
+        onSuccess: (_, { id }) => {
             queryClient.invalidateQueries({
-                queryKey: ReceiptQueryKeys.detail(variables.id),
+                queryKey: ReceiptQueryKeys.detail(id),
             });
             queryClient.invalidateQueries({
-                queryKey: ReceiptQueryKeys.valid(variables.id),
+                queryKey: ReceiptQueryKeys.valid(id),
             });
         },
         onError: (error) => {
@@ -32,13 +31,12 @@ export function useCreateReceiptItem() {
         mutationFn: async (args: { id: string, item: ReceiptItemDto }) => {
             return await createReceiptItemRpc({ data: { receiptId: args.id, receiptItem: args.item } });
         },
-        onSuccess: (_, variables) => {
-            if (variables == null) return;
+        onSuccess: (_, { id }) => {
             queryClient.invalidateQueries({
-                queryKey: ReceiptQueryKeys.detail(variables.id),
+                queryKey: ReceiptQueryKeys.detail(id),
             });
             queryClient.invalidateQueries({
-                queryKey: ReceiptQueryKeys.valid(variables.id),
+                queryKey: ReceiptQueryKeys.valid(id),
             });
         },
         onError: (error) => {
@@ -47,20 +45,20 @@ export function useCreateReceiptItem() {
     });
 }
 
-export function useEditReceiptItem() {
+export function useEditReceiptItem(receiptId: string) {
     const queryClient = useQueryClient();
-
+    const _receiptId = receiptId;
     return useMutation({
         mutationFn: async (item: ReceiptItemDto) => {
             return await editReceiptItemRpc({ data: item });
         },
-        onSuccess: (_, variables) => {
-            if (variables == null) return;
+        onSuccess: () => {
+            console.log(_receiptId)
             queryClient.invalidateQueries({
-                queryKey: ReceiptQueryKeys.detail(variables.id),
+                queryKey: ReceiptQueryKeys.detail(_receiptId),
             });
             queryClient.invalidateQueries({
-                queryKey: ReceiptQueryKeys.valid(variables.id),
+                queryKey: ReceiptQueryKeys.valid(_receiptId),
             });
         },
         onError: (error) => {
@@ -76,15 +74,14 @@ export function useFinalizeReceipt() {
         mutationFn: async (item: ReceiptTotalsDto) => {
             return await finalizeReceiptTotalsRpc({ data: item });
         },
-        onSuccess: (_, variables) => {
-            if (variables == null) {
-                return;
-            }
+        onSuccess: (_, item) => {
+            if (item == null) return;
+            console.log(item.id);
             queryClient.invalidateQueries({
-                queryKey: ReceiptQueryKeys.detail(variables?.id),
+                queryKey: ReceiptQueryKeys.detail(item.id),
             });
             queryClient.invalidateQueries({
-                queryKey: ReceiptQueryKeys.valid(variables?.id),
+                queryKey: ReceiptQueryKeys.valid(item.id),
             });
         },
         onError: (error) => {

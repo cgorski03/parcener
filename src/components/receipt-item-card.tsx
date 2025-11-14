@@ -23,7 +23,10 @@ export function ReceiptItemCard(props: {
                     <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                             <h3 className="font-semibold text-base leading-tight">
-                                {hasMultiple && item.quantity} {item.interpretedText}
+                                {hasMultiple
+                                    ? `${item.quantity} ${item.interpretedText}`
+                                    : item.interpretedText
+                                }
                             </h3>
                         </div>
                         {item.rawText && <p className="text-xs text-muted-foreground font-mono bg-muted/50 px-2 py-0.5 rounded inline-block">

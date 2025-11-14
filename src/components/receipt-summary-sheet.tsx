@@ -85,7 +85,10 @@ export function ReceiptSummarySheet(props: {
 
     return (
         <Sheet open={showSheet} onOpenChange={(open) => !open && closeSheet()}>
-            <SheetContent side="bottom" className="rounded-t-2xl px-4 py-4 !duration-250">
+            <SheetContent onOpenAutoFocus={(e) => {
+                e.preventDefault();
+            }}
+                side="bottom" className="rounded-t-2xl px-4 py-4 !duration-250">
                 <SheetHeader className='pl-0'>
                     <SheetTitle className="text-xl">Edit Totals</SheetTitle>
                     <SheetDescription className="text-sm">Adjust tax and tip</SheetDescription>

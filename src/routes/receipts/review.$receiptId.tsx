@@ -47,7 +47,7 @@ function RouteComponent() {
     const [showSummarySheet, setShowSummarySheet] = useState<boolean>(false);
     const [receiptItemForSheet, setReceiptItemForSheet] = useState<ReceiptItemDto | null>(null);
 
-    const { mutateAsync: editReceiptItem } = useEditReceiptItem();
+    const { mutateAsync: editReceiptItem } = useEditReceiptItem(receiptId);
     const { mutateAsync: deleteReceiptItem } = useDeleteReceiptItem();
     const { mutateAsync: createReceiptItem } = useCreateReceiptItem();
 
