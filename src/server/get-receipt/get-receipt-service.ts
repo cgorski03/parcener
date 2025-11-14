@@ -1,19 +1,31 @@
 import { getAllReceiptInfo } from "./repository";
-import { receiptEntityToDtoHelper, ReceiptDto } from "../dtos";
+import { receiptEntityWithReferencesToDtoHelper, ReceiptDto } from "../dtos";
+import { ReceiptNotFoundResponse, ReceiptProcessingFailedResponse, ReceiptProcessingResponse } from "../response-types";
 
-type processingStatus = { status: 'processing' }
-type failedStatus = { attempts: number }
+export type GetReceiptResponse = ReceiptNotFoundResponse | ReceiptProcessingResponse | ReceiptProcessingFailedResponse | ReceiptDto;
 
-
-export type GetReceiptResponse = processingStatus | failedStatus | ReceiptDto;
 export async function getReceiptWithItems(receiptId: string): Promise<GetReceiptResponse> {
     const receiptInformation = await getAllReceiptInfo(receiptId);
-    if (receiptInformation?.processingInfo.some(x => x.processingStatus === 'success')) {
-        return receiptEntityToDtoHelper(receiptInformation);
+    if (!receiptInformation) {
+        return { error: true, code: 'NOT_FOUND' }
     }
     if (receiptInformation?.processingInfo.some(x => x.processingStatus === 'processing')) {
-        return { status: 'processing' }
+        return { error: true, code: 'PROCESSING' }
     }
-    return { attempts: receiptInformation?.processingInfo.filter((info) => info.processingStatus === 'failed').length ?? 0 }
+
+    const hasSuccesses = receiptInformation.processingInfo.some((receipt) => receipt.processingStatus === 'success');
+    // have we failed, and dont have a success or a processing
+
+    if (!hasSuccesses && receiptInformation.processingInfo.length > 0) {
+        const failedAttemptsCount = receiptInformation.processingInfo.filter(
+            (info) => info.processingStatus === "failed",
+        ).length;
+
+        if (failedAttemptsCount === receiptInformation.processingInfo.length) {
+            return { error: true, code: "FAILED", attempts: failedAttemptsCount };
+        }
+    }
+
+    return receiptEntityWithReferencesToDtoHelper(receiptInformation);
 }
 

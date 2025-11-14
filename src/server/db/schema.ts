@@ -57,4 +57,7 @@ export const receiptProcessingRelations = relations(receiptProcessingInformation
 export type ReceiptItemSelect = typeof receiptItem.$inferSelect;
 export type ReceiptItemInsert = typeof receiptItem.$inferInsert;
 
+export type ReceiptSelect = typeof receipt.$inferSelect;
+export type ReceiptInsert = typeof receipt.$inferInsert;
+
 

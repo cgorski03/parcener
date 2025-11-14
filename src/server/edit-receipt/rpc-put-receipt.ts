@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
-import { createReceiptItem, deleteReceiptItem, editReceiptItem } from "./edit-receipt-service";
-import { ReceiptItemDto } from "../dtos";
+import { createReceiptItem, deleteReceiptItem, editReceiptItem, finalizeReceiptTotals } from "./edit-receipt-service";
+import { ReceiptItemDto, ReceiptTotalsDto } from "../dtos";
 
 export const editReceiptItemRpc = createServerFn({ method: 'POST' })
     .inputValidator((receiptItem: ReceiptItemDto) => receiptItem)
@@ -19,4 +19,10 @@ export const createReceiptItemRpc = createServerFn({ method: 'POST' })
     .handler(async ({ data }) => {
         const { receiptItem, receiptId } = data;
         return createReceiptItem(receiptItem, receiptId);
+    });
+
+export const finalizeReceiptTotalsRpc = createServerFn({ method: 'POST' })
+    .inputValidator((receipt: ReceiptTotalsDto) => receipt)
+    .handler(async ({ data: receipt }) => {
+        return finalizeReceiptTotals(receipt);
     });

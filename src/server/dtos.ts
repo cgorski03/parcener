@@ -26,7 +26,15 @@ export type ReceiptDto = {
 
 } | null;
 
-export const receiptEntityToDtoHelper = (
+export type ReceiptTotalsDto = {
+    id: string;
+    subtotal: number;
+    tax: number;
+    tip: number;
+    grandTotal: number;
+} | null;
+
+export const receiptEntityWithReferencesToDtoHelper = (
     receipt: Awaited<ReturnType<typeof getAllReceiptInfo>>,
 ): ReceiptDto => {
     if (!receipt) return null
@@ -42,6 +50,8 @@ export const receiptEntityToDtoHelper = (
     }
 }
 
+
+
 export const parseNullable = (v: string | null): number | null =>
     v === null ? null : parseFloat(v)
 
@@ -54,4 +64,5 @@ export const receiptItemEntityToDtoHelper = (item: ReceiptItemSelect) => {
         quantity: parseFloat(item.quantity),
     }
 }
+
 
