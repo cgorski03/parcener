@@ -1,5 +1,5 @@
-import { ReceiptItemDto } from "@/server/dtos";
-import { editReceiptItemRpc, deleteReceiptItemRpc, createReceiptItemRpc } from "@/server/edit-receipt/rpc-put-receipt";
+import { ReceiptItemDto, ReceiptTotalsDto } from "@/server/dtos";
+import { editReceiptItemRpc, deleteReceiptItemRpc, createReceiptItemRpc, finalizeReceiptTotalsRpc } from "@/server/edit-receipt/rpc-put-receipt";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export function useDeleteReceiptItem(receiptId: string) {
@@ -51,6 +51,25 @@ export function useEditReceiptItem(receiptId: string) {
         onSuccess: () => {
             queryClient.invalidateQueries({
                 queryKey: ['receipt', _receiptId]
+            });
+        },
+        onError: (error) => {
+            console.error('Failed to save item:', error);
+        }
+    });
+}
+
+export function useFinalizeReceipt() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (item: ReceiptTotalsDto) => {
+            return await finalizeReceiptTotalsRpc({ data: item });
+        },
+        onSuccess: (_, variables) => {
+            console.log(variables?.id)
+            queryClient.invalidateQueries({
+                queryKey: ['receipt', variables?.id]
             });
         },
         onError: (error) => {

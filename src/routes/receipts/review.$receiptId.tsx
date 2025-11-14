@@ -1,15 +1,18 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { getReceipt } from '@/server/get-receipt/rpc-get-receipt'
-import { isFailed, isProcessing } from '@/lib/receipt-utils'
+import { isFailed, isProcessing, receiptNotFound } from '@/lib/receipt-utils'
 import { ReceiptItemCard } from '@/components/receipt-item-card'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Plus, Share2, Loader2, Receipt, AlertCircle } from 'lucide-react'
+import { Plus, Share2, Loader2, AlertCircle } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import ReceiptItemSheet from '@/components/edit-item-sheet'
 import { ReceiptItemDto } from '@/server/dtos'
 import { useCreateReceiptItem, useDeleteReceiptItem, useEditReceiptItem } from '@/lib/hooks/useEditReceipt'
 import { ReceiptSummarySheet } from '@/components/receipt-summary-sheet'
+import { ReviewReceiptHeader } from '@/components/review/receipt-header'
+import { ErrorReceipt, NotFoundReceipt, ProcessingReceipt } from '@/components/processing-errors'
+import { useGetReceiptReview } from '@/lib/hooks/useGetReceipt'
 
 export const Route = createFileRoute('/receipts/review/$receiptId')({
     loader: async ({ params }) => {
@@ -18,47 +21,24 @@ export const Route = createFileRoute('/receipts/review/$receiptId')({
     component: RouteComponent,
 })
 
-function NotFoundReceipt() {
-    return (<div>
-        Doesnt exist loser
-    </div>)
-}
 
-function ProcessingReceipt() {
-    return (
-        <div className="flex flex-col items-center justify-center min-h-screen p-4 gap-4">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="text-sm text-muted-foreground">Processing your receipt...</p>
-            <Button variant="outline" size="sm">Process Again</Button>
-        </div>
-    )
-}
-
-function ErrorReceipt(attempts: number) {
-    return (
-        <div className="flex flex-col items-center justify-center min-h-screen p-4 gap-4">
-            <div className="text-center">
-                <p className="text-lg font-semibold mb-2">Processing Failed</p>
-                <p className="text-sm text-muted-foreground">
-                    Failed after {attempts} attempts
-                </p>
-            </div>
-            <Button>Try Again</Button>
-        </div>
-    )
-}
 
 function RouteComponent() {
     const receiptInfoFromServer = Route.useLoaderData()
-    if (receiptInfoFromServer === null) { return NotFoundReceipt() }
-    if (isProcessing(receiptInfoFromServer)) {
-        return ProcessingReceipt()
+    const { receiptId } = Route.useParams();
+
+    const { data: receipt } = useGetReceiptReview(receiptId, receiptInfoFromServer);
+
+    if (receipt == null || receiptNotFound(receipt)) {
+        return <NotFoundReceipt />
     }
-    if (isFailed(receiptInfoFromServer)) {
-        return ErrorReceipt(receiptInfoFromServer.attempts);
+    if (isProcessing(receipt)) {
+        return <ProcessingReceipt />
+    }
+    if (isFailed(receipt)) {
+        return <ErrorReceipt attempts={receipt.attempts} />;
     }
     // Enable optimistic updates
-    const [receipt, setReceipt] = useState(receiptInfoFromServer);
     const [receiptItems, setReceiptItems] = useState(receipt.items);
 
     // Component state
@@ -128,21 +108,13 @@ function RouteComponent() {
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
+            <ReviewReceiptHeader
+                title={receipt.title ?? "Set Title"}
+                itemCount={receiptItems.length}
+                subtotal={subtotal}
+            />
             <div className="container max-w-2xl mx-auto px-4 py-6 md:py-12">
                 {/* Header */}
-                <div className="mb-6">
-                    <div className="flex items-center gap-3 mb-2">
-                        <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                            <Receipt className="h-6 w-6 text-primary" />
-                        </div>
-                        <div>
-                            <h1 className="text-2xl md:text-3xl font-bold">{receipt.title}</h1>
-                            <p className="text-sm text-muted-foreground">
-                                {receiptItems.length} items • ${subtotal}
-                            </p>
-                        </div>
-                    </div>
-                </div>
 
                 {/* Items Grid */}
                 <div className="space-y-2 mb-4">
@@ -220,7 +192,7 @@ function RouteComponent() {
 
                 {/* Mobile bottom padding for fixed button alternative */}
                 <div className="h-4 md:hidden" />
-            </div>
+            </div >
             <ReceiptItemSheet
                 key={receiptItemForSheet?.id}
                 item={receiptItemForSheet}
@@ -233,9 +205,6 @@ function RouteComponent() {
                 receipt={receipt}
                 subtotal={subtotal}
                 closeSheet={() => setShowSummarySheet(false)}
-                handleSaveSummary={async (_) => {
-                    // Save to backend
-                }}
             />
         </div >
     )

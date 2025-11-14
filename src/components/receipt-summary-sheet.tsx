@@ -1,9 +1,11 @@
 import { ReceiptDto } from "@/server/dtos";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "./ui/sheet";
 import { Label } from "@radix-ui/react-label";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
+import { useFinalizeReceipt } from "@/lib/hooks/useEditReceipt";
+import { Loader2 } from "lucide-react";
 
 const calculateAmount = (
     inputValue: string,
@@ -23,9 +25,10 @@ export function ReceiptSummarySheet(props: {
     subtotal: string;
     receipt: ReceiptDto;
     closeSheet: () => void;
-    handleSaveSummary: (data: { tax: number; tip: number }) => void;
 }) {
-    const { showSheet, receipt, subtotal, closeSheet, handleSaveSummary } = props;
+
+    const { showSheet, receipt, subtotal, closeSheet } = props;
+    const { mutateAsync: saveReceiptTotal, isPending: savingReceiptTotal } = useFinalizeReceipt();
 
     const [taxMode, setTaxMode] = useState<'percentage' | 'absolute'>('absolute');
     const [tipMode, setTipMode] = useState<'percentage' | 'absolute'>('absolute');
@@ -38,6 +41,17 @@ export function ReceiptSummarySheet(props: {
     const tipAmount = calculateAmount(tipInputValue, tipMode, subtotalFloat);
 
     const grandTotal = (subtotalFloat + taxAmount + tipAmount);
+    const handleSaveReceiptTotals = async () => {
+        if (!receipt) return;
+        await saveReceiptTotal({
+            id: receipt.id,
+            subtotal: subtotalFloat,
+            tax: taxAmount,
+            tip: tipAmount,
+            grandTotal: grandTotal
+        })
+        closeSheet();
+    }
 
     return (
         <Sheet open={showSheet} onOpenChange={(open) => !open && closeSheet()}>
@@ -72,11 +86,11 @@ export function ReceiptSummarySheet(props: {
                                         if (e.target.value === '') {
                                             setTaxInputValue('');
                                         } else {
-                                            setTaxInputValue(parseFloat(e.target.value) || 0);
+                                            setTaxInputValue(e.target.value);
                                         }
                                     }}
                                     onBlur={(e) => {
-                                        if (e.target.value === '') setTaxInputValue(0);
+                                        if (e.target.value === '') setTaxInputValue('0');
                                     }}
                                     className="text-lg h-12 pl-8 pr-4"
                                     placeholder="0.00"
@@ -86,7 +100,7 @@ export function ReceiptSummarySheet(props: {
                                 <button
                                     type="button"
                                     onClick={() => setTaxMode('absolute')}
-                                    className={`px-4 py-3 text-sm font-medium rounded-md transition-all min-w-[48px] ${taxMode === 'absolute'
+                                    className={`text-lg font-medium rounded-md transition-all min-w-[48px] ${taxMode === 'absolute'
                                         ? 'bg-background text-foreground shadow-sm'
                                         : 'text-muted-foreground'
                                         }`}
@@ -96,7 +110,7 @@ export function ReceiptSummarySheet(props: {
                                 <button
                                     type="button"
                                     onClick={() => setTaxMode('percentage')}
-                                    className={`px-4 py-3 text-sm font-medium rounded-md transition-all min-w-[48px] ${taxMode === 'percentage'
+                                    className={`text-lg font-medium rounded-md transition-all min-w-[48px] ${taxMode === 'percentage'
                                         ? 'bg-background text-foreground shadow-sm'
                                         : 'text-muted-foreground'
                                         }`}
@@ -124,11 +138,11 @@ export function ReceiptSummarySheet(props: {
                                         if (e.target.value === '') {
                                             setTipInputValue('');
                                         } else {
-                                            setTipInputValue(parseFloat(e.target.value) || 0);
+                                            setTipInputValue(e.target.value);
                                         }
                                     }}
                                     onBlur={(e) => {
-                                        if (e.target.value === '') setTipInputValue(0);
+                                        if (e.target.value === '') setTipInputValue('0');
                                     }}
                                     className="text-lg h-12 pl-8 pr-4"
                                     placeholder="0.00"
@@ -138,7 +152,7 @@ export function ReceiptSummarySheet(props: {
                                 <button
                                     type="button"
                                     onClick={() => setTipMode('absolute')}
-                                    className={`px-4 py-3 text-sm font-medium rounded-md transition-all min-w-[48px] ${tipMode === 'absolute'
+                                    className={`text-lg font-medium rounded-md transition-all min-w-[48px] ${tipMode === 'absolute'
                                         ? 'bg-background text-foreground shadow-sm'
                                         : 'text-muted-foreground'
                                         }`}
@@ -148,7 +162,7 @@ export function ReceiptSummarySheet(props: {
                                 <button
                                     type="button"
                                     onClick={() => setTipMode('percentage')}
-                                    className={`px-4 py-3 text-sm font-medium rounded-md transition-all min-w-[48px] ${tipMode === 'percentage'
+                                    className={`text-lg font-medium rounded-md transition-all min-w-[48px] ${tipMode === 'percentage'
                                         ? 'bg-background text-foreground shadow-sm'
                                         : 'text-muted-foreground'
                                         }`}
@@ -161,10 +175,6 @@ export function ReceiptSummarySheet(props: {
 
                     {/* Grand Total Preview */}
                     <div className="p-4 bg-primary/5 rounded-xl border border-primary/20">
-                        <div className="flex items-center justify-between mb-3">
-                            <span className="text-base font-medium">Grand Total</span>
-                            <span className="text-2xl font-bold text-primary">${grandTotal.toFixed(2)}</span>
-                        </div>
                         <div className="text-sm text-muted-foreground space-y-1.5">
                             <div className="flex justify-between">
                                 <span>Subtotal</span>
@@ -174,10 +184,14 @@ export function ReceiptSummarySheet(props: {
                                 <span>Tax</span>
                                 <span className="font-medium">${taxAmount.toFixed(2)}</span>
                             </div>
-                            <div className="flex justify-between">
+                            <div className="flex justify-between mb-3">
                                 <span>Tip</span>
                                 <span className="font-medium">${tipAmount.toFixed(2)}</span>
                             </div>
+                        </div>
+                        <div className="flex items-center justify-between ">
+                            <span className="text-base font-medium">Grand Total</span>
+                            <span className="text-2xl font-bold text-primary">${grandTotal.toFixed(2)}</span>
                         </div>
                     </div>
 
@@ -194,12 +208,9 @@ export function ReceiptSummarySheet(props: {
                         <Button
                             size="lg"
                             className="flex-1 h-12 text-base"
-                            onClick={() => {
-                                handleSaveSummary({ tax: taxAmount, tip: tipAmount });
-                                closeSheet();
-                            }}
+                            onClick={handleSaveReceiptTotals}
                         >
-                            Save
+                            {savingReceiptTotal ? <Loader2 className="animate-spin" /> : "Save"}
                         </Button>
                     </div>
                 </div>

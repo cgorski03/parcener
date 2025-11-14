@@ -3,7 +3,7 @@ import { db } from "../db";
 import { receipt, receiptItem } from "../db/schema";
 import { ReceiptItemDto, receiptItemEntityToDtoHelper, ReceiptTotalsDto } from "../dtos";
 import { getReceiptWithItems, } from "../get-receipt/get-receipt-service";
-import { isFailed, isNotFound, isProcessing } from "@/lib/receipt-utils";
+import { isFailed, receiptNotFound, isProcessing } from "@/lib/receipt-utils";
 import { ReceiptNotFoundResponse, ReceiptProcessingFailedResponse, ReceiptProcessingResponse } from "../response-types";
 
 export async function editReceiptItem(item: ReceiptItemDto) {
@@ -54,7 +54,7 @@ export async function finalizeReceiptTotals(receiptTotals: ReceiptTotalsDto): Pr
 
     const receiptInformation = await getReceiptWithItems(id);
 
-    if (isNotFound(receiptInformation) || !receiptInformation) {
+    if (receiptNotFound(receiptInformation) || !receiptInformation) {
         // Not found
         return {
             error: true,

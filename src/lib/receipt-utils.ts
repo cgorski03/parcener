@@ -1,10 +1,16 @@
-import { GetReceiptResponse, ReceiptDto } from "@/server/get-receipt/get-receipt-service";
+import { ReceiptDto } from "@/server/dtos";
+import { GetReceiptResponse } from "@/server/get-receipt/get-receipt-service";
+import { ReceiptNotFoundResponse, ReceiptProcessingFailedResponse, ReceiptProcessingResponse } from "@/server/response-types";
 
-export function isProcessing(receipt: GetReceiptResponse): receipt is { status: "processing" } {
-    return receipt !== null && 'status' in receipt;
+export function receiptNotFound(receipt: GetReceiptResponse): receipt is ReceiptNotFoundResponse {
+    return receipt !== null && 'code' in receipt && receipt.code === 'NOT_FOUND';
 }
 
-export function isFailed(receipt: GetReceiptResponse): receipt is { attempts: number } {
+export function isProcessing(receipt: GetReceiptResponse): receipt is ReceiptProcessingResponse {
+    return receipt !== null && 'code' in receipt && receipt.code === 'PROCESSING';
+}
+
+export function isFailed(receipt: GetReceiptResponse): receipt is ReceiptProcessingFailedResponse {
     return receipt !== null && 'attempts' in receipt;
 }
 
