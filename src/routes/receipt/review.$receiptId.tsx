@@ -14,7 +14,7 @@ import { ErrorReceipt, NotFoundReceipt, ProcessingReceipt } from '@/components/p
 import { useGetReceiptReview, useReceiptIsValid } from '@/hooks/useGetReceipt'
 import { useCreateReceiptItem, useDeleteReceiptItem, useEditReceiptItem } from '@/hooks/useEditReceipt'
 
-export const Route = createFileRoute('/receipts/review/$receiptId')({
+export const Route = createFileRoute('/receipt/review/$receiptId')({
     loader: async ({ params }) => {
         return await getReceiptRpc({ data: params.receiptId })
     },

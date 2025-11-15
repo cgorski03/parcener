@@ -13,7 +13,7 @@ const client = postgres({
 export const db = drizzle(client, { schema });
 
 
-export { user, session, account, verification } from './auth-schema';
+export * as authSchema from './auth-schema';
 
 export * from './schema';
 export type { ReceiptSelect, ReceiptInsert } from './schema';
