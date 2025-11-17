@@ -9,11 +9,11 @@ import { createProcessingError, createReceiptStub as beginReceiptProcessingRun, 
 
 const RECEIPT_PROCESSING_MODEL = 'gemini-2.5-pro';
 
-export async function processReceipt(imageBuffer: ArrayBuffer) {
+export async function processReceipt(userId: string, imageBuffer: ArrayBuffer) {
     const ai = google();
     const receiptId = crypto.randomUUID();
     // Insert the stub records to the database
-    const runId = await beginReceiptProcessingRun(receiptId);
+    const runId = await beginReceiptProcessingRun(userId, receiptId);
     let metadata: UsageMetadata | null = null;
     let rawResponse: string | null = null;
     try {

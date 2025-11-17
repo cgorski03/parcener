@@ -4,11 +4,12 @@ import { eq } from "drizzle-orm";
 import { ParsedReceipt } from "./types";
 
 // Returns what is effectively the processing run ID
-export async function createReceiptStub(id: string) {
+export async function createReceiptStub(userId: string, id: string) {
     const startTime = new Date();
     return db.transaction(async (tx) => {
         await tx.insert(receipt).values({
             id,
+            userId,
             createdAt: startTime,
         });
         const [insertedRecord] = await tx.insert(receiptProcessingInformation).values({

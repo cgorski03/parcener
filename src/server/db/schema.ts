@@ -6,6 +6,7 @@ export const receiptProcessingEnum = pgEnum('processing_status', ['processing', 
 
 export const receipt = pgTable('receipt', {
     id: uuid('id').primaryKey().defaultRandom(),
+    userId: text('user_id').notNull().references(() => user.id, { onDelete: "cascade" }),
     title: varchar('title', { length: 255 }),
     subtotal: numeric('subtotal', { precision: 10, scale: 2 }).notNull().default('0'),
     tip: numeric('tip', { precision: 10, scale: 2 }).notNull().default('0'),

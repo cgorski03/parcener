@@ -7,7 +7,6 @@ export const Route = createFileRoute('/login')({
 
 function RouteComponent() {
     const signIn = () => {
-
         authClient.signIn.social({
             provider: "google",
         });

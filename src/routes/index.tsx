@@ -1,12 +1,29 @@
+import { Button } from '@/components/ui/button';
+import { authClient } from '@/lib/auth-client';
 import { createFileRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/')({ component: App })
 
 function App() {
+    const { data: session, isPending } = authClient.useSession()
 
+    const signIn = () => {
+        authClient.signIn.social({
+            provider: "google",
+        });
+    };
+    const signOut = () => {
+        authClient.signOut();
+    };
     return (
-        <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
-            Split
-        </div>
-    )
+        <div>
+            {!isPending && !session ?
+                <Button onClick={signIn}>
+                    Login
+                </Button> : <Button onClick={signOut}>
+                    Logout
+                </Button>
+
+            }
+        </div>)
 }
