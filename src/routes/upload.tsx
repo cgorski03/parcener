@@ -42,7 +42,6 @@ function UploadComponent() {
         try {
             const formData = new FormData();
             formData.append('file', file);
-            formData.append('createdBy', name);
 
             const { receiptId } = await uploadReceipt({ data: formData });
             router.navigate({ to: `/receipts/review/${receiptId}` });
@@ -65,19 +64,6 @@ function UploadComponent() {
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={handleSubmit} className="space-y-4">
-                        <div className="space-y-2">
-                            <label htmlFor="name" className="text-sm font-medium">
-                                Your Name
-                            </label>
-                            <Input
-                                id="name"
-                                type="text"
-                                placeholder="Enter your name"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                                disabled={loading}
-                            />
-                        </div>
 
                         <div className="space-y-2">
                             <label htmlFor="receipt" className="text-sm font-medium"> Receipt Image

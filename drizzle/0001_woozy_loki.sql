@@ -1,0 +1,1 @@
+ALTER TABLE "room" RENAME COLUMN "created_id" TO "created_at";

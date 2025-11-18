@@ -66,8 +66,9 @@ export const room = pgTable('room', {
     receiptId: uuid('receipt_id').notNull().references(() => receipt.id, { onDelete: 'cascade' }),
     title: varchar('title', { length: 255 }),
     createdBy: text('user_id').notNull().references(() => user.id, { onDelete: "cascade" }),
-    createdAt: timestamp('created_id').defaultNow(),
+    createdAt: timestamp('created_at').defaultNow(),
 })
+
 export const roomRelations = relations(room, ({ one, many }) => ({
     receipt: one(receipt, { fields: [room.receiptId], references: [receipt.id] }),
     members: many(roomMember),
