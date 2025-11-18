@@ -19,5 +19,4 @@ export const uploadReceipt = createServerFn({ method: 'POST' })
 
         const result = await processReceipt(userId, buffer);
         return result;
-
     });

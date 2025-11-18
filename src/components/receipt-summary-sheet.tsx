@@ -4,8 +4,8 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "
 import { Label } from "@radix-ui/react-label";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import { useFinalizeReceipt } from "@/lib/hooks/useEditReceipt";
 import { Loader2 } from "lucide-react";
+import { useFinalizeReceipt } from "@/hooks/useEditReceipt";
 
 const calculateAmount = (
     inputValue: string,

@@ -1,3 +1,5 @@
+CREATE TYPE "public"."processing_status" AS ENUM('processing', 'failed', 'success');--> statement-breakpoint
+
 CREATE TABLE "account" (
 	"id" text PRIMARY KEY NOT NULL,
 	"account_id" text NOT NULL,
@@ -55,6 +57,39 @@ CREATE TABLE "claim" (
 	"claimed_at" timestamp DEFAULT now()
 );
 --> statement-breakpoint
+CREATE TABLE "receipt" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"user_id" text NOT NULL,
+	"title" varchar(255),
+	"subtotal" numeric(10, 2) DEFAULT '0' NOT NULL,
+	"tip" numeric(10, 2) DEFAULT '0' NOT NULL,
+	"tax" numeric(10, 2) DEFAULT '0' NOT NULL,
+	"grand_total" numeric(10, 2) DEFAULT '0' NOT NULL,
+	"raw_parsing_response" jsonb,
+	"created_at" timestamp DEFAULT now()
+);
+--> statement-breakpoint
+CREATE TABLE "receipt_item" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"receipt_id" uuid NOT NULL,
+	"price" numeric(10, 2) NOT NULL,
+	"raw_text" varchar(255),
+	"interpreted_text" varchar(1027) NOT NULL,
+	"quantity" numeric(5, 2) DEFAULT '1' NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "receipt_processing_information" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"receipt_id" uuid NOT NULL,
+	"processing_status" "processing_status" NOT NULL,
+	"started_at" timestamp DEFAULT now(),
+	"ended_at" timestamp DEFAULT now(),
+	"error_message" text,
+	"error_details" jsonb,
+	"model" varchar(30),
+	"processing_tokens" integer
+);
+--> statement-breakpoint
 CREATE TABLE "room" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"receipt_id" uuid NOT NULL,
@@ -72,22 +107,14 @@ CREATE TABLE "room_member" (
 	"joined_at" timestamp DEFAULT now()
 );
 --> statement-breakpoint
-ALTER TABLE "receipt" ALTER COLUMN "subtotal" SET DEFAULT '0';--> statement-breakpoint
-ALTER TABLE "receipt" ALTER COLUMN "subtotal" SET NOT NULL;--> statement-breakpoint
-ALTER TABLE "receipt" ALTER COLUMN "tip" SET DEFAULT '0';--> statement-breakpoint
-ALTER TABLE "receipt" ALTER COLUMN "tip" SET NOT NULL;--> statement-breakpoint
-ALTER TABLE "receipt" ALTER COLUMN "tax" SET DEFAULT '0';--> statement-breakpoint
-ALTER TABLE "receipt" ALTER COLUMN "tax" SET NOT NULL;--> statement-breakpoint
-ALTER TABLE "receipt" ALTER COLUMN "grand_total" SET DEFAULT '0';--> statement-breakpoint
-ALTER TABLE "receipt" ALTER COLUMN "grand_total" SET NOT NULL;--> statement-breakpoint
-ALTER TABLE "receipt_item" ALTER COLUMN "price" SET NOT NULL;--> statement-breakpoint
-ALTER TABLE "receipt_item" ALTER COLUMN "interpreted_text" SET NOT NULL;--> statement-breakpoint
-ALTER TABLE "receipt_item" ALTER COLUMN "quantity" SET NOT NULL;--> statement-breakpoint
 ALTER TABLE "account" ADD CONSTRAINT "account_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "session" ADD CONSTRAINT "session_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "claim" ADD CONSTRAINT "claim_room_id_room_id_fk" FOREIGN KEY ("room_id") REFERENCES "public"."room"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "claim" ADD CONSTRAINT "claim_member_id_room_member_id_fk" FOREIGN KEY ("member_id") REFERENCES "public"."room_member"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "claim" ADD CONSTRAINT "claim_receipt_item_id_receipt_item_id_fk" FOREIGN KEY ("receipt_item_id") REFERENCES "public"."receipt_item"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "receipt" ADD CONSTRAINT "receipt_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "receipt_item" ADD CONSTRAINT "receipt_item_receipt_id_receipt_id_fk" FOREIGN KEY ("receipt_id") REFERENCES "public"."receipt"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "receipt_processing_information" ADD CONSTRAINT "receipt_processing_information_receipt_id_receipt_id_fk" FOREIGN KEY ("receipt_id") REFERENCES "public"."receipt"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "room" ADD CONSTRAINT "room_receipt_id_receipt_id_fk" FOREIGN KEY ("receipt_id") REFERENCES "public"."receipt"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "room" ADD CONSTRAINT "room_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "room_member" ADD CONSTRAINT "room_member_room_id_room_id_fk" FOREIGN KEY ("room_id") REFERENCES "public"."room"("id") ON DELETE cascade ON UPDATE no action;
