@@ -12,6 +12,7 @@ import {
 } from "../response-types";
 import { isFailed, isProcessing, receiptNotFound } from "@/lib/receipt-utils";
 import { calculateItemTotal, moneyValuesEqual } from "../money-math";
+import { ReceiptEntityWithItems } from "../db";
 
 export type GetReceiptResponse = NotFoundResponse | ReceiptProcessingResponse | ReceiptProcessingFailedResponse | ReceiptDto;
 
@@ -40,7 +41,7 @@ export async function getReceiptWithItems(receiptId: string): Promise<GetReceipt
     return receiptEntityWithReferencesToDtoHelper(receiptInformation);
 }
 
-export type GetReceiptIsValidResponse = { success: true }
+export type GetReceiptIsValidResponse = { success: true, receipt: ReceiptDto }
     | NotFoundResponse
     | ReceiptProcessingResponse
     | ReceiptProcessingFailedResponse
@@ -81,5 +82,5 @@ export async function getReceiptIsValid(receiptId: string): Promise<GetReceiptIs
             serverGrandTotal: receiptInformation.grandTotal
         }
     };
-    return { success: true }
+    return { success: true, receipt: receiptInformation }
 }

@@ -10,18 +10,18 @@ export type CreateRoomRequest = {
     userId: string;
 }
 
-export async function CreateRoom(request: CreateRoomRequest) {
-    const { title, receiptId, userId } = request;
+export async function CreateRoom(receiptId: string, userId: string) {
     const validResponse = await getReceiptIsValid(receiptId);
     if (!("success" in validResponse)) {
         return validResponse;
     }
+
     // We know the receipt is in a valid state
     // We can create the room
     try {
         const [newRoom] = await db.insert(room).values({
             receiptId,
-            title,
+            title: validResponse.receipt?.title ?? "Untitled Room",
             createdBy: userId
         }).returning();
         return { success: true, room: newRoom }

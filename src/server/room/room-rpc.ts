@@ -6,16 +6,17 @@ import { parseRoomIdentity } from "../auth/parse-room-identity";
 import { NOT_FOUND } from "../response-types";
 import { z } from 'zod';
 import { receiptEntityWithReferencesToDtoHelper } from "../dtos";
+
 export const createRoomRpc = createServerFn({ method: 'POST' })
-    .inputValidator((createRoomRequest: { title: string; receiptId: string }) => createRoomRequest)
-    .handler(async ({ data: createRoomRequest }) => {
+    .inputValidator(z.string().uuid())
+    .handler(async ({ data: roomId }) => {
         const request = getRequest();
         const session = await getServerSession(request);
         const userId = session.data?.user.id;
         if (userId == null) {
             throw new Error('Not authorized to perform this action');
         }
-        return CreateRoom({ ...createRoomRequest, userId });
+        return CreateRoom({ roomId, userId });
     });
 
 export const getAllRoomInfo = createServerFn({ method: 'GET' })
