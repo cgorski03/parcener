@@ -16,7 +16,7 @@ export const createRoomRpc = createServerFn({ method: 'POST' })
         if (userId == null) {
             throw new Error('Not authorized to perform this action');
         }
-        return CreateRoom({ roomId, userId });
+        return CreateRoom(roomId, userId);
     });
 
 export const getAllRoomInfo = createServerFn({ method: 'GET' })

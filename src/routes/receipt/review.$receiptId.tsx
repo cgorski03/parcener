@@ -13,6 +13,7 @@ import { ReviewReceiptHeader } from '@/components/review/receipt-header'
 import { ErrorReceipt, NotFoundReceipt, ProcessingReceipt } from '@/components/processing-errors'
 import { useGetReceiptReview, useReceiptIsValid } from '@/hooks/useGetReceipt'
 import { useCreateReceiptItem, useDeleteReceiptItem, useEditReceiptItem } from '@/hooks/useEditReceipt'
+import { useCreateReceiptRoom } from '@/hooks/useRoom'
 
 export const Route = createFileRoute('/receipt/review/$receiptId')({
     loader: async ({ params }) => {
@@ -50,6 +51,8 @@ function RouteComponent() {
     const { mutateAsync: editReceiptItem } = useEditReceiptItem(receiptId);
     const { mutateAsync: deleteReceiptItem } = useDeleteReceiptItem();
     const { mutateAsync: createReceiptItem } = useCreateReceiptItem();
+    const { mutateAsync: createReceiptRoom, isPending: createReceiptRoomLoading } = useCreateReceiptRoom();
+
 
     const handleDeleteItem = async (updatedItem: ReceiptItemDto) => {
         // Optimistically update
@@ -77,6 +80,13 @@ function RouteComponent() {
                 onError: () => setReceiptItems(receipt.items)
             });
         }
+    };
+
+    const handleCreateReceiptRoom = () => {
+        if (receiptNotValid) {
+            console.error('client tried to create receipt room for an invalid receipt');
+        }
+        createReceiptRoom(receiptId);
     };
 
     const handleCreateCustomItem = () => {
@@ -171,8 +181,9 @@ function RouteComponent() {
                         <Button
                             className="w-full h-11"
                             disabled={totalHasError}
+                            onClick={handleCreateReceiptRoom}
                         >
-                            {false ? (
+                            {createReceiptRoomLoading ? (
                                 <>
                                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                                     Creating Room...
