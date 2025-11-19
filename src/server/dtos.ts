@@ -1,4 +1,4 @@
-import { ReceiptItemSelect } from "./db/schema";
+import { ReceiptEntityWithItems, ReceiptItemSelect } from "./db/schema";
 import { getAllReceiptInfo } from "./get-receipt/repository";
 
 export type ReceiptItemDto = {
@@ -35,7 +35,7 @@ export type ReceiptTotalsDto = {
 } | null;
 
 export const receiptEntityWithReferencesToDtoHelper = (
-    receipt: Awaited<ReturnType<typeof getAllReceiptInfo>>,
+    receipt: ReceiptEntityWithItems,
 ): ReceiptDto => {
     if (!receipt) return null
     return {

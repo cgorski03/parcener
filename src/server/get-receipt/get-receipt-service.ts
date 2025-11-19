@@ -1,11 +1,11 @@
 import { getAllReceiptInfo } from "./repository";
 import { receiptEntityWithReferencesToDtoHelper, ReceiptDto } from "../dtos";
 import {
-    RECEIPT_NOT_FOUND,
+    NOT_FOUND,
     RECEIPT_PROCESSING,
     RECEIPT_PROCESSING_FAILED,
     ReceiptGrandTotalMismatchResponse,
-    ReceiptNotFoundResponse,
+    NotFoundResponse,
     ReceiptProcessingFailedResponse,
     ReceiptProcessingResponse,
     ReceiptSubtotalMismatchResponse
@@ -13,12 +13,12 @@ import {
 import { isFailed, isProcessing, receiptNotFound } from "@/lib/receipt-utils";
 import { calculateItemTotal, moneyValuesEqual } from "../money-math";
 
-export type GetReceiptResponse = ReceiptNotFoundResponse | ReceiptProcessingResponse | ReceiptProcessingFailedResponse | ReceiptDto;
+export type GetReceiptResponse = NotFoundResponse | ReceiptProcessingResponse | ReceiptProcessingFailedResponse | ReceiptDto;
 
 export async function getReceiptWithItems(receiptId: string): Promise<GetReceiptResponse> {
     const receiptInformation = await getAllReceiptInfo(receiptId);
     if (!receiptInformation) {
-        return RECEIPT_NOT_FOUND;
+        return NOT_FOUND;
     }
     if (receiptInformation?.processingInfo.some(x => x.processingStatus === 'processing')) {
         return RECEIPT_PROCESSING
@@ -41,7 +41,7 @@ export async function getReceiptWithItems(receiptId: string): Promise<GetReceipt
 }
 
 export type GetReceiptIsValidResponse = { success: true }
-    | ReceiptNotFoundResponse
+    | NotFoundResponse
     | ReceiptProcessingResponse
     | ReceiptProcessingFailedResponse
     | ReceiptSubtotalMismatchResponse
@@ -53,7 +53,7 @@ export async function getReceiptIsValid(receiptId: string): Promise<GetReceiptIs
 
     if (receiptNotFound(receiptInformation) || !receiptInformation) {
         // Not found
-        return RECEIPT_NOT_FOUND
+        return NOT_FOUND
     }
     if (isFailed(receiptInformation)) {
         return RECEIPT_PROCESSING_FAILED(receiptInformation.attempts)

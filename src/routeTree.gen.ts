@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as UploadRouteImport } from './routes/upload'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ParceRoomIdRouteImport } from './routes/parce/$roomId'
 import { Route as ReceiptReviewReceiptIdRouteImport } from './routes/receipt/review.$receiptId'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
@@ -30,6 +31,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ParceRoomIdRoute = ParceRoomIdRouteImport.update({
+  id: '/parce/$roomId',
+  path: '/parce/$roomId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ReceiptReviewReceiptIdRoute = ReceiptReviewReceiptIdRouteImport.update({
   id: '/receipt/review/$receiptId',
   path: '/receipt/review/$receiptId',
@@ -45,6 +51,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/upload': typeof UploadRoute
+  '/parce/$roomId': typeof ParceRoomIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/receipt/review/$receiptId': typeof ReceiptReviewReceiptIdRoute
 }
@@ -52,6 +59,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/upload': typeof UploadRoute
+  '/parce/$roomId': typeof ParceRoomIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/receipt/review/$receiptId': typeof ReceiptReviewReceiptIdRoute
 }
@@ -60,6 +68,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/upload': typeof UploadRoute
+  '/parce/$roomId': typeof ParceRoomIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/receipt/review/$receiptId': typeof ReceiptReviewReceiptIdRoute
 }
@@ -69,15 +78,23 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/upload'
+    | '/parce/$roomId'
     | '/api/auth/$'
     | '/receipt/review/$receiptId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/upload' | '/api/auth/$' | '/receipt/review/$receiptId'
+  to:
+    | '/'
+    | '/login'
+    | '/upload'
+    | '/parce/$roomId'
+    | '/api/auth/$'
+    | '/receipt/review/$receiptId'
   id:
     | '__root__'
     | '/'
     | '/login'
     | '/upload'
+    | '/parce/$roomId'
     | '/api/auth/$'
     | '/receipt/review/$receiptId'
   fileRoutesById: FileRoutesById
@@ -86,6 +103,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LoginRoute: typeof LoginRoute
   UploadRoute: typeof UploadRoute
+  ParceRoomIdRoute: typeof ParceRoomIdRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ReceiptReviewReceiptIdRoute: typeof ReceiptReviewReceiptIdRoute
 }
@@ -113,6 +131,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/parce/$roomId': {
+      id: '/parce/$roomId'
+      path: '/parce/$roomId'
+      fullPath: '/parce/$roomId'
+      preLoaderRoute: typeof ParceRoomIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/receipt/review/$receiptId': {
       id: '/receipt/review/$receiptId'
       path: '/receipt/review/$receiptId'
@@ -134,6 +159,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LoginRoute: LoginRoute,
   UploadRoute: UploadRoute,
+  ParceRoomIdRoute: ParceRoomIdRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ReceiptReviewReceiptIdRoute: ReceiptReviewReceiptIdRoute,
 }

@@ -47,6 +47,10 @@ export const receiptRelations = relations((receipt), ({ many }) => ({
     processingInfo: many(receiptProcessingInformation),
 }))
 
+export type ReceiptEntityWithItems = ReceiptSelect & {
+    items: ReceiptItemSelect[];
+};
+
 export const receiptItemRelations = relations(receiptItem, ({ one }) => ({
     receipt: one(receipt, {
         fields: [receiptItem.receiptId],

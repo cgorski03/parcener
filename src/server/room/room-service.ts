@@ -29,7 +29,29 @@ export async function CreateRoom(request: CreateRoomRequest) {
         console.error(error);
         return ROOM_CREATE_ERROR;
     }
-
+}
+export async function GetFullRoomInfo(roomId: string) {
+    return await db.query.room.findFirst({
+        where: eq(room.id, roomId),
+        with: {
+            receipt: {
+                with: {
+                    items: true,
+                },
+            },
+            members: true,
+            claims: {
+                with: {
+                    roomMember: true,
+                },
+            },
+        },
+    });
+}
+export async function GetRoom(roomId: string) {
+    return await db.query.room.findFirst({
+        where: eq(room.id, roomId),
+    })
 }
 
 async function JoinRoomGuest(roomId: string) {
