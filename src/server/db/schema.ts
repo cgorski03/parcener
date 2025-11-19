@@ -85,7 +85,7 @@ export const roomMember = pgTable('room_member', {
     userId: uuid('user_id'),
     guestUuid: uuid('guest_uuid'),
     displayName:
-        varchar('display_name', { length: 100 }).notNull(),
+        varchar('display_name', { length: 100 }),
     joinedAt: timestamp('joined_at').defaultNow(),
 });
 

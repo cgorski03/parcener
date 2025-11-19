@@ -1,8 +1,10 @@
-import { db, room } from "../db";
+import { and, eq } from "drizzle-orm";
+import { db, room, roomMember } from "../db";
 import { getReceiptIsValid } from "../get-receipt/get-receipt-service";
 import { ROOM_CREATE_ERROR } from "../response-types";
+import { RoomIdentity } from "../auth/parse-room-identity";
 
-type CreateRoomRequest = {
+export type CreateRoomRequest = {
     title: string;
     receiptId: string;
     userId: string;
@@ -30,15 +32,55 @@ export async function CreateRoom(request: CreateRoomRequest) {
 
 }
 
-type JoinRoomGuestRequest = {
-    roomId: string;
-    displayName: string;
-}
-type JoinRoomMemberRequest = {
-    userId: string;
-    roomId: string;
+async function JoinRoomGuest(roomId: string) {
+    const guestUuid = crypto.randomUUID();
+    const guestName = `Guest ${guestUuid.slice(0, 8)}`
+    const [newRoomMember] = await db.insert(roomMember).values({
+        roomId,
+        guestUuid,
+        displayName: guestName
+    }).returning();
+    return { member: newRoomMember, generatedUuid: guestUuid, isNew: true }
 }
 
-export async function JoinRoomGuest(request: JoinRoomGuestRequest) {
+export async function JoinRoom(identity: RoomIdentity, roomId: string) {
+
+    // Performance optimization - can skip a query by short circuting in this case
+    if (!identity.guestUuid && !identity.userId) {
+        return await JoinRoomGuest(roomId);
+    }
+
+    const existingRoomMembership = await db.query.roomMember.findFirst({
+        where: and(
+            eq(roomMember.roomId, roomId),
+            identity.userId ?
+                eq(roomMember.userId, identity.userId)
+                : eq(roomMember.guestUuid, identity.guestUuid!)
+        )
+    });
+
+    if (existingRoomMembership) {
+        return { member: existingRoomMembership, isNew: false }
+    }
+
+    if (identity.isAuthenticated) {
+        const [authedNewRoomMember] = await db.insert(roomMember).values({
+            roomId,
+            userId: identity.userId,
+            displayName: identity.name
+        }).returning();
+        return { member: authedNewRoomMember, identity, isNew: true }
+    }
+    return await JoinRoomGuest(roomId);
 
 }
+
+
+export async function EditRoomMemberDisplayName(roomMemberId: string, displayName: string) {
+    const [updatedRoomMember] = await db.update(roomMember)
+        .set({ displayName })
+        .where(eq(roomMember.id, roomMemberId))
+        .returning();
+    return updatedRoomMember;
+}
+

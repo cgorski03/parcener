@@ -17,3 +17,11 @@ export const auth = betterAuth({
         provider: "pg",
     }),
 });
+
+export async function getSession(req?: Request) {
+    return auth.getSession({
+        fetchOptions: {
+            headers: req?.headers,
+        }
+    });
+}
