@@ -1,6 +1,7 @@
 import { relations } from "drizzle-orm";
 import { integer, jsonb, numeric, pgEnum, pgTable, text, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
 import { user } from "./auth-schema";
+import { unique } from "drizzle-orm/pg-core";
 
 export const receiptProcessingEnum = pgEnum('processing_status', ['processing', 'failed', 'success']);
 
@@ -51,11 +52,12 @@ export type ReceiptEntityWithItems = ReceiptSelect & {
     items: ReceiptItemSelect[];
 };
 
-export const receiptItemRelations = relations(receiptItem, ({ one }) => ({
+export const receiptItemRelations = relations(receiptItem, ({ one, many }) => ({
     receipt: one(receipt, {
         fields: [receiptItem.receiptId],
         references: [receipt.id]
     }),
+    claims: many(claim),
 }))
 
 export const receiptProcessingRelations = relations(receiptProcessingInformation, ({ one }) => ({
@@ -117,7 +119,9 @@ export const claim = pgTable('claim', {
         .notNull()
         .default('1'),
     claimedAt: timestamp('claimed_at').defaultNow(),
-});
+}, (table) => ({
+    uniqueClaim: unique().on(table.roomId, table.memberId, table.receiptItemId)
+}));
 
 export const claimRelations = relations(claim, ({ one }) => ({
     room: one(room, { fields: [claim.roomId], references: [room.id] }),

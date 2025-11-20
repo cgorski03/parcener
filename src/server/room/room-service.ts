@@ -44,11 +44,6 @@ export async function GetFullRoomInfo(roomId: string) {
         },
     });
 }
-export async function GetRoom(roomId: string) {
-    return await db.query.room.findFirst({
-        where: eq(room.id, roomId),
-    })
-}
 
 async function JoinRoomGuest(roomId: string) {
     const guestUuid = crypto.randomUUID();
@@ -61,7 +56,7 @@ async function JoinRoomGuest(roomId: string) {
     return { member: newRoomMember, generatedUuid: guestUuid, isNew: true }
 }
 
-export async function JoinRoom(identity: RoomIdentity, roomId: string) {
+export async function ensureRoomMember(identity: RoomIdentity, roomId: string) {
 
     // Performance optimization - can skip a query by short circuting in this case
     if (!identity.guestUuid && !identity.userId) {
