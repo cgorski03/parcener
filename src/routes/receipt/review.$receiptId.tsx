@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, notFound } from '@tanstack/react-router'
 import { getReceiptRpc } from '@/server/get-receipt/rpc-get-receipt'
 import { isFailed, isProcessing, receiptNotFound } from '@/lib/receipt-utils'
 import { ReceiptItemCard } from '@/components/receipt-item-card'
@@ -10,14 +10,16 @@ import ReceiptItemSheet from '@/components/edit-item-sheet'
 import { ReceiptItemDto } from '@/server/dtos'
 import { ReceiptSummarySheet } from '@/components/receipt-summary-sheet'
 import { ReviewReceiptHeader } from '@/components/review/receipt-header'
-import { ErrorReceipt, NotFoundReceipt, ProcessingReceipt } from '@/components/processing-errors'
+import { ErrorReceipt, ProcessingReceipt } from '@/components/processing-errors'
 import { useGetReceiptReview, useReceiptIsValid } from '@/hooks/useGetReceipt'
 import { useCreateReceiptItem, useDeleteReceiptItem, useEditReceiptItem } from '@/hooks/useEditReceipt'
 import { useCreateReceiptRoom } from '@/hooks/useRoom'
 
 export const Route = createFileRoute('/receipt/review/$receiptId')({
     loader: async ({ params }) => {
-        return await getReceiptRpc({ data: params.receiptId })
+        const receipt = await getReceiptRpc({ data: params.receiptId })
+        if (!receipt) throw notFound();
+        return receipt;
     },
     component: RouteComponent,
 })
@@ -32,7 +34,7 @@ function RouteComponent() {
     const { isError: receiptNotValid, isFetching: receiptValidFetching } = useReceiptIsValid(receiptId);
 
     if (receipt == null || receiptNotFound(receipt)) {
-        return <NotFoundReceipt />
+        throw notFound();
     }
     if (isProcessing(receipt)) {
         return <ProcessingReceipt />

@@ -1,0 +1,1 @@
+ALTER TABLE "claim" ADD CONSTRAINT "claim_room_id_member_id_receipt_item_id_unique" UNIQUE("room_id","member_id","receipt_item_id");

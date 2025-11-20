@@ -12,7 +12,9 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as UploadRouteImport } from './routes/upload'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ParceNotFoundRouteImport } from './routes/parce/not-found'
 import { Route as ParceRoomIdRouteImport } from './routes/parce/$roomId'
+import { Route as ReceiptReviewNotFoundRouteImport } from './routes/receipt/review.not-found'
 import { Route as ReceiptReviewReceiptIdRouteImport } from './routes/receipt/review.$receiptId'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
@@ -31,9 +33,19 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ParceNotFoundRoute = ParceNotFoundRouteImport.update({
+  id: '/parce/not-found',
+  path: '/parce/not-found',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ParceRoomIdRoute = ParceRoomIdRouteImport.update({
   id: '/parce/$roomId',
   path: '/parce/$roomId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReceiptReviewNotFoundRoute = ReceiptReviewNotFoundRouteImport.update({
+  id: '/receipt/review/not-found',
+  path: '/receipt/review/not-found',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ReceiptReviewReceiptIdRoute = ReceiptReviewReceiptIdRouteImport.update({
@@ -52,16 +64,20 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/upload': typeof UploadRoute
   '/parce/$roomId': typeof ParceRoomIdRoute
+  '/parce/not-found': typeof ParceNotFoundRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/receipt/review/$receiptId': typeof ReceiptReviewReceiptIdRoute
+  '/receipt/review/not-found': typeof ReceiptReviewNotFoundRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/upload': typeof UploadRoute
   '/parce/$roomId': typeof ParceRoomIdRoute
+  '/parce/not-found': typeof ParceNotFoundRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/receipt/review/$receiptId': typeof ReceiptReviewReceiptIdRoute
+  '/receipt/review/not-found': typeof ReceiptReviewNotFoundRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -69,8 +85,10 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/upload': typeof UploadRoute
   '/parce/$roomId': typeof ParceRoomIdRoute
+  '/parce/not-found': typeof ParceNotFoundRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/receipt/review/$receiptId': typeof ReceiptReviewReceiptIdRoute
+  '/receipt/review/not-found': typeof ReceiptReviewNotFoundRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -79,24 +97,30 @@ export interface FileRouteTypes {
     | '/login'
     | '/upload'
     | '/parce/$roomId'
+    | '/parce/not-found'
     | '/api/auth/$'
     | '/receipt/review/$receiptId'
+    | '/receipt/review/not-found'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/login'
     | '/upload'
     | '/parce/$roomId'
+    | '/parce/not-found'
     | '/api/auth/$'
     | '/receipt/review/$receiptId'
+    | '/receipt/review/not-found'
   id:
     | '__root__'
     | '/'
     | '/login'
     | '/upload'
     | '/parce/$roomId'
+    | '/parce/not-found'
     | '/api/auth/$'
     | '/receipt/review/$receiptId'
+    | '/receipt/review/not-found'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -104,8 +128,10 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   UploadRoute: typeof UploadRoute
   ParceRoomIdRoute: typeof ParceRoomIdRoute
+  ParceNotFoundRoute: typeof ParceNotFoundRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ReceiptReviewReceiptIdRoute: typeof ReceiptReviewReceiptIdRoute
+  ReceiptReviewNotFoundRoute: typeof ReceiptReviewNotFoundRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -131,11 +157,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/parce/not-found': {
+      id: '/parce/not-found'
+      path: '/parce/not-found'
+      fullPath: '/parce/not-found'
+      preLoaderRoute: typeof ParceNotFoundRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/parce/$roomId': {
       id: '/parce/$roomId'
       path: '/parce/$roomId'
       fullPath: '/parce/$roomId'
       preLoaderRoute: typeof ParceRoomIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/receipt/review/not-found': {
+      id: '/receipt/review/not-found'
+      path: '/receipt/review/not-found'
+      fullPath: '/receipt/review/not-found'
+      preLoaderRoute: typeof ReceiptReviewNotFoundRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/receipt/review/$receiptId': {
@@ -160,8 +200,10 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   UploadRoute: UploadRoute,
   ParceRoomIdRoute: ParceRoomIdRoute,
+  ParceNotFoundRoute: ParceNotFoundRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ReceiptReviewReceiptIdRoute: ReceiptReviewReceiptIdRoute,
+  ReceiptReviewNotFoundRoute: ReceiptReviewNotFoundRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -1,12 +1,12 @@
 import { getAllRoomInfo, joinRoomRpc } from '@/server/room/room-rpc'
-import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
+import { createFileRoute, notFound, } from '@tanstack/react-router'
 import { useEffect } from 'react';
 
 export const Route = createFileRoute('/parce/$roomId')({
     loader: async ({ params }) => {
         const joinResponse = await joinRoomRpc({ data: params.roomId });
         if ('error' in joinResponse) {
-            throw redirect({ to: '/parce/not-found' });
+            throw notFound();
         }
         const roomInformation = await getAllRoomInfo({ data: params.roomId });
         return {
@@ -20,9 +20,8 @@ export const Route = createFileRoute('/parce/$roomId')({
 
 function RouteComponent() {
     const { room, member, guestUuid } = Route.useLoaderData();
-    const router = useRouter();
     if (!room) {
-        throw router.navigate({ to: '/parce/not-found' });
+        throw notFound();
     }
     useEffect(() => {
         if (guestUuid) {
