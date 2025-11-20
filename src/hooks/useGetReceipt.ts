@@ -9,11 +9,6 @@ export const ReceiptQueryKeys = {
     valid: (id: string) => [...ReceiptQueryKeys.validation, id] as const,
 };
 
-export const useGetReceiptRoom = (receiptId: string) => useQuery({
-    queryKey: ReceiptQueryKeys.detail(receiptId),
-    queryFn: () => getReceiptRpc({ data: receiptId }),
-    refetchInterval: 3000,
-});
 
 export const useGetReceiptReview = (receiptId: string, initialData?: GetReceiptResponse) => useQuery({
     queryKey: ReceiptQueryKeys.detail(receiptId),

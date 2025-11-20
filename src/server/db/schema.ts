@@ -86,7 +86,7 @@ export const roomMember = pgTable('room_member', {
             .notNull()
             .references(() => room.id, { onDelete: 'cascade' }),
     // either a real user or a guestSession
-    userId: uuid('user_id'),
+    userId: text('user_id'),
     guestUuid: uuid('guest_uuid'),
     displayName:
         varchar('display_name', { length: 100 }),
@@ -94,7 +94,7 @@ export const roomMember = pgTable('room_member', {
 });
 
 export const roomMemberRelations = relations(roomMember, ({ one, many }) => ({
-    room: one(room, { fields: [roomMember.id], references: [room.id] }),
+    room: one(room, { fields: [roomMember.roomId], references: [room.id] }),
     claims: many(claim),
 }));
 

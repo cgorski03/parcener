@@ -40,11 +40,7 @@ export async function GetFullRoomInfo(roomId: string) {
                 },
             },
             members: true,
-            claims: {
-                with: {
-                    roomMember: true,
-                },
-            },
+            claims: true,
         },
     });
 }
@@ -98,10 +94,15 @@ export async function JoinRoom(identity: RoomIdentity, roomId: string) {
 }
 
 
-export async function EditRoomMemberDisplayName(roomMemberId: string, displayName: string) {
+export async function editRoomMemberDisplayName(identity: RoomIdentity, roomId: string, displayName: string) {
+
     const [updatedRoomMember] = await db.update(roomMember)
         .set({ displayName })
-        .where(eq(roomMember.id, roomMemberId))
+        .where(and(
+            eq(roomMember.roomId, roomId),
+            identity.userId ?
+                eq(roomMember.userId, identity.userId)
+                : eq(roomMember.guestUuid, identity.guestUuid!)))
         .returning();
     return updatedRoomMember;
 }
