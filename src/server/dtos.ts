@@ -65,4 +65,9 @@ export const receiptItemEntityToDtoHelper = (item: ReceiptItemSelect) => {
     }
 }
 
-
+export type RoomMemberDto = {
+    id: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+    isGuest: boolean;
+}

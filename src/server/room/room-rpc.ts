@@ -5,9 +5,9 @@ import { getServerSession } from "../auth/get-server-session";
 import { parseRoomIdentity } from "../auth/parse-room-identity";
 import { NOT_FOUND } from "../response-types";
 import { z } from 'zod';
-import { ReceiptDto, receiptEntityWithReferencesToDtoHelper } from "../dtos";
+import { ReceiptDto, receiptEntityWithReferencesToDtoHelper, RoomMemberDto } from "../dtos";
 import { claimItem } from "./room-claims-service";
-import { ClaimSelect, RoomMemberSelect, RoomSelect } from "../db";
+import { ClaimSelect, RoomSelect } from "../db";
 
 export const createRoomRpc = createServerFn({ method: 'POST' })
     .inputValidator(z.string().uuid())
@@ -24,7 +24,7 @@ export const createRoomRpc = createServerFn({ method: 'POST' })
 export type FullRoomInfo = RoomSelect & {
     receipt: ReceiptDto;
     claims: ClaimSelect[];
-    members: RoomMemberSelect[];
+    members: RoomMemberDto[];
 }
 
 export const getRoomAndMembership = createServerFn({ method: 'GET' })

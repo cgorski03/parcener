@@ -90,7 +90,7 @@ export const roomMember = pgTable('room_member', {
             .notNull()
             .references(() => room.id, { onDelete: 'cascade' }),
     // either a real user or a guestSession
-    userId: text('user_id'),
+    userId: text('user_id').references(() => user.id, { onDelete: 'cascade' }),
     guestUuid: uuid('guest_uuid'),
     displayName:
         varchar('display_name', { length: 100 }),
@@ -101,6 +101,7 @@ export type RoomMemberSelect = typeof roomMember.$inferSelect;
 
 export const roomMemberRelations = relations(roomMember, ({ one, many }) => ({
     room: one(room, { fields: [roomMember.roomId], references: [room.id] }),
+    user: one(user, { fields: [roomMember.userId], references: [user.id] }),
     claims: many(claim),
 }));
 

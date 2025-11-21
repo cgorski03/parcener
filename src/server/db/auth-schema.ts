@@ -1,4 +1,6 @@
 import { pgTable, text, timestamp, boolean } from "drizzle-orm/pg-core";
+import { receipt, room, roomMember } from "./schema";
+import { relations } from "drizzle-orm";
 
 export const user = pgTable("user", {
     id: text("id").primaryKey(),
@@ -12,6 +14,12 @@ export const user = pgTable("user", {
         .$onUpdate(() => /* @__PURE__ */ new Date())
         .notNull(),
 });
+
+export const userRelations = relations(user, ({ many }) => ({
+    receipts: many(receipt),
+    rooms: many(room),
+    roomMembers: many(roomMember),
+}));
 
 export const session = pgTable("session", {
     id: text("id").primaryKey(),

@@ -61,7 +61,7 @@ export function LobbyScreen({ room, user }: LobbyScreenProps) {
                 <span className="text-xl font-bold tracking-tight">Parcener</span>
             </div>
 
-            <Card className="w-full max-w-md shadow-2xl border-t-4 border-t-primary animate-in fade-in zoom-in-95 duration-500">
+            <Card className="w-full max-w-md shadow-2xl border-t-4 border-t-primary animate-in fade-in  duration-500">
                 <CardHeader className="text-center space-y-4 pb-2">
                     {/* Room Context */}
                     <div>
@@ -111,7 +111,10 @@ export function LobbyScreen({ room, user }: LobbyScreenProps) {
                             <div className="p-3 bg-secondary/30 rounded-xl border flex items-center justify-between group">
                                 <div className="flex items-center gap-3">
                                     <Avatar className="h-10 w-10 border shadow-sm">
-                                        <AvatarFallback className="bg-primary/10 text-primary font-semibold" />
+                                        {user.image && <AvatarImage src={user.image} />}
+                                        <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                                            {user.name?.[0] ?? <User className="h-4 w-4" />}
+                                        </AvatarFallback>
                                     </Avatar>
                                     <div className="text-left">
                                         <p className="font-semibold text-sm leading-none">
@@ -151,7 +154,7 @@ export function LobbyScreen({ room, user }: LobbyScreenProps) {
 
                     <Button
                         size="lg"
-                        className="w-full h-12 text-base font-semibold shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                        className="w-full h-12 text-base font-semibold shadow-lg shadow-primary/20 transition-all  "
                         onClick={() => joinRoom()}
                         disabled={isPending || (!name && !user)}
                     >

@@ -1,4 +1,4 @@
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -6,13 +6,13 @@ import { ArrowLeft, Share2, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { RoomMemberSelect } from "@/server/db";
 import QRCode from 'react-qr-code';
+import { RoomMemberDto } from "@/server/dtos";
 
 interface CollaborativeRoomHeaderProps {
     roomName: string;
     roomId: string;
-    members: RoomMemberSelect[];
+    members: RoomMemberDto[];
     activeFilterId: string | null;
     onSelectFilter: (memberId: string | null) => void;
 }
@@ -133,7 +133,8 @@ export function CollaborativeRoomHeader({
                                         ? "border-primary ring-2 ring-primary/20 scale-110"
                                         : "border-transparent opacity-80 grayscale-[0.3]"
                                 )}>
-                                    <AvatarFallback className="text-[10px] bg-muted">
+                                    {m.avatarUrl && <AvatarImage src={m.avatarUrl} />}
+                                    <AvatarFallback className="bg-primary/10 text-primary font-semibold">
                                         {m.displayName?.substring(0, 2).toUpperCase() ?? "G"}
                                     </AvatarFallback>
                                 </Avatar>

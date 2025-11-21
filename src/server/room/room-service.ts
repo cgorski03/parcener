@@ -32,7 +32,7 @@ export async function CreateRoom(receiptId: string, userId: string) {
 }
 
 export async function GetFullRoomInfo(roomId: string) {
-    return await db.query.room.findFirst({
+    const result = await db.query.room.findFirst({
         where: eq(room.id, roomId),
         with: {
             receipt: {
@@ -40,10 +40,22 @@ export async function GetFullRoomInfo(roomId: string) {
                     items: true,
                 },
             },
-            members: true,
+            members: {
+                with: {
+                    user: true
+                },
+            },
             claims: true,
         },
     });
+    if (result == null) return;
+    const processedMembers = result?.members.map(m => ({
+        id: m.id,
+        displayName: m.displayName,
+        avatarUrl: m.user?.image ?? null,
+        isGuest: !m.userId,
+    }));
+    return { ...result, "members": processedMembers };
 }
 
 
