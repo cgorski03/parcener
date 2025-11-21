@@ -22,9 +22,9 @@ export function BaseReceiptItemCard({
 }: BaseItemCardProps) {
 
     const variantStyles = {
-        default: "border-l-secondary hover:border-l-muted-foreground/20",
-        active: "border-l-primary bg-primary/5 border-y-primary/10 border-r-primary/10",
-        dimmed: "opacity-60 grayscale bg-muted/50 border-l-transparent"
+        default: "bg-card border-border hover:border-muted-foreground/30",
+        active: "bg-orange-50/60 border-orange-400 shadow-sm",
+        dimmed: "opacity-60 bg-muted/30 border-transparent grayscale-[0.5]"
     };
 
     return (

@@ -1,4 +1,4 @@
-import { createFileRoute, notFound } from '@tanstack/react-router'
+import { createFileRoute, notFound, useRouter } from '@tanstack/react-router'
 import { getReceiptRpc } from '@/server/get-receipt/rpc-get-receipt'
 import { isFailed, isProcessing, receiptNotFound } from '@/lib/receipt-utils'
 import { Button } from '@/components/ui/button'
@@ -30,6 +30,7 @@ export const Route = createFileRoute('/receipt/review/$receiptId')({
 function RouteComponent() {
     const receiptInfoFromServer = Route.useLoaderData()
     const { receiptId } = Route.useParams();
+    const router = useRouter();
 
     const { data: receipt } = useGetReceiptReview(receiptId, receiptInfoFromServer);
     const { isError: receiptNotValid, isFetching: receiptValidFetching } = useReceiptIsValid(receiptId);
@@ -85,11 +86,17 @@ function RouteComponent() {
         }
     };
 
-    const handleCreateReceiptRoom = () => {
+    const handleCreateReceiptRoom = async () => {
         if (receiptNotValid) {
             console.error('client tried to create receipt room for an invalid receipt');
         }
-        createReceiptRoom(receiptId);
+        const response = await createReceiptRoom(receiptId);
+        if ('success' in response) {
+            router.navigate({
+                to: '/parce/$roomId',
+                params: { roomId: response.room.id }
+            });
+        }
     };
 
     const handleCreateCustomItem = () => {
