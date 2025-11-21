@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { CreateRoom, editRoomMemberDisplayName, GetFullRoomInfo, ensureRoomMember, GetRoomHeader } from "./room-service";
+import { CreateRoom, editRoomMemberDisplayName, GetFullRoomInfo, GetRoomHeader, getRoomMembership, joinRoomAction } from "./room-service";
 import { getRequest } from "@tanstack/react-start/server";
 import { getServerSession } from "../auth/get-server-session";
 import { parseRoomIdentity } from "../auth/parse-room-identity";
@@ -27,7 +27,39 @@ export type FullRoomInfo = RoomSelect & {
     members: RoomMemberSelect[];
 }
 
-export const getAllRoomInfoRpc = createServerFn({ method: 'GET' })
+export const getRoomAndMembership = createServerFn({ method: 'GET' })
+    .inputValidator(
+        z.string().uuid()
+    )
+    .handler(async ({ data: roomId }) => {
+        const request = getRequest();
+        const ident = await parseRoomIdentity(request, roomId);
+
+        const roomData = await GetFullRoomInfo(roomId);
+        const userInformation = await getRoomMembership(ident, roomId);
+
+        if (!roomData) return { room: undefined };
+
+        const roomInfo: FullRoomInfo = {
+            id: roomData.id,
+            title: roomData.title,
+            receiptId: roomData.receiptId,
+            createdAt: roomData.createdAt,
+            updatedAt: roomData.updatedAt,
+            createdBy: roomData.createdBy,
+            members: roomData.members,
+            claims: roomData.claims,
+            receipt: receiptEntityWithReferencesToDtoHelper(roomData.receipt)
+        };
+
+        // 6. Return the Data wrapper
+        return {
+            room: roomInfo,
+            membership: userInformation
+        };
+    });
+
+export const getRoomPulseRpc = createServerFn({ method: 'GET' })
     .inputValidator(z.object({
         roomId: z.string().uuid(),
         since: z.date().optional().nullable()
@@ -108,11 +140,15 @@ export const claimItemRpc = createServerFn({ method: 'POST' })
     });
 
 export const joinRoomRpc = createServerFn({ method: 'POST' })
-    .inputValidator((roomId: string) => roomId)
-    .handler(async ({ data: roomId }) => {
+    .inputValidator(z.object({
+        roomId: z.string().uuid(),
+        displayName: z.string().nullable(),
+    }))
+    .handler(async ({ data }) => {
+        const { roomId, displayName } = data;
         const request = getRequest();
         const identity = await parseRoomIdentity(request, roomId);
-        return await ensureRoomMember(identity, roomId);
+        return await joinRoomAction({ roomId, identity, displayName: displayName ?? undefined });
     });
 
 

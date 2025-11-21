@@ -46,6 +46,25 @@ export async function GetFullRoomInfo(roomId: string) {
     });
 }
 
+
+export async function getRoomMembership(identity: RoomIdentity, roomId: string) {
+    if (!identity.guestUuid && !identity.userId) {
+        return null;
+    }
+    const whereClause = identity.userId
+        ? eq(roomMember.userId, identity.userId)
+        : eq(roomMember.guestUuid, identity.guestUuid!);
+
+    const member = await db.query.roomMember.findFirst({
+        where: and(
+            eq(roomMember.roomId, roomId),
+            whereClause
+        )
+    });
+
+    return member || null;
+}
+
 export async function GetRoomHeader(roomId: string) {
     const [header] = await db
         .select({ updatedAt: room.updatedAt })
@@ -54,94 +73,55 @@ export async function GetRoomHeader(roomId: string) {
     return header;
 }
 
-async function JoinRoomGuest(roomId: string) {
-    const guestUuid = crypto.randomUUID();
-    const guestName = `Guest ${guestUuid.slice(0, 8)}`;
+export async function joinRoomAction(input: {
+    roomId: string,
+    identity: RoomIdentity,
+    displayName?: string
+}) {
+    const { roomId, identity, displayName } = input;
 
-    return await db.transaction(async (tx) => {
-        const [newRoomMember] = await tx.insert(roomMember)
-            .values({
-                roomId,
-                guestUuid,
-                displayName: guestName,
-            })
-            .returning();
+    // SCENARIO A: They are ALREADY a member (Double check)
+    const existing = await getRoomMembership(identity, roomId);
 
-        await tx.update(room)
-            .set({ updatedAt: new Date() })
-            .where(eq(room.id, roomId));
-
-        return {
-            member: newRoomMember,
-            generatedUuid: guestUuid,
-            isNew: true
-        };
-    });
-}
-
-export async function ensureRoomMember(identity: RoomIdentity, roomId: string) {
-
-    // Performance optimization - can skip a query by short circuting in this case
-    if (!identity.guestUuid && !identity.userId) {
-        return await JoinRoomGuest(roomId);
-    }
-    // We want to be able to connect if the user initially joined as guest, but then logged in
-    const existingRoomMembership = await db.query.roomMember.findFirst({
-        where: and(
-            eq(roomMember.roomId, roomId),
-            identity.guestUuid ?
-                eq(roomMember.guestUuid, identity.guestUuid)
-                : eq(roomMember.userId, identity.userId!)
-        )
-    });
-    // This is the case that they have GUEST membership in the room but they have a userId. 
-    // This means they must have logged in since they were given the guest id 
-    // We want to connect these accounts
-    if (existingRoomMembership
-        && existingRoomMembership.userId == null
-        && identity.guestUuid
-        && identity.isAuthenticated) {
+    // SCENARIO B: The "Upgrade" Case (Guest -> User)
+    if (existing && existing.userId === null && identity.userId) {
         return await db.transaction(async (tx) => {
-
-            const [member] = await tx.update(roomMember).set({
+            const [upgraded] = await tx.update(roomMember).set({
                 userId: identity.userId,
-                displayName: identity.name
+                displayName: displayName || identity.name || existing.displayName, // Prefer new name, then auth name, then old guest name
             }).where(
-                and(
-                    eq(roomMember.roomId, roomId),
-                    eq(roomMember.guestUuid, identity.guestUuid!))
+                eq(roomMember.id, existing.id)
             ).returning();
 
-            await tx.update(room)
-                .set({ updatedAt: new Date() })
-                .where(eq(room.id, roomId));
-            return {
-                member,
-                isNew: true,
-            }
-        })
+            // Touch room
+            await tx.update(room).set({ updatedAt: new Date() }).where(eq(room.id, roomId));
+
+            return { member: upgraded, generatedUuid: existing.guestUuid };
+        });
     }
 
-    if (existingRoomMembership) {
-        return { member: existingRoomMembership, isNew: false }
+    // If they exist and no upgrade needed, just return
+    if (existing) {
+        return { member: existing, generatedUuid: existing.guestUuid };
     }
 
-    if (identity.isAuthenticated) {
-        return await db.transaction(async (tx) => {
-            const [authedNewRoomMember] = await tx.insert(roomMember).values({
-                roomId,
-                userId: identity.userId,
-                displayName: identity.name
-            }).returning();
+    // SCENARIO C: New Member (User or Guest)
+    return await db.transaction(async (tx) => {
+        const newGuestUuid = identity.guestUuid || crypto.randomUUID();
+        const finalName = displayName || identity.name || `Guest ${newGuestUuid.slice(0, 4)}`;
 
-            await tx.update(room)
-                .set({ updatedAt: new Date() })
-                .where(eq(room.id, roomId));
+        const [newMember] = await tx.insert(roomMember).values({
+            roomId,
+            userId: identity.userId || null, // Null if guest
+            guestUuid: newGuestUuid,         // Always generate one for the cookie
+            displayName: finalName
+        }).returning();
 
-            return { member: authedNewRoomMember, identity, isNew: true }
-        })
-    }
-    return await JoinRoomGuest(roomId);
+        // Touch room
+        await tx.update(room).set({ updatedAt: new Date() }).where(eq(room.id, roomId));
+
+        return { member: newMember, generatedUuid: newGuestUuid };
+    });
 }
 
 
