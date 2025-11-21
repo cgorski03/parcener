@@ -1,7 +1,6 @@
 import { createFileRoute, notFound } from '@tanstack/react-router'
 import { getReceiptRpc } from '@/server/get-receipt/rpc-get-receipt'
 import { isFailed, isProcessing, receiptNotFound } from '@/lib/receipt-utils'
-import { ReceiptItemCard } from '@/components/receipt-item-card'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Plus, Share2, Loader2, AlertCircle } from 'lucide-react'
@@ -15,6 +14,7 @@ import { useGetReceiptReview, useReceiptIsValid } from '@/hooks/useGetReceipt'
 import { useCreateReceiptItem, useDeleteReceiptItem, useEditReceiptItem } from '@/hooks/useEditReceipt'
 import { useCreateReceiptRoom } from '@/hooks/useRoom'
 import { ReceiptLayoutShell } from '@/components/layout/receipt-layout-shell'
+import { ReviewItemCard } from '@/components/item-card/review-item-card'
 
 export const Route = createFileRoute('/receipt/review/$receiptId')({
     loader: async ({ params }) => {
@@ -135,7 +135,7 @@ function RouteComponent() {
             {/* Items Grid */}
             <div className="space-y-2 mb-4">
                 {receiptItems.map((item) => (
-                    <ReceiptItemCard
+                    <ReviewItemCard
                         key={item.id}
                         item={item}
                         onEdit={() => handleEditItem(item)}

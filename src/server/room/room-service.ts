@@ -30,6 +30,7 @@ export async function CreateRoom(receiptId: string, userId: string) {
         return ROOM_CREATE_ERROR;
     }
 }
+
 export async function GetFullRoomInfo(roomId: string) {
     return await db.query.room.findFirst({
         where: eq(room.id, roomId),
@@ -39,6 +40,16 @@ export async function GetFullRoomInfo(roomId: string) {
                     items: true,
                 },
             },
+            members: true,
+            claims: true,
+        },
+    });
+}
+
+export async function GetRoomPulse(roomId: string) {
+    return await db.query.room.findFirst({
+        where: eq(room.id, roomId),
+        with: {
             members: true,
             claims: true,
         },

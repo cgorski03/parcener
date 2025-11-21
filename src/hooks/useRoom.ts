@@ -1,4 +1,4 @@
-import { createRoomRpc } from "@/server/room/room-rpc";
+import { createRoomRpc, FullRoomInfo, getAllRoomInfoRpc } from "@/server/room/room-rpc";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
 export const RoomQueryKeys = {
@@ -8,9 +8,10 @@ export const RoomQueryKeys = {
 };
 
 // To optimize performance, this returns only a subset of ALL The room information - it will get the members, room object and claims
-export const useGetRoomPulse = (roomId: string) => useQuery({
+export const useGetRoomPulse = (roomId: string, initialData: FullRoomInfo) => useQuery({
     queryKey: RoomQueryKeys.detail(roomId),
-    queryFn: () => ([]),
+    queryFn: () => (getAllRoomInfoRpc({ data: roomId })),
+    initialData,
     refetchInterval: 3000,
 });
 

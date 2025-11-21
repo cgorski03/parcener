@@ -25,8 +25,5 @@ export function ProcessingReceipt() {
     )
 }
 export function NotFoundReceipt() {
-    return (<div>
-        Doesnt exist loser
-    </div>)
 }
 

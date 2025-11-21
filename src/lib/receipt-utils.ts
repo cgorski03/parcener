@@ -1,8 +1,8 @@
 import { ReceiptDto } from "@/server/dtos";
 import { GetReceiptResponse } from "@/server/get-receipt/get-receipt-service";
-import { ReceiptNotFoundResponse, ReceiptProcessingFailedResponse, ReceiptProcessingResponse } from "@/server/response-types";
+import { NotFoundResponse, ReceiptProcessingFailedResponse, ReceiptProcessingResponse } from "@/server/response-types";
 
-export function receiptNotFound(receipt: GetReceiptResponse): receipt is ReceiptNotFoundResponse {
+export function receiptNotFound(receipt: GetReceiptResponse): receipt is NotFoundResponse {
     return receipt !== null && 'code' in receipt && receipt.code === 'NOT_FOUND';
 }
 

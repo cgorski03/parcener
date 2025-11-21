@@ -18,10 +18,3 @@ export const auth = betterAuth({
     }),
 });
 
-export async function getSession(req?: Request) {
-    return auth.getSession({
-        fetchOptions: {
-            headers: req?.headers,
-        }
-    });
-}

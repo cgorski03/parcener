@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
 import { processReceipt } from "./processing-service";
-import { getSession } from "../auth-server";
+import { getServerSession } from "@/lib/auth-client";
 
 export const uploadReceipt = createServerFn({ method: 'POST' })
     .inputValidator((data: FormData) => data)
@@ -9,7 +9,7 @@ export const uploadReceipt = createServerFn({ method: 'POST' })
         const file = data.get('file') as File;
         const buffer = await file.arrayBuffer();
         const request = getRequest();
-        const session = await getSession(request);
+        const session = await getServerSession(request);
         const userId = session.data?.user.id;
         if (userId == null) {
             throw new Error('Not authorized to perform this action');

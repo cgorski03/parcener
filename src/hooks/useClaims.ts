@@ -10,7 +10,7 @@ export function useClaimItem() {
             await claimItemRpc({ data: { ...request } })
         }, onSuccess: (_, variables) => {
             queryClient.invalidateQueries({
-                queryKey: RoomQueryKeys.pulse(variables.roomId)
+                queryKey: RoomQueryKeys.detail(variables.roomId)
             })
         },
         onError: (error) => {

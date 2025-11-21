@@ -74,6 +74,7 @@ export const room = pgTable('room', {
     createdBy: text('user_id').notNull().references(() => user.id, { onDelete: "cascade" }),
     createdAt: timestamp('created_at').defaultNow(),
 })
+export type RoomSelect = typeof room.$inferSelect;
 
 export const roomRelations = relations(room, ({ one, many }) => ({
     receipt: one(receipt, { fields: [room.receiptId], references: [receipt.id] }),
@@ -94,6 +95,8 @@ export const roomMember = pgTable('room_member', {
         varchar('display_name', { length: 100 }),
     joinedAt: timestamp('joined_at').defaultNow(),
 });
+
+export type RoomMemberSelect = typeof roomMember.$inferSelect;
 
 export const roomMemberRelations = relations(roomMember, ({ one, many }) => ({
     room: one(room, { fields: [roomMember.roomId], references: [room.id] }),
@@ -123,6 +126,7 @@ export const claim = pgTable('claim', {
     uniqueClaim: unique().on(table.roomId, table.memberId, table.receiptItemId)
 }));
 
+export type ClaimSelect = typeof claim.$inferSelect;
 export const claimRelations = relations(claim, ({ one }) => ({
     room: one(room, { fields: [claim.roomId], references: [room.id] }),
     roomMember: one(roomMember, { fields: [claim.memberId], references: [roomMember.id] }),

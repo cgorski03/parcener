@@ -4,7 +4,7 @@ import { receipt, receiptItem } from "../db/schema";
 import { ReceiptItemDto, receiptItemEntityToDtoHelper, ReceiptTotalsDto } from "../dtos";
 import { getReceiptWithItems, } from "../get-receipt/get-receipt-service";
 import { isFailed, receiptNotFound, isProcessing } from "@/lib/receipt-utils";
-import { RECEIPT_PROCESSING_FAILED, RECEIPT_NOT_FOUND, RECEIPT_PROCESSING, ReceiptNotFoundResponse, ReceiptProcessingFailedResponse, ReceiptProcessingResponse, ReceiptGrandTotalMismatchResponse, ReceiptSubtotalMismatchResponse } from "../response-types";
+import { RECEIPT_PROCESSING_FAILED, NOT_FOUND, RECEIPT_PROCESSING, NotFoundResponse, ReceiptProcessingFailedResponse, ReceiptProcessingResponse, ReceiptGrandTotalMismatchResponse, ReceiptSubtotalMismatchResponse } from "../response-types";
 import { calculateItemTotal, moneyValuesEqual } from "../money-math";
 
 export async function editReceiptItem(item: ReceiptItemDto) {
@@ -42,7 +42,7 @@ type FinalizeReceiptResponse =
     | ReceiptGrandTotalMismatchResponse
     | ReceiptProcessingResponse
     | ReceiptProcessingFailedResponse
-    | ReceiptNotFoundResponse;
+    | NotFoundResponse;
 
 export async function finalizeReceiptTotals(receiptTotals: ReceiptTotalsDto): Promise<FinalizeReceiptResponse> {
     // Truthfully, I don't know how I really want this behavior to be enforced.
@@ -59,7 +59,7 @@ export async function finalizeReceiptTotals(receiptTotals: ReceiptTotalsDto): Pr
 
     if (receiptNotFound(receiptInformation) || !receiptInformation) {
         // Not found
-        return RECEIPT_NOT_FOUND
+        return NOT_FOUND
     }
 
     if (isFailed(receiptInformation)) {

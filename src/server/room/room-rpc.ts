@@ -1,12 +1,13 @@
 import { createServerFn } from "@tanstack/react-start";
-import { CreateRoom, editRoomMemberDisplayName, GetFullRoomInfo, ensureRoomMember } from "./room-service";
+import { CreateRoom, editRoomMemberDisplayName, GetFullRoomInfo, ensureRoomMember, GetRoomPulse } from "./room-service";
 import { getRequest } from "@tanstack/react-start/server";
 import { getServerSession } from "../auth/get-server-session";
 import { parseRoomIdentity } from "../auth/parse-room-identity";
 import { NOT_FOUND } from "../response-types";
 import { z } from 'zod';
-import { receiptEntityWithReferencesToDtoHelper } from "../dtos";
+import { ReceiptDto, receiptEntityWithReferencesToDtoHelper } from "../dtos";
 import { claimItem } from "./room-claims-service";
+import { ClaimSelect, RoomMemberSelect, RoomSelect } from "../db";
 
 export const createRoomRpc = createServerFn({ method: 'POST' })
     .inputValidator(z.string().uuid())
@@ -20,13 +21,17 @@ export const createRoomRpc = createServerFn({ method: 'POST' })
         return CreateRoom(roomId, userId);
     });
 
-export const getAllRoomInfo = createServerFn({ method: 'GET' })
+export type FullRoomInfo = RoomSelect & {
+    receipt: ReceiptDto;
+    claims: ClaimSelect[];
+    members: RoomMemberSelect[];
+}
+export const getAllRoomInfoRpc = createServerFn({ method: 'GET' })
     .inputValidator(z.string().uuid())
     .handler(async ({ data: roomId }) => {
         const roomData = await GetFullRoomInfo(roomId);
         if (!roomData) return undefined;
-
-        return {
+        const roomInfo: FullRoomInfo = {
             id: roomData.id,
             title: roomData.title,
             receiptId: roomData.receiptId,
@@ -35,9 +40,25 @@ export const getAllRoomInfo = createServerFn({ method: 'GET' })
             members: roomData.members,
             claims: roomData.claims,
             receipt: receiptEntityWithReferencesToDtoHelper(roomData.receipt)
-        };
+        }
+        return roomInfo;
     });
 
+export const getRoomPulseRpc = createServerFn({ method: 'GET' })
+    .inputValidator(z.string().uuid())
+    .handler(async ({ data: roomId }) => {
+        const roomData = await GetRoomPulse(roomId);
+        if (!roomData) return undefined;
+        return {
+            id: roomData.id,
+            title: roomData.title,
+            receiptId: roomData.receiptId,
+            createdAt: roomData.createdAt,
+            createdBy: roomData.createdBy,
+            members: roomData.members,
+            claims: roomData.claims,
+        };
+    });
 export const updateRoomDisplayNameRpc = createServerFn({ method: 'POST' })
     .inputValidator(z.object({
         roomId: z.string().uuid(),
