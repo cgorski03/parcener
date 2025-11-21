@@ -4,6 +4,7 @@ import { RoomQueryKeys } from "./useRoom";
 import { useMemo } from "react";
 import { RoomMemberSelect } from "@/server/db";
 import { ReceiptItemDto } from "@/server/dtos";
+import { generateId } from "ai";
 
 
 type EnrichedClaim = {
@@ -43,7 +44,7 @@ export function useClaimItem(myMembershipId: string) {
                         filteredClaims
                         : [...filteredClaims,
                         {
-                            id: crypto.randomUUID(),
+                            id: generateId(),
                             roomId,
                             receiptItemId,
                             memberId: _memId,

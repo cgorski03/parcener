@@ -2,11 +2,12 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { ArrowLeft, QrCode, Share2, Users } from "lucide-react";
+import { ArrowLeft, Share2, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { RoomMemberSelect } from "@/server/db";
+import QRCode from 'react-qr-code';
 
 interface CollaborativeRoomHeaderProps {
     roomName: string;
@@ -24,7 +25,8 @@ export function CollaborativeRoomHeader({
     onSelectFilter
 }: CollaborativeRoomHeaderProps) {
     const [isShareOpen, setIsShareOpen] = useState(false);
-    const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
+    // TODO 
+    const shareUrl = `http://192.168.86.235:3000/parce/${roomId}`
 
     const handleNativeShare = async () => {
         if (navigator.share) {
@@ -78,9 +80,7 @@ export function CollaborativeRoomHeader({
                             </SheetHeader>
                             <div className="flex flex-col items-center justify-center space-y-6 pb-8">
                                 <div className="bg-white p-4 rounded-xl shadow-sm border">
-                                    {/* Placeholder for QR Code */}
-                                    <QrCode className="h-32 w-32 text-foreground" />
-                                    {/* <QRCode value={shareUrl} size={128} /> */}
+                                    <QRCode value={shareUrl} size={128} />
                                 </div>
                                 <p className="text-sm text-muted-foreground text-center max-w-xs">
                                     Scan to join <strong>{roomName}</strong><br />

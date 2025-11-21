@@ -16,12 +16,12 @@ export const Route = createFileRoute('/parce/$roomId')({
 })
 
 function RouteComponent() {
-    const { room, membership } = Route.useLoaderData();
+    const { room, membership, user } = Route.useLoaderData();
     if (!room || !room.receipt) {
         throw notFound();
     }
     if (membership) {
         return <ActiveRoomScreen initialRoom={room} member={membership} />
     }
-    return < LobbyScreen room={room} />
+    return < LobbyScreen room={room} user={user} />
 }

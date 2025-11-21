@@ -1,4 +1,4 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { RoomMemberSelect } from "@/server/db";
 import { Users } from "lucide-react";
@@ -10,7 +10,7 @@ type RoomMembersBarProps =
         onSelectMember: (memberId: string) => void;
     }
 
-function RoomMembersBar({ members, activeMemberId, onSelectMember }: RoomMembersBarProps) {
+export function RoomMembersBar({ members, activeMemberId, onSelectMember }: RoomMembersBarProps) {
     return (
         <div className="border-b bg-background/95 backdrop-blur py-3">
             <ScrollArea className="w-full whitespace-nowrap">

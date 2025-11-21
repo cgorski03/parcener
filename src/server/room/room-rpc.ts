@@ -34,6 +34,7 @@ export const getRoomAndMembership = createServerFn({ method: 'GET' })
     .handler(async ({ data: roomId }) => {
         const request = getRequest();
         const ident = await parseRoomIdentity(request, roomId);
+        const user = await getServerSession(request);
 
         const roomData = await GetFullRoomInfo(roomId);
         const userInformation = await getRoomMembership(ident, roomId);
@@ -55,7 +56,8 @@ export const getRoomAndMembership = createServerFn({ method: 'GET' })
         // 6. Return the Data wrapper
         return {
             room: roomInfo,
-            membership: userInformation
+            membership: userInformation,
+            user: user.data?.user,
         };
     });
 
@@ -130,13 +132,19 @@ export const claimItemRpc = createServerFn({ method: 'POST' })
     }))
     .handler(async ({ data }) => {
         const { roomId, receiptItemId, quantity } = data;
+        console.log("someone is trying to claim");
         const request = getRequest();
         const identity = await parseRoomIdentity(request, roomId);
+        const member = await getRoomMembership(identity, roomId);
+        if (!member) {
+            console.error('user is not a member of this room');
+            return null;
+        }
         if (!identity.guestUuid && !identity.userId) {
             // TODO 
             return NOT_FOUND
         }
-        return await claimItem({ roomId, identity, receiptItemId, newQuantity: quantity });
+        return await claimItem({ roomId, identity, receiptItemId, roomMemberId: member.id, newQuantity: quantity });
     });
 
 export const joinRoomRpc = createServerFn({ method: 'POST' })
