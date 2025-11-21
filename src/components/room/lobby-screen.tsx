@@ -20,7 +20,7 @@ export function LobbyScreen({ room, user }: LobbyScreenProps) {
     // Pre-fill name if logged in, otherwise blank
     const [name, setName] = useState(user?.name ?? "");
     const [isEditingName, setIsEditingName] = useState(!user?.name);
-
+    console.log(room.members);
     // If auth state changes (e.g. loads late), update name
     useEffect(() => {
         if (user?.name) {
@@ -81,8 +81,9 @@ export function LobbyScreen({ room, user }: LobbyScreenProps) {
                             <div className="flex -space-x-3 hover:space-x-1 transition-all duration-300">
                                 {room.members.slice(0, 5).map((m) => (
                                     <Avatar key={m.id} className="h-10 w-10 border-2 border-background ring-1 ring-muted shadow-sm">
-                                        <AvatarFallback className={`text-white text-[10px]`}>
-                                            {m.displayName?.substring(0, 2).toUpperCase() ?? "??"}
+                                        {m.avatarUrl && <AvatarImage src={m.avatarUrl} />}
+                                        <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                                            {m.displayName?.substring(0, 2).toUpperCase() ?? "G"}
                                         </AvatarFallback>
                                     </Avatar>
                                 ))}
