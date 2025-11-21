@@ -2,7 +2,6 @@ import { createFileRoute, notFound } from '@tanstack/react-router'
 import { getReceiptRpc } from '@/server/get-receipt/rpc-get-receipt'
 import { isFailed, isProcessing, receiptNotFound } from '@/lib/receipt-utils'
 import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
 import { Plus, Share2, Loader2, AlertCircle } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import ReceiptItemSheet from '@/components/edit-item-sheet'
@@ -15,6 +14,7 @@ import { useCreateReceiptItem, useDeleteReceiptItem, useEditReceiptItem } from '
 import { useCreateReceiptRoom } from '@/hooks/useRoom'
 import { ReceiptLayoutShell } from '@/components/layout/receipt-layout-shell'
 import { ReviewItemCard } from '@/components/item-card/review-item-card'
+import { PriceBreakdown } from '@/components/price-breakdown'
 
 export const Route = createFileRoute('/receipt/review/$receiptId')({
     loader: async ({ params }) => {
@@ -154,58 +154,42 @@ function RouteComponent() {
             </Button>
 
             {/* Summary Card */}
-            <Card className="mb-6 md:mb-0 py-0 gap-0 overflow-hidden">
-                <button
-                    onClick={() => setShowSummarySheet(true)}
-                    className="w-full bg-gradient-to-br from-primary/5 to-primary/10 p-4 border-b rounded-t-lg text-left hover:from-primary/10 hover:to-primary/15 transition-all h-auto"
+            <PriceBreakdown
+                subtotal={parseFloat(subtotal)}
+                tax={receipt.tax ?? 0}
+                tip={receipt.tip ?? 0}
+                grandTotal={receipt.grandTotal ?? 0}
+                label="Receipt Totals"
+                onClick={() => setShowSummarySheet(true)}
+                className="mt-6"
+            />
+
+            {/* Create Room Actions */}
+            <div className=" space-y-3">
+                {totalHasError && (
+                    <div className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive flex items-center gap-2">
+                        <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                        <span>Click on the total above to resolve issues with grand total calculation</span>
+                    </div>
+                )}
+                <Button
+                    className="w-full h-11"
+                    disabled={totalHasError}
+                    onClick={handleCreateReceiptRoom}
                 >
-                    <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-muted-foreground">Computed Subtotal</span>
-                        <span className="text-2xl font-bold">${subtotal}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-muted-foreground">Tip</span>
-                        <span className="text-2xl font-bold">${receipt.tip?.toFixed(2)}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-muted-foreground">Tax</span>
-                        <span className="text-2xl font-bold">${receipt.tax?.toFixed(2)}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-muted-foreground">Grand Total</span>
-                        <span className="text-2xl font-bold">${receipt.grandTotal?.toFixed(2)}</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                        Tax & tip will be split proportionally
-                    </p>
-                </button>
-                {/* Create Room Button */}
-                <div className="p-4 space-y-3">
-                    <Button
-                        className="w-full h-11"
-                        disabled={totalHasError}
-                        onClick={handleCreateReceiptRoom}
-                    >
-                        {createReceiptRoomLoading ? (
-                            <>
-                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                Creating Room...
-                            </>
-                        ) : (
-                            <>
-                                <Share2 className="h-4 w-4 mr-2" />
-                                Create Split Room
-                            </>
-                        )}
-                    </Button>
-                    {totalHasError && (
-                        <div className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive flex items-center gap-2">
-                            <AlertCircle className="h-4 w-4 flex-shrink-0" />
-                            <span>Click on the total above to resolve issues with grand total calculation</span>
-                        </div>
+                    {createReceiptRoomLoading ? (
+                        <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Creating Room...
+                        </>
+                    ) : (
+                        <>
+                            <Share2 className="h-4 w-4 mr-2" />
+                            Create Split Room
+                        </>
                     )}
-                </div>
-            </Card>
+                </Button>
+            </div>
 
             {/* Mobile bottom padding for fixed button alternative */}
             <div className="h-4 md:hidden" />

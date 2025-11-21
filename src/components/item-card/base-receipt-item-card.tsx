@@ -32,7 +32,7 @@ export function BaseReceiptItemCard({
             onClick={onClick}
             className={cn(
                 "relative p-3 transition-all duration-200 border-l-4 overflow-hidden",
-                onClick && "cursor-pointer active:scale-[0.99]",
+                onClick && "cursor-pointer ",
                 variantStyles[variant],
                 className
             )}
