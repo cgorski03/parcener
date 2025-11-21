@@ -1,6 +1,6 @@
 import { and, eq } from "drizzle-orm";
 import { RoomIdentity } from "../auth/parse-room-identity";
-import { claim, db, room } from "../db";
+import { claim, db, receipt, room } from "../db";
 import { ensureRoomMember } from "./room-service";
 
 type ItemClaimRequest = {
@@ -13,6 +13,7 @@ type ItemClaimRequest = {
 
 export async function claimItem(request: ItemClaimRequest) {
     const { roomId, identity, receiptItemId, newQuantity } = request;
+    console.log(receiptItemId);
     // Ensure the item belongs to the room 
     const { member } = await ensureRoomMember(identity, roomId);
     return await db.transaction(async (tx) => {
@@ -38,7 +39,7 @@ export async function claimItem(request: ItemClaimRequest) {
         }
 
         // Prevent too many from being claimed
-        const totalClaimed = item.claims.reduce((sum, c) => sum + Number(c.quantity), 0);
+        const totalClaimed = item.claims.reduce((sum, c) => sum + (c.memberId != member.id ? Number(c.quantity) : 0), 0);
         if (totalClaimed + newQuantity > parseFloat(item.quantity)) {
             throw new Error("Already claimed");
         }

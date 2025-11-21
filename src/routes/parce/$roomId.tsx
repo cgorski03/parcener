@@ -27,14 +27,17 @@ export const Route = createFileRoute('/parce/$roomId')({
 
 function RouteComponent() {
     const { room: initialRoomData, member, guestUuid } = Route.useLoaderData();
+
     if (!initialRoomData || initialRoomData.data == null) {
         throw notFound();
     }
-    const { mutateAsync: claimItem, isPending: claimItemLoading } = useClaimItem();
+
     const { data: room } = useGetRoomPulse(initialRoomData.data.id, initialRoomData.data);
+
     if (room.receipt == null) {
         throw notFound();
     }
+
     const { itemsWithClaims } = useEnrichedClaimItems(room, member);
 
 
@@ -58,8 +61,9 @@ function RouteComponent() {
             {itemsWithClaims && itemsWithClaims.map((data) => (
                 <CollabItemCard
                     key={data.item.id}
-                    data={data} // Pass the pre-calculated object
-                    onUpdateClaim={(newQty) => { claimItem({ roomId: room.id, receiptItemId: data.item.id, quantity: newQty }) }}
+                    data={data}
+                    roomId={room.id}
+                    memberId={member.id}
                 />
             ))}
             <PriceBreakdown

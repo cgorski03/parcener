@@ -4,7 +4,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 export const RoomQueryKeys = {
     all: ['room'] as const,
     detail: (id: string) => [...RoomQueryKeys.all, id] as const,
-    pulse: (id: string) => [...RoomQueryKeys.all, 'pulse', id] as const,
 };
 
 // To optimize performance, this returns only a subset of ALL The room information - it will get the members, room object and claims

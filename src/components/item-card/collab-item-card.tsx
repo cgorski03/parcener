@@ -1,20 +1,29 @@
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { BaseReceiptItemCard } from "./base-receipt-item-card";
-import { ItemWithClaims } from "@/routes/parce/$roomId";
 import { QuantityControl } from "./quantity-control";
+import { useDebouncedClaim } from "@/hooks/use-debounced-claim";
+import { ItemWithClaims } from "@/hooks/useClaims";
 
 export function CollabItemCard({
     data,
-    onUpdateClaim
+    roomId,
+    memberId,
+
 }: {
     data: ItemWithClaims,
-    onUpdateClaim: (qty: number) => void
+    roomId: string;
+    memberId: string;
 }) {
-    const { item, myClaim, otherClaims, remainingQuantity } = data;
+    const { item, myClaim, otherClaims, otherClaimedQty } = data;
+    const { quantity, updateQuantity } = useDebouncedClaim(
+        myClaim?.quantity ?? 0,
+        roomId,
+        memberId,
+        item.id
+    );
 
-    const myQty = myClaim?.quantity ?? 0;
-    const isMine = myQty > 0;
-    const isFullyClaimedByOthers = remainingQuantity <= 0 && !isMine;
+    const isMine = quantity > 0;
+    const isFullyClaimedByOthers = item.quantity - otherClaimedQty + quantity <= 0 && !isMine;
 
     return (
         <BaseReceiptItemCard
@@ -22,7 +31,7 @@ export function CollabItemCard({
             variant={isMine ? "active" : isFullyClaimedByOthers ? "dimmed" : "default"}
             onClick={() => {
                 if (item.quantity === 1) {
-                    onUpdateClaim(isMine ? 0 : 1);
+                    updateQuantity(isMine ? 0 : 1);
                 }
             }}
 
@@ -46,11 +55,10 @@ export function CollabItemCard({
                 (item.quantity > 1) && (
                     <QuantityControl
                         totalQuantity={item.quantity}
-                        myQuantity={myQty}
-                        remainingQuantity={remainingQuantity}
-                        onIncrement={() => onUpdateClaim(myQty + 1)}
-                        onDecrement={() => onUpdateClaim(myQty - 1)}
-                        onOpenSplitSheet={() => { }}
+                        myQuantity={quantity}
+                        othersQuantity={otherClaimedQty}
+                        onIncrement={() => updateQuantity(quantity + 1)}
+                        onDecrement={() => updateQuantity(quantity - 1)}
                     />
                 )
             }

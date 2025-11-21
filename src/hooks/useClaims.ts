@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { RoomQueryKeys } from "./useRoom";
 import { useMemo } from "react";
 import { RoomMemberSelect } from "@/server/db";
+import { ReceiptItemDto } from "@/server/dtos";
 
 
 type EnrichedClaim = {
@@ -16,22 +17,53 @@ export type ItemWithClaims = {
     item: ReceiptItemDto;
     myClaim: EnrichedClaim | undefined;
     otherClaims: EnrichedClaim[];
-    totalClaimed: number;
-    remainingQuantity: number;
+    otherClaimedQty: number;
 }
 
-export function useClaimItem() {
+export function useClaimItem(myMembershipId: string) {
+    const _memId = myMembershipId;
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (request: { roomId: string; receiptItemId: string; quantity: number }) => {
-            await claimItemRpc({ data: { ...request } })
-        }, onSuccess: (_, variables) => {
-            queryClient.invalidateQueries({
-                queryKey: RoomQueryKeys.detail(variables.roomId)
-            })
+            const { roomId, receiptItemId, quantity } = request;
+            // 1. Cancel outgoing refetches so they don't overwrite our optimistic update
+            await queryClient.cancelQueries({ queryKey: RoomQueryKeys.detail(roomId) });
+
+            // 2. Snapshot previous value
+            const previousRoom = queryClient.getQueryData(RoomQueryKeys.detail(roomId)) as FullRoomInfo;
+
+            // 3. Optimistically update the cache
+            queryClient.setQueryData(RoomQueryKeys.detail(roomId), (old: FullRoomInfo) => {
+                // Manually inject the fake claim into the 'claims' array
+                // This makes the UI update INSTANTLY without waiting for the server
+                let filteredClaims = old.claims.filter((claim) => !(claim.receiptItemId == receiptItemId && claim.memberId == _memId));
+                return {
+                    ...old,
+                    claims: quantity === 0 ?
+                        filteredClaims
+                        : [...filteredClaims,
+                        {
+                            id: crypto.randomUUID(),
+                            roomId,
+                            receiptItemId,
+                            memberId: _memId,
+                            claimedAt: new Date(),
+                            quantity: quantity.toFixed(2),
+                        }
+                        ]
+                };
+            });
+            claimItemRpc({ data: { roomId, receiptItemId, quantity } });
+            return { previousRoom };
         },
-        onError: (error) => {
-            console.error('Failed to create receipt room', error);
+        onError: (err, newTodo, onMutateResult) => {
+            const previousRoom = (onMutateResult as { previousRoom: FullRoomInfo }).previousRoom;
+            // If server fails, roll back
+            queryClient.setQueryData(['room', newTodo.roomId], previousRoom);
+        },
+        onSettled: (data, error, variables) => {
+            // Always refetch after error or success to ensure sync
+            queryClient.invalidateQueries({ queryKey: ['room', variables.roomId] });
         },
     });
 }
@@ -46,6 +78,7 @@ export const useEnrichedClaimItems = (room: FullRoomInfo, myMembership: RoomMemb
 
     const itemsWithClaims = useMemo(() => {
         const claimsByItem = new Map<string, EnrichedClaim[]>();
+
         currentClaims.forEach(claim => {
             const memberInfo = memberMap.get(claim.memberId);
             const enriched: EnrichedClaim = {
@@ -58,19 +91,19 @@ export const useEnrichedClaimItems = (room: FullRoomInfo, myMembership: RoomMemb
             existingClaims.push(enriched);
             claimsByItem.set(claim.receiptItemId, existingClaims);
         })
+
         return room.receipt?.items.map(item => {
             const claims = claimsByItem.get(item.id) || [];
             const myClaim = claims.find(c => c.isMe);
             const otherClaims = claims.filter(c => !c.isMe);
 
-            const totalClaimedQty = claims.reduce((sum, c) => sum + c.quantity, 0);
+            const otherClaimedQty = otherClaims.reduce((sum, c) => sum + c.quantity, 0);
 
             return {
                 item,
                 myClaim,
                 otherClaims,
-                totalClaimed: totalClaimedQty,
-                remainingQuantity: item.quantity - totalClaimedQty
+                otherClaimedQty
             };
         });
     }, [room.receipt?.items, currentClaims, memberMap, myMembership.id]);
