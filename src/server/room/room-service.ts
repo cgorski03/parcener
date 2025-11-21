@@ -85,15 +85,42 @@ export async function ensureRoomMember(identity: RoomIdentity, roomId: string) {
     if (!identity.guestUuid && !identity.userId) {
         return await JoinRoomGuest(roomId);
     }
-
+    // We want to be able to connect if the user initially joined as guest, but then logged in
     const existingRoomMembership = await db.query.roomMember.findFirst({
         where: and(
             eq(roomMember.roomId, roomId),
-            identity.userId ?
-                eq(roomMember.userId, identity.userId)
-                : eq(roomMember.guestUuid, identity.guestUuid!)
+            identity.guestUuid ?
+                eq(roomMember.guestUuid, identity.guestUuid)
+                : eq(roomMember.userId, identity.userId!)
         )
     });
+    // This is the case that they have GUEST membership in the room but they have a userId. 
+    // This means they must have logged in since they were given the guest id 
+    // We want to connect these accounts
+    if (existingRoomMembership
+        && existingRoomMembership.userId == null
+        && identity.guestUuid
+        && identity.isAuthenticated) {
+        return await db.transaction(async (tx) => {
+
+            const [member] = await tx.update(roomMember).set({
+                userId: identity.userId,
+                displayName: identity.name
+            }).where(
+                and(
+                    eq(roomMember.roomId, roomId),
+                    eq(roomMember.guestUuid, identity.guestUuid!))
+            ).returning();
+
+            await tx.update(room)
+                .set({ updatedAt: new Date() })
+                .where(eq(room.id, roomId));
+            return {
+                member,
+                isNew: true,
+            }
+        })
+    }
 
     if (existingRoomMembership) {
         return { member: existingRoomMembership, isNew: false }

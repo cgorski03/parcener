@@ -2,7 +2,7 @@ import { CollabItemCard } from '@/components/item-card/collab-item-card';
 import { CollaborativeRoomHeader } from '@/components/layout/collaborative-room-header';
 import { ReceiptLayoutShell } from '@/components/layout/receipt-layout-shell';
 import { PriceBreakdown } from '@/components/price-breakdown';
-import { useClaimItem, useEnrichedClaimItems } from '@/hooks/useClaims';
+import { useEnrichedClaimItems } from '@/hooks/useClaims';
 import { useGetRoomPulse } from '@/hooks/useRoom';
 import { getAllRoomInfoRpc, joinRoomRpc } from '@/server/room/room-rpc'
 import { createFileRoute, notFound, } from '@tanstack/react-router'

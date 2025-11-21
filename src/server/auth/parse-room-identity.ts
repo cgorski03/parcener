@@ -9,22 +9,17 @@ export type RoomIdentity = {
 
 export async function parseRoomIdentity(req: Request, roomId: string): Promise<RoomIdentity> {
     const session = await getServerSession(req);
-    if (session?.data?.user.id != null) {
-        return {
-            userId: session.data.user.id,
-            name: session.data.user.name,
-            guestUuid: undefined,
-            isAuthenticated: true
-        };
-    }
-
+    // We are doing this this way because if a user signs in after having joined as a guest 
+    // we want to COMBINE the identities, not create two
     const cookies = req.headers.get('cookie') || '';
     const cookieName = `guest_uuid_room_${roomId}`;
     const match = cookies.match(new RegExp(`${cookieName}=([a-f0-9-]+)`));
+
     return {
-        userId: undefined,
-        guestUuid: match?.[1],
-        isAuthenticated: false,
+        userId: session?.data?.user.id ?? undefined,
+        name: session?.data?.user.name ?? undefined,
+        guestUuid: match?.[1] ?? undefined,
+        isAuthenticated: session?.data?.user != null ? true : false,
     }
 }
 

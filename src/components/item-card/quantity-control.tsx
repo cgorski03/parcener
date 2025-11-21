@@ -22,16 +22,10 @@ export function QuantityControl({
     const canDecrement = myQuantity > 0;
     const isFullyClaimed = remaining === 0;
 
-    // 1. Calculate Totals for the Bar
-    // We want the "Others" bar to push the "My" bar to the right.
-    // Or, cleaner: "Others" is the base grey, "My" is the highlighted tip.
-    // Let's calculate the total percentage filled:
-
-    // Calculate the split point for styling (Where 'others' ends and 'mine' begins)
     const othersPercent = (othersQuantity / totalQuantity) * 100;
 
     return (
-        <div className="mt-3 pt-3 border-t border-dashed border-border/60">
+        <div className=" pt-3 border-t border-dashed border-border/60">
             <div className="flex items-end justify-between gap-4">
 
                 {/* Left Side: Capacity & Progress */}
