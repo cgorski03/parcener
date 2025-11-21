@@ -104,7 +104,7 @@ export const claimItemRpc = createServerFn({ method: 'POST' })
             // TODO 
             return NOT_FOUND
         }
-        return await claimItem({ roomId, identity, receiptItemId, quantity });
+        return await claimItem({ roomId, identity, receiptItemId, newQuantity: quantity });
     });
 
 export const joinRoomRpc = createServerFn({ method: 'POST' })

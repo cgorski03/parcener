@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { RoomIdentity } from "../auth/parse-room-identity";
 import { claim, db, room } from "../db";
 import { ensureRoomMember } from "./room-service";
@@ -7,12 +7,12 @@ type ItemClaimRequest = {
     roomId: string;
     receiptItemId: string;
     identity: RoomIdentity;
-    quantity: number;
+    newQuantity: number;
 }
 
 
 export async function claimItem(request: ItemClaimRequest) {
-    const { roomId, identity, receiptItemId, quantity } = request;
+    const { roomId, identity, receiptItemId, newQuantity } = request;
     // Ensure the item belongs to the room 
     const { member } = await ensureRoomMember(identity, roomId);
     return await db.transaction(async (tx) => {
@@ -39,19 +39,30 @@ export async function claimItem(request: ItemClaimRequest) {
 
         // Prevent too many from being claimed
         const totalClaimed = item.claims.reduce((sum, c) => sum + Number(c.quantity), 0);
-        if (totalClaimed + quantity > parseFloat(item.quantity)) {
+        if (totalClaimed + newQuantity > parseFloat(item.quantity)) {
             throw new Error("Already claimed");
         }
-
-        await tx.insert(claim).values({
-            roomId,
-            memberId: member.id,
-            receiptItemId,
-            quantity: quantity.toString(),
-        }).onConflictDoUpdate({
-            target: [claim.roomId, claim.memberId, claim.receiptItemId],
-            set: { quantity: quantity.toString() }
-        });
+        if (newQuantity === 0) {
+            // This should be a delete operation
+            await tx.delete(claim)
+                .where(
+                    and(
+                        eq(claim.roomId, roomId),
+                        eq(claim.receiptItemId, receiptItemId),
+                        eq(claim.memberId, member.id)
+                    )
+                );
+        } else {
+            await tx.insert(claim).values({
+                roomId,
+                memberId: member.id,
+                receiptItemId,
+                quantity: newQuantity.toString(),
+            }).onConflictDoUpdate({
+                target: [claim.roomId, claim.memberId, claim.receiptItemId],
+                set: { quantity: newQuantity.toString() }
+            });
+        }
 
         await tx.update(room)
             .set({ updatedAt: new Date() })

@@ -1,6 +1,7 @@
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { BaseReceiptItemCard } from "./base-receipt-item-card";
 import { ItemWithClaims } from "@/routes/parce/$roomId";
+import { QuantityControl } from "./quantity-control";
 
 export function CollabItemCard({
     data,
@@ -40,19 +41,19 @@ export function CollabItemCard({
                 )
             }
 
-        // Render Quantity Controls
-        // footerElement={
-        //     (item.quantity > 1 && isMine) && (
-        //         <QuantityControl
-        //             totalQuantity={item.quantity}
-        //             myQuantity={myQty}
-        //             remainingQuantity={remainingQuantity}
-        //             onIncrement={() => onUpdateClaim(myQty + 1)}
-        //             onDecrement={() => onUpdateClaim(myQty - 1)}
-        //             onOpenSplitSheet={() => { }}
-        //         />
-        //     )
-        // }
+            // Render Quantity Controls
+            footerElement={
+                (item.quantity > 1) && (
+                    <QuantityControl
+                        totalQuantity={item.quantity}
+                        myQuantity={myQty}
+                        remainingQuantity={remainingQuantity}
+                        onIncrement={() => onUpdateClaim(myQty + 1)}
+                        onDecrement={() => onUpdateClaim(myQty - 1)}
+                        onOpenSplitSheet={() => { }}
+                    />
+                )
+            }
         />
     );
 }
