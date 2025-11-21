@@ -1,27 +1,13 @@
 import { CollabItemCard } from '@/components/item-card/collab-item-card';
 import { CollaborativeRoomHeader } from '@/components/layout/collaborative-room-header';
 import { ReceiptLayoutShell } from '@/components/layout/receipt-layout-shell';
-import { useClaimItem } from '@/hooks/useClaims';
+import { PriceBreakdown } from '@/components/price-breakdown';
+import { useClaimItem, useEnrichedClaimItems } from '@/hooks/useClaims';
 import { useGetRoomPulse } from '@/hooks/useRoom';
-import { ReceiptItemDto } from '@/server/dtos';
 import { getAllRoomInfoRpc, joinRoomRpc } from '@/server/room/room-rpc'
 import { createFileRoute, notFound, } from '@tanstack/react-router'
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 
-type EnrichedClaim = {
-    quantity: number;
-    memberId: string;
-    displayName: string;
-    isMe: boolean;
-};
-
-export type ItemWithClaims = {
-    item: ReceiptItemDto;
-    myClaim: EnrichedClaim | undefined;
-    otherClaims: EnrichedClaim[];
-    totalClaimed: number;
-    remainingQuantity: number;
-}
 
 export const Route = createFileRoute('/parce/$roomId')({
     loader: async ({ params }) => {
@@ -46,6 +32,10 @@ function RouteComponent() {
     }
     const { mutateAsync: claimItem, isPending: claimItemLoading } = useClaimItem();
     const { data: room } = useGetRoomPulse(initialRoomData.data.id, initialRoomData.data);
+    if (room.receipt == null) {
+        throw notFound();
+    }
+    const { itemsWithClaims } = useEnrichedClaimItems(room, member);
 
 
     useEffect(() => {
@@ -55,44 +45,6 @@ function RouteComponent() {
             document.cookie = `${cookieName}=${guestUuid}; path=/; max-age=${maxAge}; SameSite=Lax`;
         }
     }, [guestUuid, room.id]);
-    //
-    // TODO lift into custom hook
-    const currentClaims = room.claims;
-    const memberMap = useMemo(() => {
-        return new Map(room.members.map(m => [m.id, m]));
-
-    }, [room.members])
-    const itemsWithClaims = useMemo(() => {
-        const claimsByItem = new Map<string, EnrichedClaim[]>();
-        currentClaims.forEach(claim => {
-            const memberInfo = memberMap.get(claim.memberId);
-            const enriched: EnrichedClaim = {
-                quantity: parseFloat(claim.quantity),
-                memberId: claim.memberId,
-                displayName: memberInfo?.displayName ?? 'Unknown',
-                isMe: claim.memberId === member.id,
-            }
-            const existingClaims = claimsByItem.get(claim.receiptItemId) || [];
-            existingClaims.push(enriched);
-            claimsByItem.set(claim.receiptItemId, existingClaims);
-        })
-        return room.receipt?.items.map(item => {
-            const claims = claimsByItem.get(item.id) || [];
-            const myClaim = claims.find(c => c.isMe);
-            const otherClaims = claims.filter(c => !c.isMe);
-
-            const totalClaimedQty = claims.reduce((sum, c) => sum + c.quantity, 0);
-
-            return {
-                item,
-                myClaim,
-                otherClaims,
-                totalClaimed: totalClaimedQty,
-                remainingQuantity: item.quantity - totalClaimedQty
-            };
-        });
-    }, [room.receipt.items, currentClaims, memberMap, member.id]);
-
 
     return (
         <ReceiptLayoutShell header={
@@ -100,7 +52,8 @@ function RouteComponent() {
                 roomId={room.id}
                 roomName={room.title ?? "Untitled"}
                 members={room.members}
-                activeFilterId={null} onSelectFilter={() => (console.log("filter pressed"))} />}>
+                activeFilterId={null}
+                onSelectFilter={() => (console.log("filter pressed"))} />}>
 
             {itemsWithClaims && itemsWithClaims.map((data) => (
                 <CollabItemCard
@@ -109,6 +62,15 @@ function RouteComponent() {
                     onUpdateClaim={(newQty) => { claimItem({ roomId: room.id, receiptItemId: data.item.id, quantity: newQty }) }}
                 />
             ))}
+            <PriceBreakdown
+                subtotal={room.receipt.subtotal}
+                tax={room.receipt.tax ?? 0}
+                tip={room.receipt.tip ?? 0}
+                grandTotal={room.receipt.grandTotal ?? 0}
+                label="Receipt Totals"
+                className="mt-6"
+            />
+
         </ReceiptLayoutShell>
     );
 
