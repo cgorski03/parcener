@@ -29,7 +29,7 @@ export const Route = createFileRoute('/parce/$roomId')({
         if ('error' in joinResponse) {
             throw notFound();
         }
-        const roomInformation = await getAllRoomInfoRpc({ data: params.roomId });
+        const roomInformation = await getAllRoomInfoRpc({ data: { roomId: params.roomId } });
         return {
             room: roomInformation,
             member: joinResponse.member,
@@ -41,12 +41,12 @@ export const Route = createFileRoute('/parce/$roomId')({
 
 function RouteComponent() {
     const { room: initialRoomData, member, guestUuid } = Route.useLoaderData();
-
-    if (!initialRoomData || initialRoomData.receipt == null) {
+    if (!initialRoomData || initialRoomData.data == null) {
         throw notFound();
     }
     const { mutateAsync: claimItem, isPending: claimItemLoading } = useClaimItem();
-    const { data: room } = useGetRoomPulse(initialRoomData.id, initialRoomData);
+    const { data: room } = useGetRoomPulse(initialRoomData.data.id, initialRoomData.data);
+
 
     useEffect(() => {
         if (guestUuid) {

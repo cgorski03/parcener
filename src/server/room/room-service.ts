@@ -46,25 +46,37 @@ export async function GetFullRoomInfo(roomId: string) {
     });
 }
 
-export async function GetRoomPulse(roomId: string) {
-    return await db.query.room.findFirst({
-        where: eq(room.id, roomId),
-        with: {
-            members: true,
-            claims: true,
-        },
-    });
+export async function GetRoomHeader(roomId: string) {
+    const [header] = await db
+        .select({ updatedAt: room.updatedAt })
+        .from(room)
+        .where(eq(room.id, roomId));
+    return header;
 }
 
 async function JoinRoomGuest(roomId: string) {
     const guestUuid = crypto.randomUUID();
-    const guestName = `Guest ${guestUuid.slice(0, 8)}`
-    const [newRoomMember] = await db.insert(roomMember).values({
-        roomId,
-        guestUuid,
-        displayName: guestName
-    }).returning();
-    return { member: newRoomMember, generatedUuid: guestUuid, isNew: true }
+    const guestName = `Guest ${guestUuid.slice(0, 8)}`;
+
+    return await db.transaction(async (tx) => {
+        const [newRoomMember] = await tx.insert(roomMember)
+            .values({
+                roomId,
+                guestUuid,
+                displayName: guestName,
+            })
+            .returning();
+
+        await tx.update(room)
+            .set({ updatedAt: new Date() })
+            .where(eq(room.id, roomId));
+
+        return {
+            member: newRoomMember,
+            generatedUuid: guestUuid,
+            isNew: true
+        };
+    });
 }
 
 export async function ensureRoomMember(identity: RoomIdentity, roomId: string) {
@@ -88,28 +100,42 @@ export async function ensureRoomMember(identity: RoomIdentity, roomId: string) {
     }
 
     if (identity.isAuthenticated) {
-        const [authedNewRoomMember] = await db.insert(roomMember).values({
-            roomId,
-            userId: identity.userId,
-            displayName: identity.name
-        }).returning();
-        return { member: authedNewRoomMember, identity, isNew: true }
+        return await db.transaction(async (tx) => {
+            const [authedNewRoomMember] = await tx.insert(roomMember).values({
+                roomId,
+                userId: identity.userId,
+                displayName: identity.name
+            }).returning();
+
+            await tx.update(room)
+                .set({ updatedAt: new Date() })
+                .where(eq(room.id, roomId));
+
+            return { member: authedNewRoomMember, identity, isNew: true }
+        })
     }
     return await JoinRoomGuest(roomId);
-
 }
 
 
 export async function editRoomMemberDisplayName(identity: RoomIdentity, roomId: string, displayName: string) {
 
-    const [updatedRoomMember] = await db.update(roomMember)
-        .set({ displayName })
-        .where(and(
-            eq(roomMember.roomId, roomId),
-            identity.userId ?
-                eq(roomMember.userId, identity.userId)
-                : eq(roomMember.guestUuid, identity.guestUuid!)))
-        .returning();
-    return updatedRoomMember;
+    return await db.transaction(async (tx) => {
+
+        const [updatedRoomMember] = await tx.update(roomMember)
+            .set({ displayName })
+            .where(and(
+                eq(roomMember.roomId, roomId),
+                identity.userId ?
+                    eq(roomMember.userId, identity.userId)
+                    : eq(roomMember.guestUuid, identity.guestUuid!)))
+            .returning();
+
+        await tx.update(room)
+            .set({ updatedAt: new Date() })
+            .where(eq(room.id, roomId));
+
+        return updatedRoomMember;
+    })
 }
 

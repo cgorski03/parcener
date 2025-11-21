@@ -1,0 +1,1 @@
+ALTER TABLE "room" ADD COLUMN "updated_at" timestamp DEFAULT now();

@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
 import { processReceipt } from "./processing-service";
-import { getServerSession } from "@/lib/auth-client";
+import { getServerSession } from "../auth/get-server-session";
 
 export const uploadReceipt = createServerFn({ method: 'POST' })
     .inputValidator((data: FormData) => data)

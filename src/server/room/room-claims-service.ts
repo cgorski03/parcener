@@ -1,3 +1,4 @@
+import { eq } from "drizzle-orm";
 import { RoomIdentity } from "../auth/parse-room-identity";
 import { claim, db, room } from "../db";
 import { ensureRoomMember } from "./room-service";
@@ -14,7 +15,6 @@ export async function claimItem(request: ItemClaimRequest) {
     const { roomId, identity, receiptItemId, quantity } = request;
     // Ensure the item belongs to the room 
     const { member } = await ensureRoomMember(identity, roomId);
-
     return await db.transaction(async (tx) => {
         const item = await tx.query.receiptItem.findFirst({
             where: (items, { eq, exists, and }) => and(
@@ -52,5 +52,9 @@ export async function claimItem(request: ItemClaimRequest) {
             target: [claim.roomId, claim.memberId, claim.receiptItemId],
             set: { quantity: quantity.toString() }
         });
+
+        await tx.update(room)
+            .set({ updatedAt: new Date() })
+            .where(eq(room.id, roomId));
     });
 }

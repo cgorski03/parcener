@@ -12,7 +12,6 @@ export const Route = createFileRoute('/upload')({
 
 function UploadComponent() {
     const [file, setFile] = useState<File | null>(null);
-    const [name, setName] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const router = useRouter();
@@ -31,7 +30,7 @@ function UploadComponent() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!file || !name) {
+        if (!file) {
             setError('Please fill in all fields');
             return;
         }
@@ -44,7 +43,7 @@ function UploadComponent() {
             formData.append('file', file);
 
             const { receiptId } = await uploadReceipt({ data: formData });
-            router.navigate({ to: `/receipts/review/${receiptId}` });
+            router.navigate({ to: `/receipt/review/${receiptId}` });
         } catch (err) {
             const message = err instanceof Error ? err.message : 'Upload failed';
             setError(message);
@@ -90,7 +89,7 @@ function UploadComponent() {
 
                         <Button
                             type="submit"
-                            disabled={loading || !file || !name}
+                            disabled={loading || !file}
                             className="w-full bg-primary"
                         >
                             {loading ? 'Uploading...' : 'Split Receipt'}

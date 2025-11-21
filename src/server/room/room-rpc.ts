@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { CreateRoom, editRoomMemberDisplayName, GetFullRoomInfo, ensureRoomMember, GetRoomPulse } from "./room-service";
+import { CreateRoom, editRoomMemberDisplayName, GetFullRoomInfo, ensureRoomMember, GetRoomHeader } from "./room-service";
 import { getRequest } from "@tanstack/react-start/server";
 import { getServerSession } from "../auth/get-server-session";
 import { parseRoomIdentity } from "../auth/parse-room-identity";
@@ -26,39 +26,53 @@ export type FullRoomInfo = RoomSelect & {
     claims: ClaimSelect[];
     members: RoomMemberSelect[];
 }
+
 export const getAllRoomInfoRpc = createServerFn({ method: 'GET' })
-    .inputValidator(z.string().uuid())
-    .handler(async ({ data: roomId }) => {
+    .inputValidator(z.object({
+        roomId: z.string().uuid(),
+        since: z.date().optional().nullable()
+    }))
+    .handler(async ({ data }) => {
+        const { roomId, since } = data;
+        const roomHeader = await GetRoomHeader(roomId);
+
+        // Room doesn't exist
+        if (!roomHeader || !roomHeader.updatedAt) return undefined;
+
+        // 3. The Check: If 'since' exists and server time is NOT newer
+        // We return early with a specific flag
+        if (since && roomHeader.updatedAt <= since) {
+            return {
+                changed: false,
+                nextCursor: roomHeader.updatedAt
+            };
+        }
+
+        // Only runs if data is missing (initial load) or stale (since < updatedAt)
         const roomData = await GetFullRoomInfo(roomId);
+
         if (!roomData) return undefined;
+
         const roomInfo: FullRoomInfo = {
             id: roomData.id,
             title: roomData.title,
             receiptId: roomData.receiptId,
             createdAt: roomData.createdAt,
+            updatedAt: roomData.updatedAt,
             createdBy: roomData.createdBy,
             members: roomData.members,
             claims: roomData.claims,
             receipt: receiptEntityWithReferencesToDtoHelper(roomData.receipt)
-        }
-        return roomInfo;
-    });
+        };
 
-export const getRoomPulseRpc = createServerFn({ method: 'GET' })
-    .inputValidator(z.string().uuid())
-    .handler(async ({ data: roomId }) => {
-        const roomData = await GetRoomPulse(roomId);
-        if (!roomData) return undefined;
+        // 6. Return the Data wrapper
         return {
-            id: roomData.id,
-            title: roomData.title,
-            receiptId: roomData.receiptId,
-            createdAt: roomData.createdAt,
-            createdBy: roomData.createdBy,
-            members: roomData.members,
-            claims: roomData.claims,
+            changed: true,
+            data: roomInfo,
+            nextCursor: roomData.updatedAt
         };
     });
+
 export const updateRoomDisplayNameRpc = createServerFn({ method: 'POST' })
     .inputValidator(z.object({
         roomId: z.string().uuid(),

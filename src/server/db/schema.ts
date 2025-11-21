@@ -73,6 +73,7 @@ export const room = pgTable('room', {
     title: varchar('title', { length: 255 }),
     createdBy: text('user_id').notNull().references(() => user.id, { onDelete: "cascade" }),
     createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
 })
 export type RoomSelect = typeof room.$inferSelect;
 
