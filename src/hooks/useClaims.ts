@@ -11,6 +11,7 @@ type EnrichedClaim = {
     quantity: number;
     memberId: string;
     displayName: string;
+    avatarUrl?: string;
     isMe: boolean;
 };
 
@@ -86,6 +87,7 @@ export const useEnrichedClaimItems = (room: FullRoomInfo, myMembership: RoomMemb
                 quantity: parseFloat(claim.quantity),
                 memberId: claim.memberId,
                 displayName: memberInfo?.displayName ?? 'Unknown',
+                avatarUrl: memberInfo?.avatarUrl ?? undefined,
                 isMe: claim.memberId === myMembership.id,
             }
             const existingClaims = claimsByItem.get(claim.receiptItemId) || [];

@@ -1,5 +1,5 @@
 // components/item-card/collab-item-card.tsx
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { BaseReceiptItemCard } from "./base-receipt-item-card";
 import { QuantityControl } from "./quantity-control";
 import { useDebouncedClaim } from "@/hooks/use-debounced-claim";
@@ -49,9 +49,10 @@ export function CollabItemCard({
                     <div className="flex items-center gap-1">
                         {otherClaims.slice(0, 3).map(claim => (
                             <div key={claim.memberId} className="relative">
-                                <Avatar className="h-8 w-8 border-2 border-background ring-1 ring-muted/50">
-                                    <AvatarFallback className="text-[10px] font-bold bg-muted text-muted-foreground">
-                                        {claim.displayName.substring(0, 2).toUpperCase()}
+                                <Avatar className="h-10 w-10 border-2 border-background ring-1 ring-muted shadow-sm">
+                                    {claim.avatarUrl && <AvatarImage src={claim.avatarUrl} />}
+                                    <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                                        {claim.displayName?.substring(0, 2).toUpperCase() ?? "G"}
                                     </AvatarFallback>
                                 </Avatar>
                                 {/* Show count badge if they took more than 1 */}
