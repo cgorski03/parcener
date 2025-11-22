@@ -21,7 +21,7 @@ export function RoomMemberAvatar(props: RoomMemberAvatarProps) {
             key={id}
             className={`${sizeClasses[size]} border-2 border-background ring-1 ring-muted shadow-sm`}
         >
-            {avatarUrl && <AvatarImage src={avatarUrl} alt={displayName} />}
+            {avatarUrl && <AvatarImage src={avatarUrl} alt={displayName ?? "Guest"} />}
             <AvatarFallback className="bg-primary/10 text-primary font-semibold">
                 {displayName?.substring(0, 2).toUpperCase() ?? "G"}
             </AvatarFallback>

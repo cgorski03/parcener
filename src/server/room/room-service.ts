@@ -119,13 +119,13 @@ export async function joinRoomAction(input: {
 
     // SCENARIO C: New Member (User or Guest)
     return await db.transaction(async (tx) => {
-        const newGuestUuid = identity.guestUuid || crypto.randomUUID();
-        const finalName = displayName || identity.name || `Guest ${newGuestUuid.slice(0, 4)}`;
+        const newGuestUuid = identity.isAuthenticated ? null : (identity.guestUuid || crypto.randomUUID());
+        const finalName = displayName || identity.name || `Guest ${newGuestUuid && newGuestUuid.slice(0, 4)}`;
 
         const [newMember] = await tx.insert(roomMember).values({
             roomId,
-            userId: identity.userId || null, // Null if guest
-            guestUuid: newGuestUuid,         // Always generate one for the cookie
+            userId: identity.userId || null,
+            guestUuid: newGuestUuid,
             displayName: finalName
         }).returning();
 

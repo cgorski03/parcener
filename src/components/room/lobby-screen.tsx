@@ -87,7 +87,6 @@ export function LobbyScreen({ room, user }: LobbyScreenProps) {
                 </CardHeader>
 
                 <CardContent className="space-y-6 pt-4">
-                    {/* Flat, declarative composition */}
                     <IdentitySection user={user} name={name} setName={setName} />
 
                     <Button
@@ -148,6 +147,7 @@ interface IdentitySectionProps {
 }
 
 function IdentitySection({ user, name, setName }: IdentitySectionProps) {
+    const router = useRouter();
     return (
         <div className="space-y-3">
             <label className="text-sm font-medium text-muted-foreground uppercase tracking-wider text-[10px] ml-1">
@@ -171,10 +171,11 @@ function IdentitySection({ user, name, setName }: IdentitySectionProps) {
                         size="sm"
                         className="h-8 text-xs text-muted-foreground hover:text-foreground"
                         onClick={() => {
-                            // TODO: Implement logout or account switch
+                            authClient.signOut();
+                            router.invalidate();
                         }}
                     >
-                        Change
+                        Log Out
                     </Button>
                 </div>
             ) : (
