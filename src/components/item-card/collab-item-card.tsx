@@ -1,9 +1,9 @@
-// components/item-card/collab-item-card.tsx
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { BaseReceiptItemCard } from "./base-receipt-item-card";
 import { QuantityControl } from "./quantity-control";
 import { useDebouncedClaim } from "@/hooks/use-debounced-claim";
 import { ItemWithClaims } from "@/hooks/useClaims";
+import { RoomMemberAvatar } from "../room/room-member-avatar";
 
 export function CollabItemCard({
     data,
@@ -43,18 +43,15 @@ export function CollabItemCard({
                 }
             }}
 
-            // CHANGE: Cleaner Avatar Display
             rightElement={
                 otherClaims.length > 0 && (
                     <div className="flex items-center gap-1">
                         {otherClaims.slice(0, 3).map(claim => (
                             <div key={claim.memberId} className="relative">
-                                <Avatar className="h-10 w-10 border-2 border-background ring-1 ring-muted shadow-sm">
-                                    {claim.avatarUrl && <AvatarImage src={claim.avatarUrl} />}
-                                    <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                                        {claim.displayName?.substring(0, 2).toUpperCase() ?? "G"}
-                                    </AvatarFallback>
-                                </Avatar>
+                                <RoomMemberAvatar
+                                    id={claim.memberId}
+                                    avatarUrl={claim.avatarUrl}
+                                    displayName={claim.displayName} />
                                 {/* Show count badge if they took more than 1 */}
                                 {claim.quantity > 1 && (
                                     <div className="absolute -bottom-1 -right-1 bg-background text-[9px] font-bold border rounded-full h-4 w-4 flex items-center justify-center shadow-sm">
