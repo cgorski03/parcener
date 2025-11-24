@@ -2,6 +2,11 @@ import {
     createStartHandler,
     defaultStreamHandler,
 } from '@tanstack/react-start/server'
+import { processingQueueHandler } from './processing/processing-service'
+import { ReceiptJob } from './processing/types'
+import { DbType, getDb } from './db'
+import { createAuth } from './auth'
+import { Auth } from 'better-auth'
 
 // 1. Augment the context type so TS knows about Cloudflare
 declare module '@tanstack/react-start' {
@@ -11,7 +16,9 @@ declare module '@tanstack/react-start' {
                 cloudflare: {
                     env: Cloudflare.Env
                     ctx: ExecutionContext
-                }
+                },
+                db: DbType,
+                auth: Auth
             }
         }
     }
@@ -29,9 +36,13 @@ export default {
     async fetch(request: Request, env: any, ctx: any) {
         // We call the base handler, but we pass the 2nd argument (RequestOptions)
         // to inject the Cloudflare environment into the context
+        const db = getDb(env);
+        const auth = createAuth(db);
         return baseFetch(request, {
             context: {
                 cloudflare: { env, ctx },
+                db,
+                auth,
             },
         })
     },
@@ -39,15 +50,8 @@ export default {
     // Queue Handler 
     // Not implemented yet, but this will be the queue endpoint
     // The queue will handle the processing of receipts
-    async queue(batch: MessageBatch, env: Env, _: ExecutionContext) {
-        for (const message of batch.messages) {
-            try {
-                console.log('Message handled!');
-                message.ack()
-            } catch (error) {
-                console.error('Queue job failed:', error)
-                message.retry()
-            }
-        }
-    },
+    async queue(batch: MessageBatch<ReceiptJob>, env: Env, ctx: ExecutionContext) {
+        const db = getDb(env);
+        processingQueueHandler(db, batch, env, ctx);
+    }
 }

@@ -2,29 +2,53 @@ import { GoogleGenerativeAIProvider } from "@ai-sdk/google";
 import { generateText } from 'ai';
 import { RECEIPT_PARSE_PROMPT } from "./utils/prompts";
 import { ParseError, parseProviderMetadata, parseStructuredReceiptResponse, UsageMetadata } from "./utils/parse-json";
-import { ParsedReceiptSchema } from "./types";
+import { ParsedReceiptSchema, ReceiptJob } from "./types";
 import z from "zod";
 import { google } from "../llm";
-import { createProcessingError, createReceiptStub as beginReceiptProcessingRun, saveReceiptInformation, finishReceiptProcessingRunSuccess } from "./repository";
+import {
+    createProcessingError,
+    createProcessingStub,
+    saveReceiptInformation,
+    finishReceiptProcessingRunSuccess
+} from "./repository";
+import { DbType, receipt } from "../db";
 
 const RECEIPT_PROCESSING_MODEL = 'gemini-2.5-pro';
 
-export async function processReceipt(userId: string, imageBuffer: ArrayBuffer) {
+export async function createReceiptStub(db: DbType, receiptId: string, userId: string) {
+    await db.insert(receipt).values({
+        id: receiptId,
+        userId,
+    });
+}
+
+export async function processReceipt(db: DbType, receiptId: string, imageSource: R2Bucket) {
     const ai = google();
-    const receiptId = crypto.randomUUID();
     // Insert the stub records to the database
-    const runId = await beginReceiptProcessingRun(userId, receiptId);
+    const runId = await createProcessingStub(db, receiptId);
     let metadata: UsageMetadata | null = null;
     let rawResponse: string | null = null;
+
     try {
-        const { text, providerMetadata } = await processReceiptItems(ai, imageBuffer);
+        // Get the image from R3
+        const image = await imageSource.get(receiptId);
+        if (!image) {
+            const error = 'Image not found at source';
+            console.error(error);
+            createProcessingError(db, {
+                runId,
+            }, error)
+            return;
+        }
+        const imageObj = await image.arrayBuffer();
+        const { text, providerMetadata } = await requestAiProcessingHelper(db, ai, imageObj);
         rawResponse = text;
         if (providerMetadata) {
             metadata = parseProviderMetadata(providerMetadata);
         }
         const items = parseStructuredReceiptResponse(text, ParsedReceiptSchema)
-        await saveReceiptInformation(receiptId, items);
-        await finishReceiptProcessingRunSuccess(runId, { model: RECEIPT_PROCESSING_MODEL, tokens: metadata?.totalTokenCount ?? null })
+        await saveReceiptInformation(db, receiptId, items);
+        await finishReceiptProcessingRunSuccess(db, runId, { model: RECEIPT_PROCESSING_MODEL, tokens: metadata?.totalTokenCount ?? null })
         return { receiptId }
     }
     catch (error) {
@@ -33,7 +57,7 @@ export async function processReceipt(userId: string, imageBuffer: ArrayBuffer) {
                 message: error.message,
                 rawText: error.rawText.slice(0, 500),
             });
-            createProcessingError({
+            createProcessingError(db, {
                 runId,
                 model: RECEIPT_PROCESSING_MODEL,
                 processingTokens: metadata?.totalTokenCount,
@@ -43,14 +67,14 @@ export async function processReceipt(userId: string, imageBuffer: ArrayBuffer) {
         }
         if (error instanceof z.ZodError) {
             console.error('Receipt validation failed:', error.issues);
-            createProcessingError({
+            createProcessingError(db, {
                 runId,
                 model: RECEIPT_PROCESSING_MODEL,
                 processingTokens: metadata?.totalTokenCount,
             }, error);
             throw new Error('Receipt data is invalid or incomplete.');
         }
-        createProcessingError({
+        createProcessingError(db, {
             runId,
             model: RECEIPT_PROCESSING_MODEL,
             processingTokens: metadata?.totalTokenCount,
@@ -60,7 +84,7 @@ export async function processReceipt(userId: string, imageBuffer: ArrayBuffer) {
     }
 }
 
-export const processReceiptItems = async (ai: GoogleGenerativeAIProvider, imageBuffer: ArrayBuffer) => {
+const requestAiProcessingHelper = async (ai: GoogleGenerativeAIProvider, imageBuffer: ArrayBuffer) => {
     const { text, providerMetadata } = await generateText({
         model: ai(RECEIPT_PROCESSING_MODEL),
         system: RECEIPT_PARSE_PROMPT,
@@ -77,4 +101,16 @@ export const processReceiptItems = async (ai: GoogleGenerativeAIProvider, imageB
         ],
     });
     return { text, providerMetadata }
-} 
+}
+
+export async function processingQueueHandler(db: DbType, batch: MessageBatch<ReceiptJob>, env: Env, _: ExecutionContext) {
+    for (const message of batch.messages) {
+        try {
+            processReceipt(db, message.body.receiptId, env.parcener_receipt_images);
+            message.ack()
+        } catch (error) {
+            console.error('Queue job failed:', error)
+            message.retry()
+        }
+    }
+}

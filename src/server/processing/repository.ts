@@ -1,27 +1,20 @@
 import { receipt, receiptItem, receiptProcessingInformation, type ReceiptItemInsert } from "../db/schema";
-import { db } from "../db";
 import { eq } from "drizzle-orm";
 import { ParsedReceipt } from "./types";
+import { DbType } from "../db";
 
 // Returns what is effectively the processing run ID
-export async function createReceiptStub(userId: string, id: string) {
+export async function createProcessingStub(db: DbType, id: string) {
     const startTime = new Date();
-    return db.transaction(async (tx) => {
-        await tx.insert(receipt).values({
-            id,
-            userId,
-            createdAt: startTime,
-        });
-        const [insertedRecord] = await tx.insert(receiptProcessingInformation).values({
-            receiptId: id,
-            startedAt: startTime,
-            processingStatus: 'processing',
-        }).returning();
-        return insertedRecord.id;
-    });
+    const [insertedRecord] = await db.insert(receiptProcessingInformation).values({
+        receiptId: id,
+        startedAt: startTime,
+        processingStatus: 'processing',
+    }).returning();
+    return insertedRecord.id;
 }
 
-export async function finishReceiptProcessingRunSuccess(runId: string, request: { model: string, tokens: number | null }) {
+export async function finishReceiptProcessingRunSuccess(db: DbType, runId: string, request: { model: string, tokens: number | null }) {
     await db.update(receiptProcessingInformation).set({
         endedAt: new Date(),
         processingStatus: 'success',
@@ -29,7 +22,7 @@ export async function finishReceiptProcessingRunSuccess(runId: string, request: 
         processingTokens: request.tokens,
     }).where(eq(receiptProcessingInformation.id, runId));
 }
-export async function createProcessingError(request: {
+export async function createProcessingError(db: DbType, request: {
     runId: string,
     model?: string,
     processingTokens?: number,
@@ -45,7 +38,7 @@ export async function createProcessingError(request: {
         .where(eq(receiptProcessingInformation.id, request.runId));
 }
 
-export async function saveReceiptInformation(receiptId: string, parsedReceipt: ParsedReceipt) {
+export async function saveReceiptInformation(db: DbType, receiptId: string, parsedReceipt: ParsedReceipt) {
     await db.update(receipt).set({
         title: parsedReceipt.metadata.restaurant ?? 'No Title',
         subtotal: parsedReceipt.subtotal?.toString() ?? null,

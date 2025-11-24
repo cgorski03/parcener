@@ -1,13 +1,14 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
-import { processReceipt } from "./processing-service";
+import { createReceiptStub } from "./processing-service";
 import { getServerSession } from "../auth/get-server-session";
+import { env } from "cloudflare:workers";
+import { ReceiptJob } from "./types";
 
 export const uploadReceipt = createServerFn({ method: 'POST' })
     .inputValidator((data: FormData) => data)
-    .handler(async ({ data }) => {
-        const file = data.get('file') as File;
-        const buffer = await file.arrayBuffer();
+    .handler(async ({ data, context }) => {
+        // Authenticate and Authorie req
         const request = getRequest();
         const session = await getServerSession(request);
         const userId = session.data?.user.id;
@@ -15,8 +16,18 @@ export const uploadReceipt = createServerFn({ method: 'POST' })
             throw new Error('Not authorized to perform this action');
         }
 
+        const file = data.get('file') as File;
+        const buffer = await file.arrayBuffer();
+
         if (!file) throw new Error('No file provided');
 
-        const result = await processReceipt(userId, buffer);
-        return result;
+        const receiptId = crypto.randomUUID();
+        // Save the receipt image to R3
+        await env.parcener_receipt_images.put(receiptId, buffer);
+        await createReceiptStub(context.db, receiptId, userId);
+        const job: ReceiptJob = {
+            receiptId,
+        }
+        await env.RECEIPT_QUEUE.send(job);
+        return { receiptId, created: true }
     });

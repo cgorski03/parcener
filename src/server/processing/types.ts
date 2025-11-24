@@ -21,3 +21,7 @@ export const ParsedReceiptSchema = z.object({
 
 export type ParsedReceipt = z.infer<typeof ParsedReceiptSchema>;
 export type ReceiptItem = z.infer<typeof ReceiptItemSchema>;
+
+export type ReceiptJob = {
+    receiptId: string;
+}

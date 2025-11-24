@@ -1,12 +1,33 @@
 {
-  "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "parcener",
-  "compatibility_date": "2025-09-02",
-  "compatibility_flags": [
-    "nodejs_compat"
-  ],
-  "main": "src/server/entry.ts",
-  "observability": {
-    "enabled": true
+	"$schema": "./node_modules/wrangler/config-schema.json",
+	"name": "parcener",
+	"compatibility_date": "2025-09-02",
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
+	"main": "src/server/entry.ts",
+	"observability": {
+		"enabled": true
+	},
+	"r2_buckets": [
+		{
+			"bucket_name": "parcener-receipt-images",
+			"binding": "parcener_receipt_images"
+		}
+	],
+  "queues": {
+    "producers": [
+      {
+        "binding": "RECEIPT_QUEUE", 
+        "queue": "parcener-receipt-queue"
+      }
+    ],
+    "consumers": [
+      {
+        "queue": "parcener-receipt-queue",
+        "max_batch_size": 1, 
+        "max_retries": 3    
+      }
+    ]
   }
 }
