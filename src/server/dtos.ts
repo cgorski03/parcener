@@ -1,5 +1,4 @@
 import { ClaimSelect, ReceiptEntityWithItems, ReceiptItemSelect, RoomSelect } from "./db/schema";
-import { getAllReceiptInfo } from "./get-receipt/repository";
 
 export type ReceiptItemDto = {
     id: string;

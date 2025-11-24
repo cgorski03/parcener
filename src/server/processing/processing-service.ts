@@ -4,7 +4,6 @@ import { RECEIPT_PARSE_PROMPT } from "./utils/prompts";
 import { ParseError, parseProviderMetadata, parseStructuredReceiptResponse, UsageMetadata } from "./utils/parse-json";
 import { ParsedReceiptSchema, ReceiptJob } from "./types";
 import z from "zod";
-import { google } from "../llm";
 import {
     createProcessingError,
     createProcessingStub,
@@ -12,6 +11,7 @@ import {
     finishReceiptProcessingRunSuccess
 } from "./repository";
 import { DbType, receipt } from "../db";
+import { google } from "./llm";
 
 const RECEIPT_PROCESSING_MODEL = 'gemini-2.5-pro';
 

@@ -9,14 +9,14 @@ import { claimItem } from "./room-claims-service";
 
 export const createRoomRpc = createServerFn({ method: 'POST' })
     .inputValidator(z.string().uuid())
-    .handler(async ({ data: roomId }) => {
+    .handler(async ({ data: roomId, context }) => {
         const request = getRequest();
         const session = await getServerSession(request);
         const userId = session.data?.user.id;
         if (userId == null) {
             throw new Error('Not authorized to perform this action');
         }
-        return CreateRoom(roomId, userId);
+        return CreateRoom(context.db, roomId, userId);
     });
 
 
@@ -24,13 +24,13 @@ export const getRoomAndMembership = createServerFn({ method: 'GET' })
     .inputValidator(
         z.string().uuid()
     )
-    .handler(async ({ data: roomId }) => {
+    .handler(async ({ data: roomId, context }) => {
         const request = getRequest();
         const ident = await parseRoomIdentity(request, roomId);
         const user = await getServerSession(request);
 
-        const roomData = await GetFullRoomInfo(roomId);
-        const userInformation = await getRoomMembership(ident, roomId);
+        const roomData = await GetFullRoomInfo(context.db, roomId);
+        const userInformation = await getRoomMembership(context.db, ident, roomId);
 
         if (!roomData) return { room: undefined };
 
@@ -59,9 +59,9 @@ export const getRoomPulseRpc = createServerFn({ method: 'GET' })
         roomId: z.string().uuid(),
         since: z.date().optional().nullable()
     }))
-    .handler(async ({ data }) => {
+    .handler(async ({ data, context }) => {
         const { roomId, since } = data;
-        const roomHeader = await GetRoomHeader(roomId);
+        const roomHeader = await GetRoomHeader(context.db, roomId);
 
         // Room doesn't exist
         if (!roomHeader || !roomHeader.updatedAt) return undefined;
@@ -76,7 +76,7 @@ export const getRoomPulseRpc = createServerFn({ method: 'GET' })
         }
 
         // Only runs if data is missing (initial load) or stale (since < updatedAt)
-        const roomData = await GetFullRoomInfo(roomId);
+        const roomData = await GetFullRoomInfo(context.db, roomId);
 
         if (!roomData) return undefined;
 
@@ -105,14 +105,14 @@ export const updateRoomDisplayNameRpc = createServerFn({ method: 'POST' })
         roomId: z.string().uuid(),
         name: z.string().trim().min(1, "Name cannot be empty").max(50, "Name too long")
     }))
-    .handler(async ({ data }) => {
+    .handler(async ({ data, context }) => {
         const { roomId, name } = data;
         const request = getRequest();
         const identity = await parseRoomIdentity(request, roomId);
         if (!identity.guestUuid && !identity.userId) {
             return null;
         }
-        return await editRoomMemberDisplayName(identity, roomId, name);
+        return await editRoomMemberDisplayName(context.db, identity, roomId, name);
     });
 
 export const claimItemRpc = createServerFn({ method: 'POST' })
@@ -121,7 +121,7 @@ export const claimItemRpc = createServerFn({ method: 'POST' })
         receiptItemId: z.string().uuid(),
         quantity: z.number().min(0),
     }))
-    .handler(async ({ data }) => {
+    .handler(async ({ data, context }) => {
         const { roomId, receiptItemId, quantity } = data;
         console.log("someone is trying to claim");
         const request = getRequest();
@@ -129,12 +129,12 @@ export const claimItemRpc = createServerFn({ method: 'POST' })
         if (!identity.guestUuid && !identity.userId) {
             return null;
         }
-        const member = await getRoomMembership(identity, roomId);
+        const member = await getRoomMembership(context.db, identity, roomId);
         if (!member) {
             console.error('user is not a member of this room');
             return null;
         }
-        return await claimItem({ roomId, identity, receiptItemId, roomMemberId: member.id, newQuantity: quantity });
+        return await claimItem(context.db, { roomId, identity, receiptItemId, roomMemberId: member.id, newQuantity: quantity });
     });
 
 export const joinRoomRpc = createServerFn({ method: 'POST' })
@@ -142,11 +142,11 @@ export const joinRoomRpc = createServerFn({ method: 'POST' })
         roomId: z.string().uuid(),
         displayName: z.string().nullable(),
     }))
-    .handler(async ({ data }) => {
+    .handler(async ({ data, context }) => {
         const { roomId, displayName } = data;
         const request = getRequest();
         const identity = await parseRoomIdentity(request, roomId);
-        return await joinRoomAction({ roomId, identity, displayName: displayName ?? undefined });
+        return await joinRoomAction(context.db, { roomId, identity, displayName: displayName ?? undefined });
     });
 
 

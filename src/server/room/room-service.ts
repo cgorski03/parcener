@@ -1,5 +1,5 @@
 import { and, eq } from "drizzle-orm";
-import { db, room, roomMember } from "../db";
+import { DbType, room, roomMember } from "../db";
 import { getReceiptIsValid } from "../get-receipt/get-receipt-service";
 import { ROOM_CREATE_ERROR } from "../response-types";
 import { RoomIdentity } from "../auth/parse-room-identity";
@@ -10,8 +10,8 @@ export type CreateRoomRequest = {
     userId: string;
 }
 
-export async function CreateRoom(receiptId: string, userId: string) {
-    const validResponse = await getReceiptIsValid(receiptId);
+export async function CreateRoom(db: DbType, receiptId: string, userId: string) {
+    const validResponse = await getReceiptIsValid(db, receiptId);
     if (!("success" in validResponse)) {
         return validResponse;
     }
@@ -31,7 +31,7 @@ export async function CreateRoom(receiptId: string, userId: string) {
     }
 }
 
-export async function GetFullRoomInfo(roomId: string) {
+export async function GetFullRoomInfo(db: DbType, roomId: string) {
     const result = await db.query.room.findFirst({
         where: eq(room.id, roomId),
         with: {
@@ -59,7 +59,7 @@ export async function GetFullRoomInfo(roomId: string) {
 }
 
 
-export async function getRoomMembership(identity: RoomIdentity, roomId: string) {
+export async function getRoomMembership(db: DbType, identity: RoomIdentity, roomId: string) {
     if (!identity.guestUuid && !identity.userId) {
         return null;
     }
@@ -77,7 +77,7 @@ export async function getRoomMembership(identity: RoomIdentity, roomId: string) 
     return member || null;
 }
 
-export async function GetRoomHeader(roomId: string) {
+export async function GetRoomHeader(db: DbType, roomId: string) {
     const [header] = await db
         .select({ updatedAt: room.updatedAt })
         .from(room)
@@ -85,17 +85,17 @@ export async function GetRoomHeader(roomId: string) {
     return header;
 }
 
-export async function joinRoomAction(input: {
+export async function joinRoomAction(db: DbType, input: {
     roomId: string,
     identity: RoomIdentity,
     displayName?: string
 }) {
     const { roomId, identity, displayName } = input;
 
-    // SCENARIO A: They are ALREADY a member (Double check)
-    const existing = await getRoomMembership(identity, roomId);
+    // Get any existing membership
+    const existing = await getRoomMembership(db, identity, roomId);
 
-    // SCENARIO B: The "Upgrade" Case (Guest -> User)
+    //  The "Upgrade" Case (Guest -> User)
     if (existing && existing.userId === null && identity.userId) {
         return await db.transaction(async (tx) => {
             const [upgraded] = await tx.update(roomMember).set({
@@ -137,7 +137,7 @@ export async function joinRoomAction(input: {
 }
 
 
-export async function editRoomMemberDisplayName(identity: RoomIdentity, roomId: string, displayName: string) {
+export async function editRoomMemberDisplayName(db: DbType, identity: RoomIdentity, roomId: string, displayName: string) {
 
     return await db.transaction(async (tx) => {
 

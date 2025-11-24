@@ -1,6 +1,6 @@
 import { and, eq } from "drizzle-orm";
 import { RoomIdentity } from "../auth/parse-room-identity";
-import { claim, db, room } from "../db";
+import { claim, DbType, room } from "../db";
 
 type ItemClaimRequest = {
     roomId: string;
@@ -11,7 +11,7 @@ type ItemClaimRequest = {
 }
 
 
-export async function claimItem(request: ItemClaimRequest) {
+export async function claimItem(db: DbType, request: ItemClaimRequest) {
     const { roomId, roomMemberId, receiptItemId, newQuantity } = request;
     console.log(receiptItemId);
     // Ensure the item belongs to the room 
