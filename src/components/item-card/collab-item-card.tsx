@@ -1,4 +1,3 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { BaseReceiptItemCard } from "./base-receipt-item-card";
 import { QuantityControl } from "./quantity-control";
 import { useDebouncedClaim } from "@/hooks/use-debounced-claim";

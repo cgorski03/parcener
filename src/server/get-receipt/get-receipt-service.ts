@@ -12,7 +12,6 @@ import {
 } from "../response-types";
 import { isFailed, isProcessing, receiptNotFound } from "@/lib/receipt-utils";
 import { calculateItemTotal, moneyValuesEqual } from "../money-math";
-import { ReceiptEntityWithItems } from "../db";
 
 export type GetReceiptResponse = NotFoundResponse | ReceiptProcessingResponse | ReceiptProcessingFailedResponse | ReceiptDto;
 

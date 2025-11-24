@@ -1,4 +1,4 @@
-import { claimItemRpc, FullRoomInfo } from "@/server/room/room-rpc";
+import { claimItemRpc, FullRoomInfoDto } from "@/server/room/room-rpc";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { RoomQueryKeys } from "./useRoom";
 import { useMemo } from "react";
@@ -32,10 +32,10 @@ export function useClaimItem(myMembershipId: string) {
             await queryClient.cancelQueries({ queryKey: RoomQueryKeys.detail(roomId) });
 
             // 2. Snapshot previous value
-            const previousRoom = queryClient.getQueryData(RoomQueryKeys.detail(roomId)) as FullRoomInfo;
+            const previousRoom = queryClient.getQueryData(RoomQueryKeys.detail(roomId)) as FullRoomInfoDto;
 
             // 3. Optimistically update the cache
-            queryClient.setQueryData(RoomQueryKeys.detail(roomId), (old: FullRoomInfo) => {
+            queryClient.setQueryData(RoomQueryKeys.detail(roomId), (old: FullRoomInfoDto) => {
                 // Manually inject the fake claim into the 'claims' array
                 // This makes the UI update INSTANTLY without waiting for the server
                 let filteredClaims = old.claims.filter((claim) => !(claim.receiptItemId == receiptItemId && claim.memberId == _memId));
@@ -59,7 +59,7 @@ export function useClaimItem(myMembershipId: string) {
             return { previousRoom };
         },
         onError: (_, newTodo, onMutateResult) => {
-            const previousRoom = (onMutateResult as { previousRoom: FullRoomInfo }).previousRoom;
+            const previousRoom = (onMutateResult as { previousRoom: FullRoomInfoDto }).previousRoom;
             // If server fails, roll back
             queryClient.setQueryData(['room', newTodo.roomId], previousRoom);
         },
@@ -70,7 +70,7 @@ export function useClaimItem(myMembershipId: string) {
     });
 }
 
-export const useEnrichedClaimItems = (room: FullRoomInfo, myMembership: RoomMemberSelect) => {
+export const useEnrichedClaimItems = (room: FullRoomInfoDto, myMembership: RoomMemberSelect) => {
     const currentClaims = room.claims;
 
     const memberMap = useMemo(() => {

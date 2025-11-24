@@ -23,5 +23,5 @@ function RouteComponent() {
     if (membership) {
         return <ActiveRoomScreen initialRoom={room} member={membership} />
     }
-    return < LobbyScreen room={room} user={user} />
+    return <LobbyScreen room={room} user={user} />
 }

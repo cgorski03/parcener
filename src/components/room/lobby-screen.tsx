@@ -5,14 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Loader2, Receipt, ArrowRight, User } from "lucide-react";
-import { FullRoomInfo, joinRoomRpc } from "@/server/room/room-rpc";
+import { FullRoomInfoDto, joinRoomRpc } from "@/server/room/room-rpc";
 import type { User as UserType } from "better-auth";
 import GithubIcon from "../icons/github";
 import { authClient } from "@/lib/auth-client";
 import { RoomMemberAvatar } from "./room-member-avatar";
 
 interface LobbyScreenProps {
-    room: FullRoomInfo;
+    room: FullRoomInfoDto;
     user: UserType | undefined;
 }
 

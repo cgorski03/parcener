@@ -1,6 +1,6 @@
 import { useGetRoomPulse } from "@/hooks/useRoom";
 import { RoomMemberSelect } from "@/server/db";
-import { FullRoomInfo } from "@/server/room/room-rpc";
+import { FullRoomInfoDto } from "@/server/room/room-rpc";
 import { useEffect } from "react";
 import { ReceiptLayoutShell } from "../layout/receipt-layout-shell";
 import { CollaborativeRoomHeader } from "../layout/collaborative-room-header";
@@ -8,7 +8,7 @@ import { useEnrichedClaimItems } from "@/hooks/useClaims";
 import { CollabItemCard } from "../item-card/collab-item-card";
 import { PriceBreakdown } from "../price-breakdown";
 
-export function ActiveRoomScreen({ initialRoom, member }: { initialRoom: FullRoomInfo, member: RoomMemberSelect }) {
+export function ActiveRoomScreen({ initialRoom, member }: { initialRoom: FullRoomInfoDto, member: RoomMemberSelect }) {
     const { data: room } = useGetRoomPulse(initialRoom);
     const { itemsWithClaims } = useEnrichedClaimItems(room, member);
 

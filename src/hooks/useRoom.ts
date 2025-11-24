@@ -1,3 +1,4 @@
+import { FullRoomInfoDto } from "@/server/dtos";
 import { createRoomRpc, getRoomPulseRpc } from "@/server/room/room-rpc";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
