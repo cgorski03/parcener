@@ -3,11 +3,9 @@ import { CreateRoom, editRoomMemberDisplayName, GetFullRoomInfo, GetRoomHeader, 
 import { getRequest } from "@tanstack/react-start/server";
 import { getServerSession } from "../auth/get-server-session";
 import { parseRoomIdentity } from "../auth/parse-room-identity";
-import { NOT_FOUND } from "../response-types";
 import { z } from 'zod';
-import { ReceiptDto, receiptEntityWithReferencesToDtoHelper, RoomMemberDto } from "../dtos";
+import { FullRoomInfoDto, receiptEntityWithReferencesToDtoHelper } from "../dtos";
 import { claimItem } from "./room-claims-service";
-import { ClaimSelect, RoomSelect } from "../db";
 
 export const createRoomRpc = createServerFn({ method: 'POST' })
     .inputValidator(z.string().uuid())
@@ -21,11 +19,6 @@ export const createRoomRpc = createServerFn({ method: 'POST' })
         return CreateRoom(roomId, userId);
     });
 
-export type FullRoomInfo = RoomSelect & {
-    receipt: ReceiptDto;
-    claims: ClaimSelect[];
-    members: RoomMemberDto[];
-}
 
 export const getRoomAndMembership = createServerFn({ method: 'GET' })
     .inputValidator(
@@ -41,7 +34,7 @@ export const getRoomAndMembership = createServerFn({ method: 'GET' })
 
         if (!roomData) return { room: undefined };
 
-        const roomInfo: FullRoomInfo = {
+        const roomInfo: FullRoomInfoDto = {
             id: roomData.id,
             title: roomData.title,
             receiptId: roomData.receiptId,
@@ -87,7 +80,7 @@ export const getRoomPulseRpc = createServerFn({ method: 'GET' })
 
         if (!roomData) return undefined;
 
-        const roomInfo: FullRoomInfo = {
+        const roomInfo: FullRoomInfoDto = {
             id: roomData.id,
             title: roomData.title,
             receiptId: roomData.receiptId,
@@ -116,10 +109,8 @@ export const updateRoomDisplayNameRpc = createServerFn({ method: 'POST' })
         const { roomId, name } = data;
         const request = getRequest();
         const identity = await parseRoomIdentity(request, roomId);
-        // Check Room Exists
         if (!identity.guestUuid && !identity.userId) {
-            // TODO 
-            return NOT_FOUND
+            return null;
         }
         return await editRoomMemberDisplayName(identity, roomId, name);
     });
@@ -135,14 +126,13 @@ export const claimItemRpc = createServerFn({ method: 'POST' })
         console.log("someone is trying to claim");
         const request = getRequest();
         const identity = await parseRoomIdentity(request, roomId);
+        if (!identity.guestUuid && !identity.userId) {
+            return null;
+        }
         const member = await getRoomMembership(identity, roomId);
         if (!member) {
             console.error('user is not a member of this room');
             return null;
-        }
-        if (!identity.guestUuid && !identity.userId) {
-            // TODO 
-            return NOT_FOUND
         }
         return await claimItem({ roomId, identity, receiptItemId, roomMemberId: member.id, newQuantity: quantity });
     });

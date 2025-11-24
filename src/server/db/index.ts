@@ -20,4 +20,5 @@ export const db = drizzle(client, {
 
 export * from './schema';
 export * from './auth-schema';
+export * as authSchema from './auth-schema';
 export type { ReceiptSelect, ReceiptInsert } from './schema';

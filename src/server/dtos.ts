@@ -1,4 +1,4 @@
-import { ReceiptEntityWithItems, ReceiptItemSelect } from "./db/schema";
+import { ClaimSelect, ReceiptEntityWithItems, ReceiptItemSelect, RoomSelect } from "./db/schema";
 import { getAllReceiptInfo } from "./get-receipt/repository";
 
 export type ReceiptItemDto = {
@@ -63,6 +63,12 @@ export const receiptItemEntityToDtoHelper = (item: ReceiptItemSelect) => {
         price: parseFloat(item.price),
         quantity: parseFloat(item.quantity),
     }
+}
+
+export type FullRoomInfoDto = RoomSelect & {
+    receipt: ReceiptDto;
+    claims: ClaimSelect[];
+    members: RoomMemberDto[];
 }
 
 export type RoomMemberDto = {

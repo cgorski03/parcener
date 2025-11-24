@@ -58,12 +58,12 @@ export function useClaimItem(myMembershipId: string) {
             claimItemRpc({ data: { roomId, receiptItemId, quantity } });
             return { previousRoom };
         },
-        onError: (err, newTodo, onMutateResult) => {
+        onError: (_, newTodo, onMutateResult) => {
             const previousRoom = (onMutateResult as { previousRoom: FullRoomInfo }).previousRoom;
             // If server fails, roll back
             queryClient.setQueryData(['room', newTodo.roomId], previousRoom);
         },
-        onSettled: (data, error, variables) => {
+        onSettled: (_, __, variables) => {
             // Always refetch after error or success to ensure sync
             queryClient.invalidateQueries({ queryKey: ['room', variables.roomId] });
         },

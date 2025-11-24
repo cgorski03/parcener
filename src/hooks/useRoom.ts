@@ -1,4 +1,4 @@
-import { createRoomRpc, FullRoomInfo, getRoomPulseRpc } from "@/server/room/room-rpc";
+import { createRoomRpc, getRoomPulseRpc } from "@/server/room/room-rpc";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const RoomQueryKeys = {
@@ -7,7 +7,7 @@ export const RoomQueryKeys = {
 };
 
 // To optimize performance, this returns only a subset of ALL The room information - it will get the members, room object and claims
-export const useGetRoomPulse = (initialData: FullRoomInfo) => {
+export const useGetRoomPulse = (initialData: FullRoomInfoDto) => {
     const _id = initialData.id;
     const queryClient = useQueryClient();
 
@@ -17,7 +17,7 @@ export const useGetRoomPulse = (initialData: FullRoomInfo) => {
         refetchInterval: 3000,
 
         queryFn: async ({ queryKey }) => {
-            const currentCache = queryClient.getQueryData<FullRoomInfo>(queryKey);
+            const currentCache = queryClient.getQueryData<FullRoomInfoDto>(queryKey);
 
             // 3. Calculate Since
             const lastSync = currentCache?.updatedAt ?? null;
