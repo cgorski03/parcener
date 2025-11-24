@@ -41,7 +41,7 @@ export async function processReceipt(db: DbType, receiptId: string, imageSource:
             return;
         }
         const imageObj = await image.arrayBuffer();
-        const { text, providerMetadata } = await requestAiProcessingHelper(db, ai, imageObj);
+        const { text, providerMetadata } = await requestAiProcessingHelper(ai, imageObj);
         rawResponse = text;
         if (providerMetadata) {
             metadata = parseProviderMetadata(providerMetadata);
@@ -106,7 +106,7 @@ const requestAiProcessingHelper = async (ai: GoogleGenerativeAIProvider, imageBu
 export async function processingQueueHandler(db: DbType, batch: MessageBatch<ReceiptJob>, env: Env, _: ExecutionContext) {
     for (const message of batch.messages) {
         try {
-            processReceipt(db, message.body.receiptId, env.parcener_receipt_images);
+            await processReceipt(db, message.body.receiptId, env.parcener_receipt_images);
             message.ack()
         } catch (error) {
             console.error('Queue job failed:', error)

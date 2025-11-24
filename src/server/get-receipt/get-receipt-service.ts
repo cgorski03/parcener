@@ -1,4 +1,3 @@
-import { getAllReceiptInfo } from "./repository";
 import { receiptEntityWithReferencesToDtoHelper, ReceiptDto } from "../dtos";
 import {
     NOT_FOUND,
@@ -12,11 +11,13 @@ import {
 } from "../response-types";
 import { isFailed, isProcessing, receiptNotFound } from "@/lib/receipt-utils";
 import { calculateItemTotal, moneyValuesEqual } from "../money-math";
+import { DbType, receipt } from "../db";
+import { eq } from "drizzle-orm";
 
 export type GetReceiptResponse = NotFoundResponse | ReceiptProcessingResponse | ReceiptProcessingFailedResponse | ReceiptDto;
 
-export async function getReceiptWithItems(receiptId: string): Promise<GetReceiptResponse> {
-    const receiptInformation = await getAllReceiptInfo(receiptId);
+export async function getReceiptWithItems(db: DbType, receiptId: string): Promise<GetReceiptResponse> {
+    const receiptInformation = await getReceiptWithItemsHelper(db, receiptId);
     if (!receiptInformation) {
         return NOT_FOUND;
     }
@@ -47,9 +48,9 @@ export type GetReceiptIsValidResponse = { success: true, receipt: ReceiptDto }
     | ReceiptSubtotalMismatchResponse
     | ReceiptGrandTotalMismatchResponse;
 
-export async function getReceiptIsValid(receiptId: string): Promise<GetReceiptIsValidResponse> {
+export async function getReceiptIsValid(db: DbType, receiptId: string): Promise<GetReceiptIsValidResponse> {
     // Will return true if a receipt is valid 
-    const receiptInformation = await getReceiptWithItems(receiptId);
+    const receiptInformation = await getReceiptWithItems(db, receiptId);
 
     if (receiptNotFound(receiptInformation) || !receiptInformation) {
         // Not found
@@ -82,4 +83,15 @@ export async function getReceiptIsValid(receiptId: string): Promise<GetReceiptIs
         }
     };
     return { success: true, receipt: receiptInformation }
+}
+
+
+async function getReceiptWithItemsHelper(db: DbType, receiptId: string) {
+    return await db.query.receipt.findFirst({
+        where: eq(receipt.id, receiptId),
+        with: {
+            items: true,
+            processingInfo: true,
+        }
+    })
 }

@@ -52,6 +52,6 @@ export default {
     // The queue will handle the processing of receipts
     async queue(batch: MessageBatch<ReceiptJob>, env: Env, ctx: ExecutionContext) {
         const db = getDb(env);
-        processingQueueHandler(db, batch, env, ctx);
+        await processingQueueHandler(db, batch, env, ctx);
     }
 }
