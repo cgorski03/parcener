@@ -27,6 +27,7 @@ export async function createProcessingError(db: DbType, request: {
     model?: string,
     processingTokens?: number,
 }, err: Error | unknown) {
+    console.log('Creating processing error record for ', request.runId);
     await db.update(receiptProcessingInformation).set({
         endedAt: new Date(),
         processingStatus: 'failed',

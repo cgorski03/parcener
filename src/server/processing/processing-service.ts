@@ -13,7 +13,7 @@ import {
 import { DbType, receipt } from "../db";
 import { google } from "./llm";
 
-const RECEIPT_PROCESSING_MODEL = 'gemini-2.5-pro';
+const RECEIPT_PROCESSING_MODEL = 'gemini-2.5-flash';
 
 export async function createReceiptStub(db: DbType, receiptId: string, userId: string) {
     await db.insert(receipt).values({
@@ -30,7 +30,7 @@ export async function processReceipt(db: DbType, receiptId: string, imageSource:
     let rawResponse: string | null = null;
 
     try {
-        // Get the image from R3
+        // Get the image from R2
         const image = await imageSource.get(receiptId);
         if (!image) {
             const error = 'Image not found at source';
@@ -87,6 +87,7 @@ export async function processReceipt(db: DbType, receiptId: string, imageSource:
 const requestAiProcessingHelper = async (ai: GoogleGenerativeAIProvider, imageBuffer: ArrayBuffer) => {
     const { text, providerMetadata } = await generateText({
         model: ai(RECEIPT_PROCESSING_MODEL),
+        temperature: .3,
         system: RECEIPT_PARSE_PROMPT,
         messages: [
             {

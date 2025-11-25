@@ -74,7 +74,7 @@ function ReceiptItemSheet(props: {
 
     return (
         <Sheet
-            open={isCreate || !!item}
+            open={isCreate || !!item && showSheet}
             onOpenChange={(open) => !open && closeSheet()}
         >
             <SheetContent
