@@ -1,15 +1,14 @@
-import { z } from 'zod';
-
+import { z } from 'zod'
 
 export class ParseError extends Error {
-    constructor(
-        message: string,
-        public readonly rawText: string,
-        public readonly cause?: unknown
-    ) {
-        super(message);
-        this.name = 'ParseError';
-    }
+  constructor(
+    message: string,
+    public readonly rawText: string,
+    public readonly cause?: unknown,
+  ) {
+    super(message)
+    this.name = 'ParseError'
+  }
 }
 
 /**
@@ -17,156 +16,153 @@ export class ParseError extends Error {
  * markdown formatting, extra text, or other artifacts
  */
 export function parseStructuredReceiptResponse<T>(
-    rawText: string,
-    schema: z.ZodSchema<T>
+  rawText: string,
+  schema: z.ZodSchema<T>,
 ): T {
-    const cleanedText = cleanJsonText(rawText);
+  const cleanedText = cleanJsonText(rawText)
 
-    // Try multiple parsing strategies
-    const strategies = [
-        () => parseJsonDirect(cleanedText),
-        () => extractJsonFromMarkdown(rawText),
-        () => extractJsonBetweenBraces(rawText),
-        () => extractJsonFromCodeBlock(rawText),
-    ];
+  // Try multiple parsing strategies
+  const strategies = [
+    () => parseJsonDirect(cleanedText),
+    () => extractJsonFromMarkdown(rawText),
+    () => extractJsonBetweenBraces(rawText),
+    () => extractJsonFromCodeBlock(rawText),
+  ]
 
-    let lastError: Error | null = null;
+  let lastError: Error | null = null
 
-    for (const strategy of strategies) {
-        try {
-            const parsed = strategy();
-            if (parsed) {
-                // Validate against schema
-                const result = schema.safeParse(parsed);
-                if (result.success) {
-                    return result.data;
-                }
-                lastError = new Error(
-                    `Validation failed: ${formatZodError(result.error)}`
-                );
-            }
-        } catch (error) {
-            lastError = error as Error;
-            continue;
+  for (const strategy of strategies) {
+    try {
+      const parsed = strategy()
+      if (parsed) {
+        // Validate against schema
+        const result = schema.safeParse(parsed)
+        if (result.success) {
+          return result.data
         }
+        lastError = new Error(
+          `Validation failed: ${formatZodError(result.error)}`,
+        )
+      }
+    } catch (error) {
+      lastError = error as Error
+      continue
     }
+  }
 
-    throw new ParseError(
-        `Failed to parse JSON from response. Last error: ${lastError?.message}`,
-        rawText,
-        lastError
-    );
+  throw new ParseError(
+    `Failed to parse JSON from response. Last error: ${lastError?.message}`,
+    rawText,
+    lastError,
+  )
 }
 
 function cleanJsonText(text: string): string {
-    return text
-        .trim()
-        .replace(/^\uFEFF/, '') // Remove BOM
-        .replace(/[\u0000-\u001F\u007F-\u009F]/g, ''); // Remove control characters
+  return text
+    .trim()
+    .replace(/^\uFEFF/, '') // Remove BOM
+    .replace(/[\u0000-\u001F\u007F-\u009F]/g, '') // Remove control characters
 }
 
 function parseJsonDirect(text: string): unknown {
-    try {
-        return JSON.parse(text);
-    } catch {
-        return null;
-    }
+  try {
+    return JSON.parse(text)
+  } catch {
+    return null
+  }
 }
 
 function extractJsonFromMarkdown(text: string): unknown {
-    // Match ```json ... ``` or ``` ... ```
-    const jsonBlockRegex = /```(?:json)?\s*\n?([\s\S]*?)\n?```/;
-    const match = text.match(jsonBlockRegex);
+  // Match ```json ... ``` or ``` ... ```
+  const jsonBlockRegex = /```(?:json)?\s*\n?([\s\S]*?)\n?```/
+  const match = text.match(jsonBlockRegex)
 
-    if (match?.[1]) {
-        return parseJsonDirect(match[1]);
-    }
-    return null;
+  if (match?.[1]) {
+    return parseJsonDirect(match[1])
+  }
+  return null
 }
 
 function extractJsonBetweenBraces(text: string): unknown {
-    // Find first { and last } to extract JSON object
-    const firstBrace = text.indexOf('{');
-    const lastBrace = text.lastIndexOf('}');
+  // Find first { and last } to extract JSON object
+  const firstBrace = text.indexOf('{')
+  const lastBrace = text.lastIndexOf('}')
 
-    if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
-        const extracted = text.slice(firstBrace, lastBrace + 1);
-        return parseJsonDirect(extracted);
-    }
-    return null;
+  if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+    const extracted = text.slice(firstBrace, lastBrace + 1)
+    return parseJsonDirect(extracted)
+  }
+  return null
 }
 
 function extractJsonFromCodeBlock(text: string): unknown {
-    // Try to extract from various code block formats
-    const patterns = [
-        /```json\n([\s\S]*?)\n```/,
-        /```\n([\s\S]*?)\n```/,
-        /`([\s\S]*?)`/,
-    ];
+  // Try to extract from various code block formats
+  const patterns = [
+    /```json\n([\s\S]*?)\n```/,
+    /```\n([\s\S]*?)\n```/,
+    /`([\s\S]*?)`/,
+  ]
 
-    for (const pattern of patterns) {
-        const match = text.match(pattern);
-        if (match?.[1]) {
-            const result = parseJsonDirect(match[1]);
-            if (result) return result;
-        }
+  for (const pattern of patterns) {
+    const match = text.match(pattern)
+    if (match?.[1]) {
+      const result = parseJsonDirect(match[1])
+      if (result) return result
     }
-    return null;
+  }
+  return null
 }
 
 function formatZodError(error: z.ZodError): string {
-    return error.issues
-        .map((e) => {
-            const path = e.path.length > 0 ? e.path.join('.') : 'root';
-            return `${path}: ${e.message}`;
-        })
-        .join('; ');
+  return error.issues
+    .map((e) => {
+      const path = e.path.length > 0 ? e.path.join('.') : 'root'
+      return `${path}: ${e.message}`
+    })
+    .join('; ')
 }
 
-
-
 export interface UsageMetadata {
-    promptTokenCount: number;
-    candidatesTokenCount: number;
-    totalTokenCount: number;
+  promptTokenCount: number
+  candidatesTokenCount: number
+  totalTokenCount: number
 }
 
 export function parseProviderMetadata(
-    providerMetadata: unknown
+  providerMetadata: unknown,
 ): UsageMetadata | null {
-    if (!providerMetadata || typeof providerMetadata !== "object") {
-        return null;
-    }
+  if (!providerMetadata || typeof providerMetadata !== 'object') {
+    return null
+  }
 
-    const data = providerMetadata as Record<string, unknown>;
-    const google = data.google;
+  const data = providerMetadata as Record<string, unknown>
+  const google = data.google
 
-    if (!google || typeof google !== "object") {
-        return null;
-    }
+  if (!google || typeof google !== 'object') {
+    return null
+  }
 
-    const googleData = google as Record<string, unknown>;
-    const usage = googleData.usageMetadata;
+  const googleData = google as Record<string, unknown>
+  const usage = googleData.usageMetadata
 
-    if (!usage || typeof usage !== "object") {
-        return null;
-    }
+  if (!usage || typeof usage !== 'object') {
+    return null
+  }
 
-    const usageData = usage as Record<string, unknown>;
+  const usageData = usage as Record<string, unknown>
 
-    // Validate all required fields are numbers
-    if (
-        typeof usageData.promptTokenCount !== "number" ||
-        typeof usageData.candidatesTokenCount !== "number" ||
-        typeof usageData.totalTokenCount !== "number"
-    ) {
-        return null;
-    }
+  // Validate all required fields are numbers
+  if (
+    typeof usageData.promptTokenCount !== 'number' ||
+    typeof usageData.candidatesTokenCount !== 'number' ||
+    typeof usageData.totalTokenCount !== 'number'
+  ) {
+    return null
+  }
 
-    return {
-        promptTokenCount: usageData.promptTokenCount,
-        candidatesTokenCount: usageData.candidatesTokenCount,
-        totalTokenCount: usageData.totalTokenCount,
-    };
+  return {
+    promptTokenCount: usageData.promptTokenCount,
+    candidatesTokenCount: usageData.candidatesTokenCount,
+    totalTokenCount: usageData.totalTokenCount,
+  }
 }
-

@@ -4,12 +4,12 @@ import { routeTree } from './routeTree.gen'
 
 // Create a new router instance
 export const getRouter = () => {
-    const router = createRouter({
-        routeTree,
-        scrollRestoration: true,
-        defaultPreloadStaleTime: 0,
-        notFoundMode: 'fuzzy'
-    })
+  const router = createRouter({
+    routeTree,
+    scrollRestoration: true,
+    defaultPreloadStaleTime: 0,
+    notFoundMode: 'fuzzy',
+  })
 
-    return router
+  return router
 }

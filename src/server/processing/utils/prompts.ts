@@ -45,4 +45,4 @@ CORRECT OUTPUT:
 WRONG OUTPUT:
 {"rawText": "Happy Hour (50.00%) -$15.92", "interpreted": "Happy Hour Discount", "price": -15.92, "quantity": 1}
 
-Metadata: Only include clearly visible fields.`;
+Metadata: Only include clearly visible fields.`

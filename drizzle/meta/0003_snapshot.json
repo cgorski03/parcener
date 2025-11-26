@@ -94,12 +94,8 @@
           "name": "account_user_id_user_id_fk",
           "tableFrom": "account",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -170,12 +166,8 @@
           "name": "session_user_id_user_id_fk",
           "tableFrom": "session",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -185,9 +177,7 @@
         "session_token_unique": {
           "name": "session_token_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "token"
-          ]
+          "columns": ["token"]
         }
       },
       "policies": {},
@@ -251,9 +241,7 @@
         "user_email_unique": {
           "name": "user_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       },
       "policies": {},
@@ -361,12 +349,8 @@
           "name": "claim_room_id_room_id_fk",
           "tableFrom": "claim",
           "tableTo": "room",
-          "columnsFrom": [
-            "room_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["room_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -374,12 +358,8 @@
           "name": "claim_member_id_room_member_id_fk",
           "tableFrom": "claim",
           "tableTo": "room_member",
-          "columnsFrom": [
-            "member_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["member_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -387,12 +367,8 @@
           "name": "claim_receipt_item_id_receipt_item_id_fk",
           "tableFrom": "claim",
           "tableTo": "receipt_item",
-          "columnsFrom": [
-            "receipt_item_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["receipt_item_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -402,11 +378,7 @@
         "claim_room_id_member_id_receipt_item_id_unique": {
           "name": "claim_room_id_member_id_receipt_item_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "room_id",
-            "member_id",
-            "receipt_item_id"
-          ]
+          "columns": ["room_id", "member_id", "receipt_item_id"]
         }
       },
       "policies": {},
@@ -484,12 +456,8 @@
           "name": "receipt_user_id_user_id_fk",
           "tableFrom": "receipt",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -549,12 +517,8 @@
           "name": "receipt_item_receipt_id_receipt_id_fk",
           "tableFrom": "receipt_item",
           "tableTo": "receipt",
-          "columnsFrom": [
-            "receipt_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["receipt_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -634,12 +598,8 @@
           "name": "receipt_processing_information_receipt_id_receipt_id_fk",
           "tableFrom": "receipt_processing_information",
           "tableTo": "receipt",
-          "columnsFrom": [
-            "receipt_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["receipt_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -693,12 +653,8 @@
           "name": "room_receipt_id_receipt_id_fk",
           "tableFrom": "room",
           "tableTo": "receipt",
-          "columnsFrom": [
-            "receipt_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["receipt_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -706,12 +662,8 @@
           "name": "room_user_id_user_id_fk",
           "tableFrom": "room",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -771,12 +723,8 @@
           "name": "room_member_room_id_room_id_fk",
           "tableFrom": "room_member",
           "tableTo": "room",
-          "columnsFrom": [
-            "room_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["room_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -792,11 +740,7 @@
     "public.processing_status": {
       "name": "processing_status",
       "schema": "public",
-      "values": [
-        "processing",
-        "failed",
-        "success"
-      ]
+      "values": ["processing", "failed", "success"]
     }
   },
   "schemas": {},
