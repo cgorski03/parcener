@@ -11,7 +11,7 @@ export type CreateRoomRequest = {
 }
 
 export async function CreateRoom(db: DbType, receiptId: string, userId: string) {
-    const validResponse = await getReceiptIsValid(db, receiptId);
+    const validResponse = await getReceiptIsValid(db, receiptId, userId);
     if (!("success" in validResponse)) {
         return validResponse;
     }

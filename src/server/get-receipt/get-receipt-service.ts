@@ -12,12 +12,12 @@ import {
 import { isFailed, isProcessing, receiptNotFound } from "@/lib/receipt-utils";
 import { calculateItemTotal, moneyValuesEqual } from "../money-math";
 import { DbType, receipt } from "../db";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 export type GetReceiptResponse = NotFoundResponse | ReceiptProcessingResponse | ReceiptProcessingFailedResponse | ReceiptDto;
 
-export async function getReceiptWithItems(db: DbType, receiptId: string): Promise<GetReceiptResponse> {
-    const receiptInformation = await getReceiptWithItemsHelper(db, receiptId);
+export async function getReceiptWithItems(db: DbType, receiptId: string, userId: string): Promise<GetReceiptResponse> {
+    const receiptInformation = await getReceiptWithItemsHelper(db, receiptId, userId);
     if (!receiptInformation) {
         return NOT_FOUND;
     }
@@ -48,9 +48,9 @@ export type GetReceiptIsValidResponse = { success: true, receipt: ReceiptDto }
     | ReceiptSubtotalMismatchResponse
     | ReceiptGrandTotalMismatchResponse;
 
-export async function getReceiptIsValid(db: DbType, receiptId: string): Promise<GetReceiptIsValidResponse> {
+export async function getReceiptIsValid(db: DbType, receiptId: string, userId: string): Promise<GetReceiptIsValidResponse> {
     // Will return true if a receipt is valid 
-    const receiptInformation = await getReceiptWithItems(db, receiptId);
+    const receiptInformation = await getReceiptWithItems(db, receiptId, userId);
 
     if (receiptNotFound(receiptInformation) || !receiptInformation) {
         // Not found
@@ -86,9 +86,9 @@ export async function getReceiptIsValid(db: DbType, receiptId: string): Promise<
 }
 
 
-async function getReceiptWithItemsHelper(db: DbType, receiptId: string) {
+async function getReceiptWithItemsHelper(db: DbType, receiptId: string, userId: string) {
     return await db.query.receipt.findFirst({
-        where: eq(receipt.id, receiptId),
+        where: and(eq(receipt.id, receiptId), eq(receipt.userId, userId)),
         with: {
             items: true,
             processingInfo: true,
