@@ -57,7 +57,7 @@ export async function processReceipt(db: DbType, receiptId: string, imageSource:
                 message: error.message,
                 rawText: error.rawText.slice(0, 500),
             });
-            createProcessingError(db, {
+            await createProcessingError(db, {
                 runId,
                 model: RECEIPT_PROCESSING_MODEL,
                 processingTokens: metadata?.totalTokenCount,
@@ -67,14 +67,14 @@ export async function processReceipt(db: DbType, receiptId: string, imageSource:
         }
         if (error instanceof z.ZodError) {
             console.error('Receipt validation failed:', error.issues);
-            createProcessingError(db, {
+            await createProcessingError(db, {
                 runId,
                 model: RECEIPT_PROCESSING_MODEL,
                 processingTokens: metadata?.totalTokenCount,
             }, error);
             throw new Error('Receipt data is invalid or incomplete.');
         }
-        createProcessingError(db, {
+        await createProcessingError(db, {
             runId,
             model: RECEIPT_PROCESSING_MODEL,
             processingTokens: metadata?.totalTokenCount,
