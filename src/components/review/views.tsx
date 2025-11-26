@@ -109,7 +109,7 @@ export function ReceiptEditorView({ receipt }: ReceiptEditorProps) {
         const response = await createReceiptRoom(receipt.id);
         if ('success' in response) {
             router.navigate({
-                to: '/parce/$roomId',
+                to: '/receipt/parce/$roomId',
                 params: { roomId: response.room.id }
             });
         }

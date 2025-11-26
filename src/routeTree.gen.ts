@@ -12,12 +12,10 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as UploadRouteImport } from './routes/upload'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ReceiptRouteComponentRouteImport } from './routes/receipt/RouteComponent'
-import { Route as ParceNotFoundRouteImport } from './routes/parce/not-found'
-import { Route as ParceRoomIdRouteImport } from './routes/parce/$roomId'
-import { Route as ReceiptReviewNotFoundRouteImport } from './routes/receipt/review.not-found'
-import { Route as ReceiptReviewReceiptIdRouteImport } from './routes/receipt/review.$receiptId'
-import { Route as ReceiptRouteComponent1RouteImport } from './routes/receipt/RouteComponent.1'
+import { Route as ReceiptReviewRouteRouteImport } from './routes/receipt/review/route'
+import { Route as ReceiptParceRouteRouteImport } from './routes/receipt/parce/route'
+import { Route as ReceiptReviewReceiptIdRouteImport } from './routes/receipt/review/$receiptId'
+import { Route as ReceiptParceRoomIdRouteImport } from './routes/receipt/parce/$roomId'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
 const UploadRoute = UploadRouteImport.update({
@@ -35,35 +33,25 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ReceiptRouteComponentRoute = ReceiptRouteComponentRouteImport.update({
-  id: '/receipt/RouteComponent',
-  path: '/receipt/RouteComponent',
+const ReceiptReviewRouteRoute = ReceiptReviewRouteRouteImport.update({
+  id: '/receipt/review',
+  path: '/receipt/review',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ParceNotFoundRoute = ParceNotFoundRouteImport.update({
-  id: '/parce/not-found',
-  path: '/parce/not-found',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ParceRoomIdRoute = ParceRoomIdRouteImport.update({
-  id: '/parce/$roomId',
-  path: '/parce/$roomId',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ReceiptReviewNotFoundRoute = ReceiptReviewNotFoundRouteImport.update({
-  id: '/receipt/review/not-found',
-  path: '/receipt/review/not-found',
+const ReceiptParceRouteRoute = ReceiptParceRouteRouteImport.update({
+  id: '/receipt/parce',
+  path: '/receipt/parce',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ReceiptReviewReceiptIdRoute = ReceiptReviewReceiptIdRouteImport.update({
-  id: '/receipt/review/$receiptId',
-  path: '/receipt/review/$receiptId',
-  getParentRoute: () => rootRouteImport,
+  id: '/$receiptId',
+  path: '/$receiptId',
+  getParentRoute: () => ReceiptReviewRouteRoute,
 } as any)
-const ReceiptRouteComponent1Route = ReceiptRouteComponent1RouteImport.update({
-  id: '/1',
-  path: '/1',
-  getParentRoute: () => ReceiptRouteComponentRoute,
+const ReceiptParceRoomIdRoute = ReceiptParceRoomIdRouteImport.update({
+  id: '/$roomId',
+  path: '/$roomId',
+  getParentRoute: () => ReceiptParceRouteRoute,
 } as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
@@ -75,38 +63,32 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/upload': typeof UploadRoute
-  '/parce/$roomId': typeof ParceRoomIdRoute
-  '/parce/not-found': typeof ParceNotFoundRoute
-  '/receipt/RouteComponent': typeof ReceiptRouteComponentRouteWithChildren
+  '/receipt/parce': typeof ReceiptParceRouteRouteWithChildren
+  '/receipt/review': typeof ReceiptReviewRouteRouteWithChildren
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/receipt/RouteComponent/1': typeof ReceiptRouteComponent1Route
+  '/receipt/parce/$roomId': typeof ReceiptParceRoomIdRoute
   '/receipt/review/$receiptId': typeof ReceiptReviewReceiptIdRoute
-  '/receipt/review/not-found': typeof ReceiptReviewNotFoundRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/upload': typeof UploadRoute
-  '/parce/$roomId': typeof ParceRoomIdRoute
-  '/parce/not-found': typeof ParceNotFoundRoute
-  '/receipt/RouteComponent': typeof ReceiptRouteComponentRouteWithChildren
+  '/receipt/parce': typeof ReceiptParceRouteRouteWithChildren
+  '/receipt/review': typeof ReceiptReviewRouteRouteWithChildren
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/receipt/RouteComponent/1': typeof ReceiptRouteComponent1Route
+  '/receipt/parce/$roomId': typeof ReceiptParceRoomIdRoute
   '/receipt/review/$receiptId': typeof ReceiptReviewReceiptIdRoute
-  '/receipt/review/not-found': typeof ReceiptReviewNotFoundRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/upload': typeof UploadRoute
-  '/parce/$roomId': typeof ParceRoomIdRoute
-  '/parce/not-found': typeof ParceNotFoundRoute
-  '/receipt/RouteComponent': typeof ReceiptRouteComponentRouteWithChildren
+  '/receipt/parce': typeof ReceiptParceRouteRouteWithChildren
+  '/receipt/review': typeof ReceiptReviewRouteRouteWithChildren
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/receipt/RouteComponent/1': typeof ReceiptRouteComponent1Route
+  '/receipt/parce/$roomId': typeof ReceiptParceRoomIdRoute
   '/receipt/review/$receiptId': typeof ReceiptReviewReceiptIdRoute
-  '/receipt/review/not-found': typeof ReceiptReviewNotFoundRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -114,49 +96,40 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/upload'
-    | '/parce/$roomId'
-    | '/parce/not-found'
-    | '/receipt/RouteComponent'
+    | '/receipt/parce'
+    | '/receipt/review'
     | '/api/auth/$'
-    | '/receipt/RouteComponent/1'
+    | '/receipt/parce/$roomId'
     | '/receipt/review/$receiptId'
-    | '/receipt/review/not-found'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/login'
     | '/upload'
-    | '/parce/$roomId'
-    | '/parce/not-found'
-    | '/receipt/RouteComponent'
+    | '/receipt/parce'
+    | '/receipt/review'
     | '/api/auth/$'
-    | '/receipt/RouteComponent/1'
+    | '/receipt/parce/$roomId'
     | '/receipt/review/$receiptId'
-    | '/receipt/review/not-found'
   id:
     | '__root__'
     | '/'
     | '/login'
     | '/upload'
-    | '/parce/$roomId'
-    | '/parce/not-found'
-    | '/receipt/RouteComponent'
+    | '/receipt/parce'
+    | '/receipt/review'
     | '/api/auth/$'
-    | '/receipt/RouteComponent/1'
+    | '/receipt/parce/$roomId'
     | '/receipt/review/$receiptId'
-    | '/receipt/review/not-found'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LoginRoute: typeof LoginRoute
   UploadRoute: typeof UploadRoute
-  ParceRoomIdRoute: typeof ParceRoomIdRoute
-  ParceNotFoundRoute: typeof ParceNotFoundRoute
-  ReceiptRouteComponentRoute: typeof ReceiptRouteComponentRouteWithChildren
+  ReceiptParceRouteRoute: typeof ReceiptParceRouteRouteWithChildren
+  ReceiptReviewRouteRoute: typeof ReceiptReviewRouteRouteWithChildren
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
-  ReceiptReviewReceiptIdRoute: typeof ReceiptReviewReceiptIdRoute
-  ReceiptReviewNotFoundRoute: typeof ReceiptReviewNotFoundRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -182,47 +155,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/receipt/RouteComponent': {
-      id: '/receipt/RouteComponent'
-      path: '/receipt/RouteComponent'
-      fullPath: '/receipt/RouteComponent'
-      preLoaderRoute: typeof ReceiptRouteComponentRouteImport
+    '/receipt/review': {
+      id: '/receipt/review'
+      path: '/receipt/review'
+      fullPath: '/receipt/review'
+      preLoaderRoute: typeof ReceiptReviewRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/parce/not-found': {
-      id: '/parce/not-found'
-      path: '/parce/not-found'
-      fullPath: '/parce/not-found'
-      preLoaderRoute: typeof ParceNotFoundRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/parce/$roomId': {
-      id: '/parce/$roomId'
-      path: '/parce/$roomId'
-      fullPath: '/parce/$roomId'
-      preLoaderRoute: typeof ParceRoomIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/receipt/review/not-found': {
-      id: '/receipt/review/not-found'
-      path: '/receipt/review/not-found'
-      fullPath: '/receipt/review/not-found'
-      preLoaderRoute: typeof ReceiptReviewNotFoundRouteImport
+    '/receipt/parce': {
+      id: '/receipt/parce'
+      path: '/receipt/parce'
+      fullPath: '/receipt/parce'
+      preLoaderRoute: typeof ReceiptParceRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/receipt/review/$receiptId': {
       id: '/receipt/review/$receiptId'
-      path: '/receipt/review/$receiptId'
+      path: '/$receiptId'
       fullPath: '/receipt/review/$receiptId'
       preLoaderRoute: typeof ReceiptReviewReceiptIdRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ReceiptReviewRouteRoute
     }
-    '/receipt/RouteComponent/1': {
-      id: '/receipt/RouteComponent/1'
-      path: '/1'
-      fullPath: '/receipt/RouteComponent/1'
-      preLoaderRoute: typeof ReceiptRouteComponent1RouteImport
-      parentRoute: typeof ReceiptRouteComponentRoute
+    '/receipt/parce/$roomId': {
+      id: '/receipt/parce/$roomId'
+      path: '/$roomId'
+      fullPath: '/receipt/parce/$roomId'
+      preLoaderRoute: typeof ReceiptParceRoomIdRouteImport
+      parentRoute: typeof ReceiptParceRouteRoute
     }
     '/api/auth/$': {
       id: '/api/auth/$'
@@ -234,29 +193,35 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface ReceiptRouteComponentRouteChildren {
-  ReceiptRouteComponent1Route: typeof ReceiptRouteComponent1Route
+interface ReceiptParceRouteRouteChildren {
+  ReceiptParceRoomIdRoute: typeof ReceiptParceRoomIdRoute
 }
 
-const ReceiptRouteComponentRouteChildren: ReceiptRouteComponentRouteChildren = {
-  ReceiptRouteComponent1Route: ReceiptRouteComponent1Route,
+const ReceiptParceRouteRouteChildren: ReceiptParceRouteRouteChildren = {
+  ReceiptParceRoomIdRoute: ReceiptParceRoomIdRoute,
 }
 
-const ReceiptRouteComponentRouteWithChildren =
-  ReceiptRouteComponentRoute._addFileChildren(
-    ReceiptRouteComponentRouteChildren,
-  )
+const ReceiptParceRouteRouteWithChildren =
+  ReceiptParceRouteRoute._addFileChildren(ReceiptParceRouteRouteChildren)
+
+interface ReceiptReviewRouteRouteChildren {
+  ReceiptReviewReceiptIdRoute: typeof ReceiptReviewReceiptIdRoute
+}
+
+const ReceiptReviewRouteRouteChildren: ReceiptReviewRouteRouteChildren = {
+  ReceiptReviewReceiptIdRoute: ReceiptReviewReceiptIdRoute,
+}
+
+const ReceiptReviewRouteRouteWithChildren =
+  ReceiptReviewRouteRoute._addFileChildren(ReceiptReviewRouteRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LoginRoute: LoginRoute,
   UploadRoute: UploadRoute,
-  ParceRoomIdRoute: ParceRoomIdRoute,
-  ParceNotFoundRoute: ParceNotFoundRoute,
-  ReceiptRouteComponentRoute: ReceiptRouteComponentRouteWithChildren,
+  ReceiptParceRouteRoute: ReceiptParceRouteRouteWithChildren,
+  ReceiptReviewRouteRoute: ReceiptReviewRouteRouteWithChildren,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
-  ReceiptReviewReceiptIdRoute: ReceiptReviewReceiptIdRoute,
-  ReceiptReviewNotFoundRoute: ReceiptReviewNotFoundRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

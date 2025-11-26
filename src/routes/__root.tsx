@@ -3,6 +3,8 @@ import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import appCss from '../styles.css?url'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { GeneralNotFound } from '@/components/layout/not-found'
+
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -11,6 +13,7 @@ const queryClient = new QueryClient({
         },
     },
 })
+
 export const Route = createRootRoute({
     head: () => ({
         meta: [
@@ -32,8 +35,8 @@ export const Route = createRootRoute({
             },
         ],
     }),
-
     shellComponent: RootDocument,
+    notFoundComponent: GeneralNotFound,
 })
 
 function RootDocument({ children }: { children: React.ReactNode }) {
@@ -63,3 +66,4 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         </html>
     )
 }
+export const NotFoundComponent = GeneralNotFound;

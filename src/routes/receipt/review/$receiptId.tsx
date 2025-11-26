@@ -3,14 +3,19 @@ import { getReceiptRpc } from '@/server/get-receipt/rpc-get-receipt'
 import { isFailed, isProcessing, receiptNotFound } from '@/lib/receipt-utils'
 import { useGetReceiptReview } from '@/hooks/useGetReceipt'
 import { ErrorReceiptView, ProcessingReceiptView, ReceiptEditorView } from '@/components/review/views';
+import { ReviewNotFound } from '@/components/layout/not-found';
 
 export const Route = createFileRoute('/receipt/review/$receiptId')({
     loader: async ({ params }) => {
         const receipt = await getReceiptRpc({ data: params.receiptId });
-        if (!receipt) throw notFound();
+        if (!receipt || receiptNotFound(receipt)) {
+            console.log('Thorwing the not found');
+            throw notFound();
+        }
         return receipt;
     },
     component: RouteComponent,
+    notFoundComponent: ReviewNotFound,
 });
 
 function RouteComponent() {
