@@ -5,8 +5,7 @@ import {
 import { processingQueueHandler } from './processing/processing-service'
 import { ReceiptJob } from './processing/types'
 import { DbType, getDb } from './db'
-import { createAuth } from './auth'
-import { Auth } from 'better-auth'
+import { ApplicationAuthClient, createAuth } from './auth'
 
 // 1. Augment the context type so TS knows about Cloudflare
 declare module '@tanstack/react-start' {
@@ -18,7 +17,7 @@ declare module '@tanstack/react-start' {
                     ctx: ExecutionContext
                 }
                 db: DbType
-                auth: Auth
+                auth: ApplicationAuthClient
             }
         }
     }

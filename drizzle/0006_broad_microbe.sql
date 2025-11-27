@@ -1,0 +1,1 @@
+ALTER TABLE "user" ADD COLUMN "can_upload" boolean DEFAULT false;

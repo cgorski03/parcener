@@ -18,5 +18,6 @@ export const authConfig = {
                 input: false,
             },
         },
-    },
+    }
 } satisfies BetterAuthOptions;
+
