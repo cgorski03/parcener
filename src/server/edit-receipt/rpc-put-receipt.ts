@@ -6,28 +6,33 @@ import {
     finalizeReceiptTotals,
 } from './edit-receipt-service'
 import { createReceiptItemInputSchema, receiptItemDtoSchema, receiptTotalsSchema } from '../dtos'
+import { protectedFunctionMiddleware } from '../auth/protected-function'
 
 export const editReceiptItemRpc = createServerFn({ method: 'POST' })
+    .middleware([protectedFunctionMiddleware])
     .inputValidator(receiptItemDtoSchema)
     .handler(async ({ data: receipt, context }) => {
-        return editReceiptItem(context.db, receipt)
+        return editReceiptItem(context.db, receipt, context.user.id)
     })
 
 export const deleteReceiptItemRpc = createServerFn({ method: 'POST' })
+    .middleware([protectedFunctionMiddleware])
     .inputValidator(receiptItemDtoSchema)
     .handler(async ({ data: receipt, context }) => {
-        return deleteReceiptItem(context.db, receipt)
+        return deleteReceiptItem(context.db, receipt, context.user.id);
     })
 
 export const createReceiptItemRpc = createServerFn({ method: 'POST' })
+    .middleware([protectedFunctionMiddleware])
     .inputValidator(createReceiptItemInputSchema)
     .handler(async ({ data, context }) => {
         const { receiptItem, receiptId } = data
-        return createReceiptItem(context.db, receiptItem, receiptId)
+        return createReceiptItem(context.db, receiptItem, receiptId, context.user.id);
     })
 
 export const finalizeReceiptTotalsRpc = createServerFn({ method: 'POST' })
+    .middleware([protectedFunctionMiddleware])
     .inputValidator(receiptTotalsSchema)
     .handler(async ({ data: receipt, context }) => {
-        return finalizeReceiptTotals(context.db, receipt)
+        return finalizeReceiptTotals(context.db, receipt, context.user.id)
     })

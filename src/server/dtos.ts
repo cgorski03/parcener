@@ -13,10 +13,9 @@ export const receiptItemDtoSchema = z.object({
     quantity: z.number().positive(),
 })
 
+export const receiptIdSchema = z.string().uuid({ version: 'v4' });
 // For create operations where id can be null
-export const saveReceiptItemDtoSchema = receiptItemDtoSchema.extend({
-    id: z.string().uuid({ version: 'v4' }),
-})
+export const saveReceiptItemDtoSchema = receiptItemDtoSchema.extend(receiptIdSchema)
 
 export const receiptTotalsSchema = z.object({
     id: z.string().uuid(),
