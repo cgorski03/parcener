@@ -30,14 +30,13 @@ export async function getReceiptWithItems(
         receiptId,
         userId,
     )
-    if (!receiptInformation) {
+
+    if (!receiptInformation || receiptInformation.processingInfo.length === 0) {
         return NOT_FOUND
     }
-    if (
-        receiptInformation?.processingInfo.some(
-            (x) => x.processingStatus === 'processing',
-        )
-    ) {
+
+    if (receiptInformation?.processingInfo.some(
+        (x) => x.processingStatus === 'processing')) {
         return RECEIPT_PROCESSING
     }
 

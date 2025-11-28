@@ -50,6 +50,13 @@
       "when": 1764259784982,
       "tag": "0006_broad_microbe",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1764354094588,
+      "tag": "0007_serious_the_stranger",
+      "breakpoints": true
     }
   ]
 }
