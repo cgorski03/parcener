@@ -105,11 +105,11 @@ export const room = pgTable('room', {
         .notNull()
         .references(() => receipt.id, { onDelete: 'cascade' }),
     title: varchar('title', { length: 255 }),
-    createdBy: text('user_id')
+    createdBy: text('created_by')
         .notNull()
         .references(() => user.id, { onDelete: 'cascade' }),
-    createdAt: timestamp('created_at').defaultNow(),
-    updatedAt: timestamp('updated_at').defaultNow(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
 })
 export type RoomSelect = typeof room.$inferSelect
 
@@ -127,8 +127,8 @@ export const roomMember = pgTable('room_member', {
     // either a real user or a guestSession
     userId: text('user_id').references(() => user.id, { onDelete: 'cascade' }),
     guestUuid: uuid('guest_uuid'),
-    displayName: varchar('display_name', { length: 100 }),
-    joinedAt: timestamp('joined_at').defaultNow(),
+    displayName: varchar('display_name', { length: 63 }),
+    joinedAt: timestamp('joined_at').defaultNow().notNull(),
 })
 
 export type RoomMemberSelect = typeof roomMember.$inferSelect

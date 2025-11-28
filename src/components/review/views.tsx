@@ -69,7 +69,7 @@ export function ReceiptEditorView({ receipt }: ReceiptEditorProps) {
     const router = useRouter()
     // Validation Hook
     const { isError: receiptNotValid, isFetching: receiptValidFetching } =
-        useReceiptIsValid(receipt.id)
+        useReceiptIsValid(receipt.receiptId)
 
     // State initialization is now 100% type-safe
     const [receiptItems, setReceiptItems] = useState(receipt.items)
@@ -81,7 +81,7 @@ export function ReceiptEditorView({ receipt }: ReceiptEditorProps) {
         useState<ReceiptItemDto | null>(null)
 
     // Mutation Hooks
-    const { mutateAsync: editReceiptItem } = useEditReceiptItem(receipt.id)
+    const { mutateAsync: editReceiptItem } = useEditReceiptItem(receipt.receiptId)
     const { mutateAsync: deleteReceiptItem } = useDeleteReceiptItem()
     const { mutateAsync: createReceiptItem } = useCreateReceiptItem()
     const {
@@ -111,10 +111,10 @@ export function ReceiptEditorView({ receipt }: ReceiptEditorProps) {
     }
 
     const handleDeleteItem = async (updatedItem: ReceiptItemDto) => {
-        setReceiptItems((prev) => prev.filter((i) => i.id !== updatedItem.id))
+        setReceiptItems((prev) => prev.filter((i) => i.receiptItemId !== updatedItem.receiptItemId))
         setShowingItemSheet(false)
         deleteReceiptItem(
-            { id: receipt.id, item: updatedItem },
+            { receiptId: receipt.receiptId, item: updatedItem },
             {
                 onError: () => setReceiptItems(receipt.items),
             },
@@ -128,10 +128,10 @@ export function ReceiptEditorView({ receipt }: ReceiptEditorProps) {
         setShowingItemSheet(false)
         if (isCreated) {
             setReceiptItems((prev) => [...prev, updatedItem])
-            createReceiptItem({ id: receipt.id, item: updatedItem })
+            createReceiptItem({ receiptId: receipt.receiptId, item: updatedItem })
         } else {
             setReceiptItems((prev) =>
-                prev.map((i) => (i.id === updatedItem.id ? updatedItem : i)),
+                prev.map((i) => (i.receiptItemId === updatedItem.receiptItemId ? updatedItem : i)),
             )
             editReceiptItem(updatedItem, {
                 onError: () => setReceiptItems(receipt.items),
@@ -141,7 +141,7 @@ export function ReceiptEditorView({ receipt }: ReceiptEditorProps) {
 
     const handleCreateReceiptRoom = async () => {
         if (receiptNotValid) return
-        const response = await createReceiptRoom(receipt.id)
+        const response = await createReceiptRoom(receipt.receiptId)
         if ('success' in response) {
             router.navigate({
                 to: '/receipt/parce/$roomId',
@@ -166,7 +166,7 @@ export function ReceiptEditorView({ receipt }: ReceiptEditorProps) {
             <div className="space-y-2 mb-4">
                 {receiptItems.map((item) => (
                     <ReviewItemCard
-                        key={item.id}
+                        key={item.receiptItemId}
                         item={item}
                         onEdit={() => handleEditItem(item)}
                     />
@@ -221,7 +221,7 @@ export function ReceiptEditorView({ receipt }: ReceiptEditorProps) {
             <div className="h-4 md:hidden" />
 
             <ReceiptItemSheet
-                key={receiptItemForSheet?.id}
+                key={receiptItemForSheet?.receiptItemId}
                 item={receiptItemForSheet}
                 showSheet={showingItemSheet}
                 closeSheet={() => setShowingItemSheet(false)}

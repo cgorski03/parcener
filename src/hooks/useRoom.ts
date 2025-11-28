@@ -9,7 +9,7 @@ export const RoomQueryKeys = {
 
 // To optimize performance, this returns only a subset of ALL The room information - it will get the members, room object and claims
 export const useGetRoomPulse = (initialData: FullRoomInfoDto) => {
-    const _id = initialData.id
+    const _id = initialData.roomId
     const queryClient = useQueryClient()
 
     return useQuery({

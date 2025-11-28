@@ -44,5 +44,5 @@ function RouteComponent() {
     }
 
     // 3. Render the Success View
-    return <ReceiptEditorView key={receipt.id} receipt={receipt} />
+    return <ReceiptEditorView key={receipt.receiptId} receipt={receipt} />
 }

@@ -1,9 +1,8 @@
 import { claimItemRpc } from '@/server/room/room-rpc'
-import type { FullRoomInfoDto } from '@/server/dtos'
+import type { FullRoomInfoDto, RoomMembership } from '@/server/dtos'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { RoomQueryKeys } from './useRoom'
 import { useMemo } from 'react'
-import { RoomMemberSelect } from '@/server/db'
 import { ReceiptItemDto } from '@/server/dtos'
 import { generateId } from 'ai'
 
@@ -91,12 +90,12 @@ export function useClaimItem(myMembershipId: string) {
 
 export const useEnrichedClaimItems = (
     room: FullRoomInfoDto,
-    myMembership: RoomMemberSelect,
+    myMembership: RoomMembership,
 ) => {
     const currentClaims = room.claims
 
     const memberMap = useMemo(() => {
-        return new Map(room.members.map((m) => [m.id, m]))
+        return new Map(room.members.map((m) => [m.roomMemberId, m]))
     }, [room.members])
 
     const itemsWithClaims = useMemo(() => {
@@ -109,7 +108,7 @@ export const useEnrichedClaimItems = (
                 memberId: claim.memberId,
                 displayName: memberInfo?.displayName ?? 'Unknown',
                 avatarUrl: memberInfo?.avatarUrl ?? null,
-                isMe: claim.memberId === myMembership.id,
+                isMe: claim.memberId === myMembership.roomMemberId,
             }
             const existingClaims = claimsByItem.get(claim.receiptItemId) || []
             existingClaims.push(enriched)
@@ -117,7 +116,7 @@ export const useEnrichedClaimItems = (
         })
 
         return room.receipt?.items.map((item) => {
-            const claims = claimsByItem.get(item.id) || []
+            const claims = claimsByItem.get(item.receiptItemId) || []
             const myClaim = claims.find((c) => c.isMe)
             const otherClaims = claims.filter((c) => !c.isMe)
 
@@ -133,7 +132,7 @@ export const useEnrichedClaimItems = (
                 otherClaimedQty,
             }
         })
-    }, [room.receipt?.items, currentClaims, memberMap, myMembership.id])
+    }, [room.receipt?.items, currentClaims, memberMap, myMembership.roomMemberId])
 
     return { itemsWithClaims }
 }

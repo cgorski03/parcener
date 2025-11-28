@@ -1,36 +1,35 @@
 import { useGetRoomPulse } from '@/hooks/useRoom'
-import { RoomMemberSelect } from '@/server/db'
 import { useEffect } from 'react'
 import { ReceiptLayoutShell } from '../layout/receipt-layout-shell'
 import { CollaborativeRoomHeader } from '../layout/collaborative-room-header'
 import { useEnrichedClaimItems } from '@/hooks/useClaims'
 import { CollabItemCard } from '../item-card/collab-item-card'
 import { PriceBreakdown } from '../price-breakdown'
-import { FullRoomInfoDto } from '@/server/dtos'
+import { FullRoomInfoDto, RoomMembership } from '@/server/dtos'
 
 export function ActiveRoomScreen({
     initialRoom,
     member,
 }: {
     initialRoom: FullRoomInfoDto
-    member: RoomMemberSelect
+    member: RoomMembership
 }) {
     const { data: room } = useGetRoomPulse(initialRoom)
     const { itemsWithClaims } = useEnrichedClaimItems(room, member)
 
     useEffect(() => {
         if (member.guestUuid && !member.userId) {
-            const cookieName = `guest_uuid_room_${room.id}`
+            const cookieName = `guest_uuid_room_${room.roomId}`
             const maxAge = 60 * 60 * 24 * 7
             document.cookie = `${cookieName}=${member.guestUuid}; path=/; max-age=${maxAge}; SameSite=Lax`
         }
-    }, [member.guestUuid, room.id])
+    }, [member.guestUuid, room.roomId])
 
     return (
         <ReceiptLayoutShell
             header={
                 <CollaborativeRoomHeader
-                    roomId={room.id}
+                    roomId={room.roomId}
                     roomName={room.title ?? 'Untitled'}
                     members={room.members}
                     activeFilterId={null}
@@ -41,10 +40,10 @@ export function ActiveRoomScreen({
             {itemsWithClaims &&
                 itemsWithClaims.map((data) => (
                     <CollabItemCard
-                        key={data.item.id}
+                        key={data.item.receiptItemId}
                         data={data}
-                        roomId={room.id}
-                        memberId={member.id}
+                        roomId={room.roomId}
+                        memberId={member.roomMemberId}
                     />
                 ))}
             <PriceBreakdown

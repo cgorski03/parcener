@@ -2,11 +2,12 @@ import z from 'zod'
 import {
     ReceiptEntityWithItems,
     ReceiptItemSelect,
-    RoomSelect,
 } from './db/schema'
 
+// ----- RECEIPT ITEM SCHEMA
+export const receiptItemIdSchema = z.string().uuid({ version: 'v4' });
 export const receiptItemDtoSchema = z.object({
-    id: z.string().uuid({ version: 'v4' }),
+    receiptItemId: receiptItemIdSchema,
     rawText: z.string().nullable(),
     interpretedText: z.string().min(1, 'Item name required'),
     price: z.number().positive(),
@@ -21,8 +22,9 @@ export const receiptItemWithReceiptIdSchema = z.object({
     receiptItem: receiptItemDtoSchema
 })
 
+// ----- RECEIPT SCHEMA
 export const receiptTotalsSchema = z.object({
-    id: z.string().uuid(),
+    receiptId: receiptIdSchema,
     subtotal: z.number().nonnegative(),
     tax: z.number().nonnegative(),
     tip: z.number().nonnegative(),
@@ -30,7 +32,7 @@ export const receiptTotalsSchema = z.object({
 })
 
 export const receiptDtoSchema = z.object({
-    id: z.string().uuid({ version: 'v4' }),
+    receiptId: receiptIdSchema,
     title: z.string().nullable(),
     subtotal: z.number().nonnegative(),
     tax: z.number().nonnegative(),
@@ -40,24 +42,68 @@ export const receiptDtoSchema = z.object({
     items: z.array(receiptItemDtoSchema),
 })
 
-export const roomMemberDtoSchema = z.object({
-    id: z.string().uuid({ version: 'v4' }),
+// ---------- ROOM SCHEMA
+export const roomIdSchema = z.string().uuid({ version: 'v4' });
+export const roomMemberIdSchema = z.string().uuid({ version: 'v4' });
+export const userIdSchema = z.string().uuid({ version: 'v4' });
+
+export const roomSchema = z.object({
+    roomId: roomIdSchema,
+    receiptId: receiptIdSchema,
+    title: z.union([z.string().max(255), z.null()]),
+    createdBy: userIdSchema,
+    createdAt: z.date(),
+    updatedAt: z.date(),
+})
+
+export const baseRoomMemberSchema = z.object({
+    roomMemberId: roomMemberIdSchema,
     displayName: z.string().nullable(),
     avatarUrl: z.string().url().nullable(),
-    isGuest: z.boolean(),
+    isGuest: z.boolean().nullable(),
 })
+
+export const roomMembershipSchema = z.object({
+    roomMemberId: roomMemberIdSchema,
+    displayName: z.string().nullable(),
+    userId: z.union([userIdSchema, z.null()]),
+    guestUuid: z.union([userIdSchema, z.null()]),
+    joinedAt: z.date(),
+})
+
+export const joinRoomRequestSchema = z.object({
+    roomId: roomIdSchema,
+    displayName: z.union([z.string().max(63), z.null()]),
+});
+
+export const updateDisplayNameRoomRequestSchema = z.object({
+    roomId: roomIdSchema,
+    displayName: z.string().max(63),
+});
+export const getRoomPulseSchema = z.object({
+    roomId: z.string().uuid(),
+    since: z.date().optional().nullable(),
+})
+// ------------- CLAIMS SCHEMA
+export const claimItemRequestSchema = z.object({
+    roomId: roomIdSchema,
+    receiptItemId: receiptItemIdSchema,
+    quantity: z.number().min(0),
+});
 
 
 export type ReceiptItemDto = z.infer<typeof receiptItemDtoSchema>
 export type SaveReceiptItemDto = z.infer<typeof receiptItemWithReceiptIdSchema>
 export type ReceiptDto = z.infer<typeof receiptDtoSchema>
 export type ReceiptTotalsDto = z.infer<typeof receiptTotalsSchema>
-export type RoomMemberDto = z.infer<typeof roomMemberDtoSchema>
+export type RoomMemberDto = z.infer<typeof baseRoomMemberSchema>
+export type RoomMembership = z.infer<typeof roomMembershipSchema>
+export type RoomDto = z.infer<typeof roomSchema>
 export type NullableReceiptDto = ReceiptDto | null
 export type NullableReceiptTotalsDto = ReceiptTotalsDto | null
-
+//
 // For FullRoomInfoDto, extend the DB type pragmatically
-export type FullRoomInfoDto = RoomSelect & {
+export type FullRoomInfoDto = RoomDto & {
     receipt: ReceiptDto
     claims: any[]
     members: RoomMemberDto[]
@@ -68,7 +114,7 @@ export const receiptEntityWithReferencesToDtoHelper = (
 ): ReceiptDto | null => {
     if (!entity) return null
     const transformed = {
-        id: entity.id,
+        receiptId: entity.id,
         title: entity.title,
         subtotal: parseNullable(entity.subtotal) ?? 0,
         tax: parseNullable(entity.tax) ?? 0,
@@ -86,12 +132,11 @@ export const parseNullable = (v: string | null): number | null =>
 
 export const receiptItemEntityToDtoHelper = (item: ReceiptItemSelect) => {
     return {
-        id: item.id,
+        receiptItemId: item.id,
         rawText: item.rawText,
         interpretedText: item.interpretedText,
         price: parseFloat(item.price),
         quantity: parseFloat(item.quantity),
     }
 }
-
 

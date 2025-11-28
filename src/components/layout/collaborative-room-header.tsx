@@ -140,13 +140,13 @@ export function CollaborativeRoomHeader({
                         {/* Individual Members */}
                         {members.map((m) => (
                             <FilterPill
-                                key={m.id}
+                                key={m.roomMemberId}
                                 label={m.displayName}
-                                isActive={activeFilterId === m.id}
-                                onClick={() => onSelectFilter(m.id)}
+                                isActive={activeFilterId === m.roomMemberId}
+                                onClick={() => onSelectFilter(m.roomMemberId)}
                             >
                                 <RoomMemberAvatar
-                                    id={m.id}
+                                    id={m.roomMemberId}
                                     avatarUrl={m.avatarUrl}
                                     size="sm"
                                     displayName={m.displayName}

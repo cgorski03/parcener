@@ -48,7 +48,7 @@ export async function editReceiptItem(db: DbType, item: ReceiptItemDto, userId: 
         })
         .where(
             and(
-                eq(receiptItem.id, item.id),
+                eq(receiptItem.id, item.receiptItemId),
                 receiptItemOwnershipCheck(db, userId)
             )
         )
@@ -79,7 +79,7 @@ export async function createReceiptItem(
     const [insertedItem] = await db
         .insert(receiptItem)
         .values({
-            id: item.id,
+            id: item.receiptItemId,
             receiptId: receiptId,
             interpretedText: item.interpretedText,
             price: item.price.toString(),
@@ -93,7 +93,7 @@ export async function deleteReceiptItem(db: DbType, item: ReceiptItemDto, userId
     await db.delete(receiptItem)
         .where(
             and(
-                eq(receiptItem.id, item.id),
+                eq(receiptItem.id, item.receiptItemId),
                 receiptItemOwnershipCheck(db, userId)
             )
         )
@@ -119,10 +119,10 @@ export async function finalizeReceiptTotals(
     //
     // We are not trusting the client's calculated subtotal
     if (!receiptTotals) return { error: true, code: 'NOT_FOUND' }
-    const { id, subtotal, tax, tip, grandTotal } = receiptTotals
+    const { receiptId, subtotal, tax, tip, grandTotal } = receiptTotals
     // Get the current reciept information
 
-    const receiptInformation = await getReceiptWithItems(db, id, userId)
+    const receiptInformation = await getReceiptWithItems(db, receiptId, userId)
 
     if (receiptNotFound(receiptInformation) || !receiptInformation) {
         // Not found
@@ -169,7 +169,7 @@ export async function finalizeReceiptTotals(
             tax: tax.toString(),
             grandTotal: calculatedGrandTotal.toString(),
         })
-        .where(and(eq(receipt.id, id), eq(receipt.userId, userId)))
+        .where(and(eq(receipt.id, receiptId), eq(receipt.userId, userId)))
 
     return {
         success: true,

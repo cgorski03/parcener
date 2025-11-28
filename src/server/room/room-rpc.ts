@@ -10,27 +10,32 @@ import {
 import { getRequest } from '@tanstack/react-start/server'
 import { getServerSession } from '../auth/get-server-session'
 import { parseRoomIdentity } from '../auth/parse-room-identity'
-import { z } from 'zod'
 import {
+    claimItemRequestSchema,
     FullRoomInfoDto,
+    getRoomPulseSchema,
+    joinRoomRequestSchema,
     receiptEntityWithReferencesToDtoHelper,
+    receiptIdSchema,
+    roomIdSchema,
+    updateDisplayNameRoomRequestSchema,
 } from '../dtos'
 import { claimItem } from './room-claims-service'
 
 export const createRoomRpc = createServerFn({ method: 'POST' })
-    .inputValidator(z.string().uuid())
-    .handler(async ({ data: roomId, context }) => {
+    .inputValidator(receiptIdSchema)
+    .handler(async ({ data: receiptId, context }) => {
         const request = getRequest()
         const session = await getServerSession(request, context.auth)
         const userId = session?.user.id
         if (userId == null) {
             throw new Error('Not authorized to perform this action')
         }
-        return CreateRoom(context.db, roomId, userId)
+        return CreateRoom(context.db, receiptId, userId)
     })
 
 export const getRoomAndMembership = createServerFn({ method: 'GET' })
-    .inputValidator(z.string().uuid())
+    .inputValidator(roomIdSchema)
     .handler(async ({ data: roomId, context }) => {
         const request = getRequest()
         const session = await getServerSession(request, context.auth)
@@ -44,7 +49,7 @@ export const getRoomAndMembership = createServerFn({ method: 'GET' })
         if (!receipt) return null;
 
         const roomInfo: FullRoomInfoDto = {
-            id: roomData.id,
+            roomId: roomData.id,
             title: roomData.title,
             receiptId: roomData.receiptId,
             createdAt: roomData.createdAt,
@@ -63,12 +68,7 @@ export const getRoomAndMembership = createServerFn({ method: 'GET' })
     })
 
 export const getRoomPulseRpc = createServerFn({ method: 'GET' })
-    .inputValidator(
-        z.object({
-            roomId: z.string().uuid(),
-            since: z.date().optional().nullable(),
-        }),
-    )
+    .inputValidator(getRoomPulseSchema)
     .handler(async ({ data, context }) => {
         const { roomId, since } = data
         const roomHeader = await GetRoomHeader(context.db, roomId)
@@ -93,7 +93,7 @@ export const getRoomPulseRpc = createServerFn({ method: 'GET' })
         if (!receipt) return null;
 
         const roomInfo: FullRoomInfoDto = {
-            id: roomData.id,
+            roomId: roomData.id,
             title: roomData.title,
             receiptId: roomData.receiptId,
             createdAt: roomData.createdAt,
@@ -113,18 +113,9 @@ export const getRoomPulseRpc = createServerFn({ method: 'GET' })
     })
 
 export const updateRoomDisplayNameRpc = createServerFn({ method: 'POST' })
-    .inputValidator(
-        z.object({
-            roomId: z.string().uuid(),
-            name: z
-                .string()
-                .trim()
-                .min(1, 'Name cannot be empty')
-                .max(50, 'Name too long'),
-        }),
-    )
+    .inputValidator(updateDisplayNameRoomRequestSchema)
     .handler(async ({ data, context }) => {
-        const { roomId, name } = data
+        const { roomId, displayName } = data
         const request = getRequest()
         const session = await getServerSession(request, context.auth)
         const identity = await parseRoomIdentity(request, roomId, session?.user)
@@ -132,17 +123,21 @@ export const updateRoomDisplayNameRpc = createServerFn({ method: 'POST' })
         if (!identity.guestUuid && !identity.userId) {
             return null
         }
-        return await editRoomMemberDisplayName(context.db, identity, roomId, name)
+        const updatedMember = await editRoomMemberDisplayName(context.db, identity, roomId, displayName);
+        return {
+            roomMemberId: updatedMember.id,
+            roomId: updatedMember.roomId,
+            userId: updatedMember.userId,
+            guestUuid: updatedMember.guestUuid,
+            displayName: updatedMember.displayName,
+            joinedAt: updatedMember.joinedAt,
+        }
+
+
     })
 
 export const claimItemRpc = createServerFn({ method: 'POST' })
-    .inputValidator(
-        z.object({
-            roomId: z.string().uuid(),
-            receiptItemId: z.string().uuid(),
-            quantity: z.number().min(0),
-        }),
-    )
+    .inputValidator(claimItemRequestSchema)
     .handler(async ({ data, context }) => {
         const { roomId, receiptItemId, quantity } = data
         console.log('someone is trying to claim')
@@ -161,18 +156,13 @@ export const claimItemRpc = createServerFn({ method: 'POST' })
             roomId,
             identity,
             receiptItemId,
-            roomMemberId: member.id,
+            roomMemberId: member.roomMemberId,
             newQuantity: quantity,
         })
     })
 
 export const joinRoomRpc = createServerFn({ method: 'POST' })
-    .inputValidator(
-        z.object({
-            roomId: z.string().uuid(),
-            displayName: z.string().nullable(),
-        }),
-    )
+    .inputValidator(joinRoomRequestSchema)
     .handler(async ({ data, context }) => {
         const { roomId, displayName } = data
         const request = getRequest()
