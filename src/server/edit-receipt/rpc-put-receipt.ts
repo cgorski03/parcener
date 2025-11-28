@@ -5,7 +5,7 @@ import {
     editReceiptItem,
     finalizeReceiptTotals,
 } from './edit-receipt-service'
-import { createReceiptItemInputSchema, receiptItemDtoSchema, receiptTotalsSchema } from '../dtos'
+import { receiptItemDtoSchema, receiptItemWithReceiptIdSchema, receiptTotalsSchema } from '../dtos'
 import { protectedFunctionMiddleware } from '../auth/protected-function'
 
 export const editReceiptItemRpc = createServerFn({ method: 'POST' })
@@ -24,7 +24,7 @@ export const deleteReceiptItemRpc = createServerFn({ method: 'POST' })
 
 export const createReceiptItemRpc = createServerFn({ method: 'POST' })
     .middleware([protectedFunctionMiddleware])
-    .inputValidator(createReceiptItemInputSchema)
+    .inputValidator(receiptItemWithReceiptIdSchema)
     .handler(async ({ data, context }) => {
         const { receiptItem, receiptId } = data
         return createReceiptItem(context.db, receiptItem, receiptId, context.user.id);

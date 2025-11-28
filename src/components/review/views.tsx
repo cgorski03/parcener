@@ -4,9 +4,9 @@ import { notFound, useRouter } from '@tanstack/react-router'
 import { useReceiptIsValid } from '@/hooks/useGetReceipt'
 import { useMemo, useState } from 'react'
 import {
-  useCreateReceiptItem,
-  useDeleteReceiptItem,
-  useEditReceiptItem,
+    useCreateReceiptItem,
+    useDeleteReceiptItem,
+    useEditReceiptItem,
 } from '@/hooks/useEditReceipt'
 import { useCreateReceiptRoom } from '@/hooks/useRoom'
 import { Button } from '../ui/button'
@@ -18,204 +18,222 @@ import { ReceiptSummarySheet } from '../receipt-summary-sheet'
 import ReceiptItemSheet from '../edit-item-sheet'
 
 export function ErrorReceiptView(props: { attempts: number }) {
-  return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4 gap-4">
-      <div className="text-center">
-        <p className="text-lg font-semibold mb-2">Processing Failed</p>
-        <p className="text-sm text-muted-foreground">
-          Failed after {props.attempts} attempts
-        </p>
-      </div>
-      <Button>Try Again</Button>
-    </div>
-  )
+    return (
+        <div className="flex flex-col items-center justify-center min-h-screen p-4 gap-4">
+            <div className="text-center">
+                <p className="text-lg font-semibold mb-2">Processing Failed</p>
+                <p className="text-sm text-muted-foreground">
+                    Failed after {props.attempts} attempts
+                </p>
+            </div>
+            <Button>Try Again</Button>
+        </div>
+    )
 }
 
-export function ProcessingReceiptView(props: { isPolling: boolean }) {
-  return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4 gap-4">
-      <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      <p className="text-sm text-muted-foreground">
-        Processing your receipt...
-      </p>
-    </div>
-  )
+interface ProcessingReceiptViewProps {
+    isPolling: boolean;
+}
+
+export function ProcessingReceiptView({ isPolling }: ProcessingReceiptViewProps) {
+    return (
+        <div className="flex min-h-screen items-center justify-center bg-background p-4">
+            <div className="flex w-full max-w-sm flex-col items-center gap-6 rounded-xl border border-border bg-card p-8 shadow-sm">
+                <Loader2
+                    className={`h-10 w-10 animate-spin text-primary transition-opacity duration-500 ${isPolling ? 'opacity-90' : 'opacity-70'
+                        }`}
+                />
+
+                <div className="text-center space-y-1.5">
+                    <p className="text-base font-medium text-card-foreground">
+                        Processing your receipt...
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                        This may take a few moments
+                    </p>
+                    <p className="text-xs text-muted-foreground/70">
+                        It is safe to leave this page and come back
+                    </p>
+                </div>
+            </div>
+        </div>
+    );
 }
 
 interface ReceiptEditorProps {
-  receipt: ReceiptDto
+    receipt: ReceiptDto
 }
 
 export function ReceiptEditorView({ receipt }: ReceiptEditorProps) {
-  if (!receipt) throw notFound()
-  const router = useRouter()
-  // Validation Hook
-  const { isError: receiptNotValid, isFetching: receiptValidFetching } =
-    useReceiptIsValid(receipt.id)
+    if (!receipt) throw notFound()
+    const router = useRouter()
+    // Validation Hook
+    const { isError: receiptNotValid, isFetching: receiptValidFetching } =
+        useReceiptIsValid(receipt.id)
 
-  // State initialization is now 100% type-safe
-  const [receiptItems, setReceiptItems] = useState(receipt.items)
+    // State initialization is now 100% type-safe
+    const [receiptItems, setReceiptItems] = useState(receipt.items)
 
-  // UI State
-  const [showingItemSheet, setShowingItemSheet] = useState(false)
-  const [showSummarySheet, setShowSummarySheet] = useState(false)
-  const [receiptItemForSheet, setReceiptItemForSheet] =
-    useState<ReceiptItemDto | null>(null)
+    // UI State
+    const [showingItemSheet, setShowingItemSheet] = useState(false)
+    const [showSummarySheet, setShowSummarySheet] = useState(false)
+    const [receiptItemForSheet, setReceiptItemForSheet] =
+        useState<ReceiptItemDto | null>(null)
 
-  // Mutation Hooks
-  const { mutateAsync: editReceiptItem } = useEditReceiptItem(receipt.id)
-  const { mutateAsync: deleteReceiptItem } = useDeleteReceiptItem()
-  const { mutateAsync: createReceiptItem } = useCreateReceiptItem()
-  const {
-    mutateAsync: createReceiptRoom,
-    isPending: createReceiptRoomLoading,
-  } = useCreateReceiptRoom()
+    // Mutation Hooks
+    const { mutateAsync: editReceiptItem } = useEditReceiptItem(receipt.id)
+    const { mutateAsync: deleteReceiptItem } = useDeleteReceiptItem()
+    const { mutateAsync: createReceiptItem } = useCreateReceiptItem()
+    const {
+        mutateAsync: createReceiptRoom,
+        isPending: createReceiptRoomLoading,
+    } = useCreateReceiptRoom()
 
-  const subtotal = useMemo(() => {
-    return receiptItems.reduce((sum, item) => sum + item.price, 0).toFixed(2)
-  }, [receiptItems])
+    const subtotal = useMemo(() => {
+        return receiptItems.reduce((sum, item) => sum + item.price, 0).toFixed(2)
+    }, [receiptItems])
 
-  const totalHasError = useMemo(() => {
-    const epsilon = 0.01
-    const calculated =
-      Number(subtotal) + (receipt.tip ?? 0) + (receipt.tax ?? 0)
-    return Math.abs(calculated - (receipt.grandTotal ?? 0)) >= epsilon
-  }, [subtotal, receipt])
+    const totalHasError = useMemo(() => {
+        const epsilon = 0.01
+        const calculated =
+            Number(subtotal) + (receipt.tip ?? 0) + (receipt.tax ?? 0)
+        return Math.abs(calculated - (receipt.grandTotal ?? 0)) >= epsilon
+    }, [subtotal, receipt])
 
-  const handleCreateCustomItem = () => {
-    setReceiptItemForSheet(null)
-    setShowingItemSheet(true)
-  }
-
-  const handleEditItem = (item: ReceiptItemDto) => {
-    setReceiptItemForSheet(item)
-    setShowingItemSheet(true)
-  }
-
-  const handleDeleteItem = async (updatedItem: ReceiptItemDto) => {
-    setReceiptItems((prev) => prev.filter((i) => i.id !== updatedItem.id))
-    setShowingItemSheet(false)
-    deleteReceiptItem(
-      { id: receipt.id, item: updatedItem },
-      {
-        onError: () => setReceiptItems(receipt.items),
-      },
-    )
-  }
-
-  const saveReceiptItem = async (
-    updatedItem: ReceiptItemDto,
-    isCreated: boolean,
-  ) => {
-    setShowingItemSheet(false)
-    if (isCreated) {
-      setReceiptItems((prev) => [...prev, updatedItem])
-      createReceiptItem({ id: receipt.id, item: updatedItem })
-    } else {
-      setReceiptItems((prev) =>
-        prev.map((i) => (i.id === updatedItem.id ? updatedItem : i)),
-      )
-      editReceiptItem(updatedItem, {
-        onError: () => setReceiptItems(receipt.items),
-      })
+    const handleCreateCustomItem = () => {
+        setReceiptItemForSheet(null)
+        setShowingItemSheet(true)
     }
-  }
 
-  const handleCreateReceiptRoom = async () => {
-    if (receiptNotValid) return
-    const response = await createReceiptRoom(receipt.id)
-    if ('success' in response) {
-      router.navigate({
-        to: '/receipt/parce/$roomId',
-        params: { roomId: response.room.id },
-      })
+    const handleEditItem = (item: ReceiptItemDto) => {
+        setReceiptItemForSheet(item)
+        setShowingItemSheet(true)
     }
-  }
 
-  return (
-    <ReceiptLayoutShell
-      header={
-        <ReviewReceiptHeader
-          title={receipt.title ?? 'Set Title'}
-          itemCount={receiptItems.length}
-          grandTotal={receipt.grandTotal ?? 0}
-          receiptIsInvalid={receiptNotValid}
-          receiptIsValidPending={receiptValidFetching}
-        />
-      }
-    >
-      {/* Items Grid */}
-      <div className="space-y-2 mb-4">
-        {receiptItems.map((item) => (
-          <ReviewItemCard
-            key={item.id}
-            item={item}
-            onEdit={() => handleEditItem(item)}
-          />
-        ))}
-      </div>
+    const handleDeleteItem = async (updatedItem: ReceiptItemDto) => {
+        setReceiptItems((prev) => prev.filter((i) => i.id !== updatedItem.id))
+        setShowingItemSheet(false)
+        deleteReceiptItem(
+            { id: receipt.id, item: updatedItem },
+            {
+                onError: () => setReceiptItems(receipt.items),
+            },
+        )
+    }
 
-      <Button
-        variant="outline"
-        className="w-full mb-6 border-dashed"
-        onClick={handleCreateCustomItem}
-      >
-        <Plus className="h-4 w-4 mr-2" />
-        Add Custom Item
-      </Button>
+    const saveReceiptItem = async (
+        updatedItem: ReceiptItemDto,
+        isCreated: boolean,
+    ) => {
+        setShowingItemSheet(false)
+        if (isCreated) {
+            setReceiptItems((prev) => [...prev, updatedItem])
+            createReceiptItem({ id: receipt.id, item: updatedItem })
+        } else {
+            setReceiptItems((prev) =>
+                prev.map((i) => (i.id === updatedItem.id ? updatedItem : i)),
+            )
+            editReceiptItem(updatedItem, {
+                onError: () => setReceiptItems(receipt.items),
+            })
+        }
+    }
 
-      <PriceBreakdown
-        subtotal={parseFloat(subtotal)}
-        tax={receipt.tax ?? 0}
-        tip={receipt.tip ?? 0}
-        grandTotal={receipt.grandTotal ?? 0}
-        label="Receipt Totals"
-        onClick={() => setShowSummarySheet(true)}
-        className="mt-6"
-      />
+    const handleCreateReceiptRoom = async () => {
+        if (receiptNotValid) return
+        const response = await createReceiptRoom(receipt.id)
+        if ('success' in response) {
+            router.navigate({
+                to: '/receipt/parce/$roomId',
+                params: { roomId: response.room.id },
+            })
+        }
+    }
 
-      <div className="space-y-3">
-        {totalHasError && (
-          <div className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive flex items-center gap-2">
-            <AlertCircle className="h-4 w-4 flex-shrink-0" />
-            <span>Fix total mismatch before continuing</span>
-          </div>
-        )}
-        <Button
-          className="w-full h-11"
-          disabled={totalHasError}
-          onClick={handleCreateReceiptRoom}
+    return (
+        <ReceiptLayoutShell
+            header={
+                <ReviewReceiptHeader
+                    title={receipt.title ?? 'Set Title'}
+                    itemCount={receiptItems.length}
+                    grandTotal={receipt.grandTotal ?? 0}
+                    receiptIsInvalid={receiptNotValid}
+                    receiptIsValidPending={receiptValidFetching}
+                />
+            }
         >
-          {createReceiptRoomLoading ? (
-            <>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              Creating Room...
-            </>
-          ) : (
-            <>
-              <Share2 className="h-4 w-4 mr-2" />
-              Create Split Room
-            </>
-          )}
-        </Button>
-      </div>
+            {/* Items Grid */}
+            <div className="space-y-2 mb-4">
+                {receiptItems.map((item) => (
+                    <ReviewItemCard
+                        key={item.id}
+                        item={item}
+                        onEdit={() => handleEditItem(item)}
+                    />
+                ))}
+            </div>
 
-      <div className="h-4 md:hidden" />
+            <Button
+                variant="outline"
+                className="w-full mb-6 border-dashed"
+                onClick={handleCreateCustomItem}
+            >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Custom Item
+            </Button>
 
-      <ReceiptItemSheet
-        key={receiptItemForSheet?.id}
-        item={receiptItemForSheet}
-        showSheet={showingItemSheet}
-        closeSheet={() => setShowingItemSheet(false)}
-        handleDeleteItem={handleDeleteItem}
-        handleSaveItem={saveReceiptItem}
-      />
-      <ReceiptSummarySheet
-        showSheet={showSummarySheet}
-        receipt={receipt}
-        subtotal={subtotal}
-        closeSheet={() => setShowSummarySheet(false)}
-      />
-    </ReceiptLayoutShell>
-  )
+            <PriceBreakdown
+                subtotal={parseFloat(subtotal)}
+                tax={receipt.tax ?? 0}
+                tip={receipt.tip ?? 0}
+                grandTotal={receipt.grandTotal ?? 0}
+                label="Receipt Totals"
+                onClick={() => setShowSummarySheet(true)}
+                className="mt-6"
+            />
+
+            <div className="space-y-3">
+                {totalHasError && (
+                    <div className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive flex items-center gap-2">
+                        <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                        <span>Fix total mismatch before continuing</span>
+                    </div>
+                )}
+                <Button
+                    className="w-full h-11"
+                    disabled={totalHasError}
+                    onClick={handleCreateReceiptRoom}
+                >
+                    {createReceiptRoomLoading ? (
+                        <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Creating Room...
+                        </>
+                    ) : (
+                        <>
+                            <Share2 className="h-4 w-4 mr-2" />
+                            Create Split Room
+                        </>
+                    )}
+                </Button>
+            </div>
+
+            <div className="h-4 md:hidden" />
+
+            <ReceiptItemSheet
+                key={receiptItemForSheet?.id}
+                item={receiptItemForSheet}
+                showSheet={showingItemSheet}
+                closeSheet={() => setShowingItemSheet(false)}
+                handleDeleteItem={handleDeleteItem}
+                handleSaveItem={saveReceiptItem}
+            />
+            <ReceiptSummarySheet
+                showSheet={showSummarySheet}
+                receipt={receipt}
+                subtotal={subtotal}
+                closeSheet={() => setShowSummarySheet(false)}
+            />
+        </ReceiptLayoutShell>
+    )
 }

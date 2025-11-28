@@ -14,8 +14,12 @@ export const receiptItemDtoSchema = z.object({
 })
 
 export const receiptIdSchema = z.string().uuid({ version: 'v4' });
+
 // For create operations where id can be null
-export const saveReceiptItemDtoSchema = receiptItemDtoSchema.extend(receiptIdSchema)
+export const receiptItemWithReceiptIdSchema = z.object({
+    receiptId: receiptIdSchema,
+    receiptItem: receiptItemDtoSchema
+})
 
 export const receiptTotalsSchema = z.object({
     id: z.string().uuid(),
@@ -43,14 +47,9 @@ export const roomMemberDtoSchema = z.object({
     isGuest: z.boolean(),
 })
 
-export const createReceiptItemInputSchema = z.object({
-    receiptItem: saveReceiptItemDtoSchema,
-    receiptId: z.string().uuid({ version: 'v4' }),
-})
-
 
 export type ReceiptItemDto = z.infer<typeof receiptItemDtoSchema>
-export type SaveReceiptItemDto = z.infer<typeof saveReceiptItemDtoSchema>
+export type SaveReceiptItemDto = z.infer<typeof receiptItemWithReceiptIdSchema>
 export type ReceiptDto = z.infer<typeof receiptDtoSchema>
 export type ReceiptTotalsDto = z.infer<typeof receiptTotalsSchema>
 export type RoomMemberDto = z.infer<typeof roomMemberDtoSchema>
@@ -59,7 +58,7 @@ export type NullableReceiptTotalsDto = ReceiptTotalsDto | null
 
 // For FullRoomInfoDto, extend the DB type pragmatically
 export type FullRoomInfoDto = RoomSelect & {
-    receipt: NullableReceiptDto
+    receipt: ReceiptDto
     claims: any[]
     members: RoomMemberDto[]
 }
