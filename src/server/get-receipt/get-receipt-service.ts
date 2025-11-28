@@ -43,8 +43,8 @@ export async function getReceiptWithItems(
     const hasSuccesses = receiptInformation.processingInfo.some(
         (receipt) => receipt.processingStatus === 'success',
     )
-    // have we failed, and dont have a success or a processing
 
+    // have we failed, and dont have a success or a processing
     if (!hasSuccesses && receiptInformation.processingInfo.length > 0) {
         const failedAttemptsCount = receiptInformation.processingInfo.filter(
             (info) => info.processingStatus === 'failed',

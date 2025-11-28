@@ -9,8 +9,9 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as UploadRouteImport } from './routes/upload'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as UploadRouteRouteImport } from './routes/upload/route'
+import { Route as AccountRouteRouteImport } from './routes/account/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ReceiptReviewRouteRouteImport } from './routes/receipt/review/route'
 import { Route as ReceiptParceRouteRouteImport } from './routes/receipt/parce/route'
@@ -18,14 +19,19 @@ import { Route as ReceiptReviewReceiptIdRouteImport } from './routes/receipt/rev
 import { Route as ReceiptParceRoomIdRouteImport } from './routes/receipt/parce/$roomId'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
-const UploadRoute = UploadRouteImport.update({
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UploadRouteRoute = UploadRouteRouteImport.update({
   id: '/upload',
   path: '/upload',
   getParentRoute: () => rootRouteImport,
 } as any)
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
+const AccountRouteRoute = AccountRouteRouteImport.update({
+  id: '/account',
+  path: '/account',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -61,8 +67,9 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/account': typeof AccountRouteRoute
+  '/upload': typeof UploadRouteRoute
   '/login': typeof LoginRoute
-  '/upload': typeof UploadRoute
   '/receipt/parce': typeof ReceiptParceRouteRouteWithChildren
   '/receipt/review': typeof ReceiptReviewRouteRouteWithChildren
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -71,8 +78,9 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/account': typeof AccountRouteRoute
+  '/upload': typeof UploadRouteRoute
   '/login': typeof LoginRoute
-  '/upload': typeof UploadRoute
   '/receipt/parce': typeof ReceiptParceRouteRouteWithChildren
   '/receipt/review': typeof ReceiptReviewRouteRouteWithChildren
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -82,8 +90,9 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/account': typeof AccountRouteRoute
+  '/upload': typeof UploadRouteRoute
   '/login': typeof LoginRoute
-  '/upload': typeof UploadRoute
   '/receipt/parce': typeof ReceiptParceRouteRouteWithChildren
   '/receipt/review': typeof ReceiptReviewRouteRouteWithChildren
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -94,8 +103,9 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/login'
+    | '/account'
     | '/upload'
+    | '/login'
     | '/receipt/parce'
     | '/receipt/review'
     | '/api/auth/$'
@@ -104,8 +114,9 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/login'
+    | '/account'
     | '/upload'
+    | '/login'
     | '/receipt/parce'
     | '/receipt/review'
     | '/api/auth/$'
@@ -114,8 +125,9 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
-    | '/login'
+    | '/account'
     | '/upload'
+    | '/login'
     | '/receipt/parce'
     | '/receipt/review'
     | '/api/auth/$'
@@ -125,8 +137,9 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AccountRouteRoute: typeof AccountRouteRoute
+  UploadRouteRoute: typeof UploadRouteRoute
   LoginRoute: typeof LoginRoute
-  UploadRoute: typeof UploadRoute
   ReceiptParceRouteRoute: typeof ReceiptParceRouteRouteWithChildren
   ReceiptReviewRouteRoute: typeof ReceiptReviewRouteRouteWithChildren
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
@@ -134,18 +147,25 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/upload': {
-      id: '/upload'
-      path: '/upload'
-      fullPath: '/upload'
-      preLoaderRoute: typeof UploadRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/login': {
       id: '/login'
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/upload': {
+      id: '/upload'
+      path: '/upload'
+      fullPath: '/upload'
+      preLoaderRoute: typeof UploadRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account': {
+      id: '/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AccountRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -217,8 +237,9 @@ const ReceiptReviewRouteRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AccountRouteRoute: AccountRouteRoute,
+  UploadRouteRoute: UploadRouteRoute,
   LoginRoute: LoginRoute,
-  UploadRoute: UploadRoute,
   ReceiptParceRouteRoute: ReceiptParceRouteRouteWithChildren,
   ReceiptReviewRouteRoute: ReceiptReviewRouteRouteWithChildren,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
