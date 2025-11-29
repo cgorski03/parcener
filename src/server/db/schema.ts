@@ -35,8 +35,6 @@ export const receipt = pgTable('receipt', {
         .default('0'),
     createdAt: timestamp('created_at').defaultNow(),
 })
-export type ReceiptSelect = typeof receipt.$inferSelect
-export type ReceiptInsert = typeof receipt.$inferInsert
 
 export const receiptProcessingInformation = pgTable(
     'receipt_processing_information',
@@ -69,35 +67,6 @@ export const receiptItem = pgTable('receipt_item', {
         .default('1')
         .notNull(),
 })
-export type ReceiptItemSelect = typeof receiptItem.$inferSelect
-export type ReceiptItemInsert = typeof receiptItem.$inferInsert
-
-export const receiptRelations = relations(receipt, ({ many }) => ({
-    items: many(receiptItem),
-    processingInfo: many(receiptProcessingInformation),
-}))
-
-export type ReceiptEntityWithItems = ReceiptSelect & {
-    items: ReceiptItemSelect[]
-}
-
-export const receiptItemRelations = relations(receiptItem, ({ one, many }) => ({
-    receipt: one(receipt, {
-        fields: [receiptItem.receiptId],
-        references: [receipt.id],
-    }),
-    claims: many(claim),
-}))
-
-export const receiptProcessingRelations = relations(
-    receiptProcessingInformation,
-    ({ one }) => ({
-        receipt: one(receipt, {
-            fields: [receiptProcessingInformation.receiptId],
-            references: [receipt.id],
-        }),
-    }),
-)
 
 export const room = pgTable('room', {
     id: uuid('id').primaryKey().defaultRandom(),
@@ -111,13 +80,7 @@ export const room = pgTable('room', {
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
 })
-export type RoomSelect = typeof room.$inferSelect
 
-export const roomRelations = relations(room, ({ one, many }) => ({
-    receipt: one(receipt, { fields: [room.receiptId], references: [receipt.id] }),
-    members: many(roomMember),
-    claims: many(claim),
-}))
 
 export const roomMember = pgTable('room_member', {
     id: uuid('id').primaryKey().defaultRandom(),
@@ -131,13 +94,7 @@ export const roomMember = pgTable('room_member', {
     joinedAt: timestamp('joined_at').defaultNow().notNull(),
 })
 
-export type RoomMemberSelect = typeof roomMember.$inferSelect
 
-export const roomMemberRelations = relations(roomMember, ({ one, many }) => ({
-    room: one(room, { fields: [roomMember.roomId], references: [room.id] }),
-    user: one(user, { fields: [roomMember.userId], references: [user.id] }),
-    claims: many(claim),
-}))
 
 export const claim = pgTable(
     'claim',
@@ -162,7 +119,43 @@ export const claim = pgTable(
     }),
 )
 
-export type ClaimSelect = typeof claim.$inferSelect
+// ---------- Relations
+// 
+export const receiptRelations = relations(receipt, ({ many }) => ({
+    items: many(receiptItem),
+    processingInfo: many(receiptProcessingInformation),
+}))
+
+export const roomMemberRelations = relations(roomMember, ({ one, many }) => ({
+    room: one(room, { fields: [roomMember.roomId], references: [room.id] }),
+    user: one(user, { fields: [roomMember.userId], references: [user.id] }),
+    claims: many(claim),
+}))
+
+export const roomRelations = relations(room, ({ one, many }) => ({
+    receipt: one(receipt, { fields: [room.receiptId], references: [receipt.id] }),
+    members: many(roomMember),
+    claims: many(claim),
+}))
+export const receiptItemRelations = relations(receiptItem, ({ one, many }) => ({
+    receipt: one(receipt, {
+        fields: [receiptItem.receiptId],
+        references: [receipt.id],
+    }),
+    claims: many(claim),
+}))
+
+export const receiptProcessingRelations = relations(
+    receiptProcessingInformation,
+    ({ one }) => ({
+        receipt: one(receipt, {
+            fields: [receiptProcessingInformation.receiptId],
+            references: [receipt.id],
+        }),
+    }),
+)
+
+
 export const claimRelations = relations(claim, ({ one }) => ({
     room: one(room, { fields: [claim.roomId], references: [room.id] }),
     roomMember: one(roomMember, {
@@ -174,3 +167,20 @@ export const claimRelations = relations(claim, ({ one }) => ({
         references: [receiptItem.id],
     }),
 }))
+// ---------- Types
+// 
+export type Receipt = typeof receipt.$inferSelect
+export type NewReceipt = typeof receipt.$inferInsert
+
+export type Claim = typeof claim.$inferSelect
+export type RoomMember = typeof roomMember.$inferSelect
+export type Room = typeof room.$inferSelect
+
+export type ReceiptItem = typeof receiptItem.$inferSelect
+export type NewReceiptItem = typeof receiptItem.$inferInsert
+
+export type AppUser = typeof user.$inferInsert
+
+export type ReceiptEntityWithItems = Receipt & {
+    items: ReceiptItem[]
+}
