@@ -1,3 +1,4 @@
+import { AccountUploadsSection } from "@/components/account/upload-section";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -65,10 +66,6 @@ function RouteComponent() {
             </div>
 
             <div className="container max-w-md mx-auto p-4 space-y-5">
-
-                {/* 1. Refined Profile Card 
-                    Fixed: Removed weird borders/padding. Clean layout.
-                */}
                 <div className="bg-gradient-to-br from-primary/10 via-background to-background rounded-xl border shadow-sm p-4 flex items-center gap-4 relative overflow-hidden">
                     {/* Decorative blur blob for extra texture */}
                     <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -translate-y-16 translate-x-16 pointer-events-none" />
@@ -91,78 +88,7 @@ function RouteComponent() {
                     </div>
                 </div>
 
-                {/* 2. Membership & Invite Context */}
-                <div className="space-y-2">
-                    <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider pl-1">
-                        Membership Status
-                    </h3>
-
-                    {rateLimit.canUpload ? (
-                        /* CASE A: HAS ACCESS */
-                        <Card className="py-0 border shadow-sm overflow-hidden">
-                            <CardContent className="p-0">
-                                {/* Upload Limits */}
-                                <div className="p-4 space-y-3">
-                                    <div className="flex justify-between items-end">
-                                        <div className="text-sm font-medium">Receipt Uploads</div>
-                                        <div className="text-xs text-muted-foreground">
-                                            Resets in {rateLimit.resetInHours}h
-                                        </div>
-                                    </div>
-                                    <div className="space-y-1.5">
-                                        <Progress value={(rateLimit.used / rateLimit.limit) * 100} className="h-1.5" />
-                                        <div className="flex justify-between text-[10px] text-muted-foreground font-medium">
-                                            <span>{rateLimit.used} / {rateLimit.limit} used</span>
-                                            <span>Daily Limit</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <Separator />
-
-                                {/* The "Gatekeeper" Invite UI */}
-                                <div className="bg-gradient-to-b from-indigo-50/50 to-background p-4">
-                                    <div className="flex items-start gap-3">
-                                        <div className="bg-indigo-100 p-2 rounded-full text-indigo-600 shrink-0">
-                                            <Ticket className="h-4 w-4" />
-                                        </div>
-                                        <div className="space-y-3 flex-1">
-                                            <div>
-                                                <h4 className="text-sm font-semibold text-indigo-950">Grant Access</h4>
-                                                <p className="text-xs text-indigo-900/70 mt-0.5 leading-relaxed">
-                                                    Parcener is invite-only. You have <strong>{rateLimit.invitesRemaining} invites</strong> left to share with friends.
-                                                </p>
-                                            </div>
-                                            <Button size="sm" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm h-8 text-xs">
-                                                Copy Invite Link <Copy className="ml-2 h-3 w-3" />
-                                            </Button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    ) : (
-                        /* CASE B: NEEDS ACCESS */
-                        <Card className="py-0 border border-amber-200 shadow-sm overflow-hidden">
-                            <CardContent className="p-0">
-                                <div className="bg-amber-50/50 p-5 text-center space-y-4">
-                                    <div className="bg-amber-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto text-amber-600">
-                                        <Lock className="h-5 w-5" />
-                                    </div>
-                                    <div className="space-y-1">
-                                        <h4 className="font-semibold text-amber-950">Invitation Required</h4>
-                                        <p className="text-xs text-amber-800/80 leading-relaxed px-4">
-                                            To control costs and quality, uploading receipts is currently restricted.
-                                            <br /><span className="font-medium">Ask a friend on Parcener for an invite link.</span>
-                                        </p>
-                                    </div>
-
-                                </div>
-                            </CardContent>
-                        </Card>
-                    )}
-                </div>
-
+                <AccountUploadsSection />
                 {/* 3. Recent Receipts 
                     Fixed: Compact rows, smaller icons, tighter spacing.
                 */}
@@ -172,7 +98,9 @@ function RouteComponent() {
                             Recent Receipts
                         </h3>
                         {rateLimit.canUpload && (
-                            <Link to="/scan" className="text-xs font-medium text-primary hover:underline flex items-center gap-1">
+                            <Link
+                                to="/scan"
+                                className="text-xs font-medium text-primary hover:underline flex items-center gap-1">
                                 Scan New <Plus className="h-3 w-3" />
                             </Link>
                         )}
@@ -207,11 +135,6 @@ function RouteComponent() {
 
                                     <div className="text-right shrink-0">
                                         <div className="text-sm font-semibold">${item.total.toFixed(2)}</div>
-                                        {item.role === 'Owner' && (
-                                            <Badge variant="secondary" className="text-[9px] h-4 px-1 py-0 bg-muted/50 text-muted-foreground font-normal">
-                                                Owner
-                                            </Badge>
-                                        )}
                                     </div>
                                 </div>
 
