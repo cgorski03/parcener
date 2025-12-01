@@ -6,10 +6,10 @@ import {
     SheetDescription,
     SheetHeader,
     SheetTitle,
-} from './ui/sheet'
+} from '../ui/sheet'
 import { Label } from '@radix-ui/react-label'
-import { Input } from './ui/input'
-import { Button } from './ui/button'
+import { Input } from '../ui/input'
+import { Button } from '../ui/button'
 import { Loader2 } from 'lucide-react'
 import { useFinalizeReceipt } from '@/hooks/useEditReceipt'
 
@@ -151,8 +151,8 @@ export function ReceiptSummarySheet(props: {
                                     type="button"
                                     onClick={() => handleSetTaxMode('absolute')}
                                     className={`text-lg font-medium rounded-md transition-all min-w-[48px] ${taxMode === 'absolute'
-                                            ? 'bg-background text-foreground shadow-sm'
-                                            : 'text-muted-foreground'
+                                        ? 'bg-background text-foreground shadow-sm'
+                                        : 'text-muted-foreground'
                                         }`}
                                 >
                                     $
@@ -161,8 +161,8 @@ export function ReceiptSummarySheet(props: {
                                     type="button"
                                     onClick={() => handleSetTaxMode('percentage')}
                                     className={`text-lg font-medium rounded-md transition-all min-w-[48px] ${taxMode === 'percentage'
-                                            ? 'bg-background text-foreground shadow-sm'
-                                            : 'text-muted-foreground'
+                                        ? 'bg-background text-foreground shadow-sm'
+                                        : 'text-muted-foreground'
                                         }`}
                                 >
                                     %
@@ -203,8 +203,8 @@ export function ReceiptSummarySheet(props: {
                                     type="button"
                                     onClick={() => handleSetTipMode('absolute')}
                                     className={`text-lg font-medium rounded-md transition-all min-w-[48px] ${tipMode === 'absolute'
-                                            ? 'bg-background text-foreground shadow-sm'
-                                            : 'text-muted-foreground'
+                                        ? 'bg-background text-foreground shadow-sm'
+                                        : 'text-muted-foreground'
                                         }`}
                                 >
                                     $
@@ -213,8 +213,8 @@ export function ReceiptSummarySheet(props: {
                                     type="button"
                                     onClick={() => handleSetTipMode('percentage')}
                                     className={`text-lg font-medium rounded-md transition-all min-w-[48px] ${tipMode === 'percentage'
-                                            ? 'bg-background text-foreground shadow-sm'
-                                            : 'text-muted-foreground'
+                                        ? 'bg-background text-foreground shadow-sm'
+                                        : 'text-muted-foreground'
                                         }`}
                                 >
                                     %

@@ -7,10 +7,10 @@ import {
     SheetHeader,
     SheetTitle,
 } from '@/components/ui/sheet'
-import { Button } from './ui/button'
 import { Trash2 } from 'lucide-react'
 import React, { useState } from 'react'
 import { ReceiptItemDto } from '@/server/dtos'
+import { Button } from '../ui/button'
 
 function ReceiptItemSheet(props: {
     showSheet: boolean
@@ -119,8 +119,8 @@ function ReceiptItemSheet(props: {
                                     type="button"
                                     onClick={() => handlePriceModeChange('total')}
                                     className={`flex-1 rounded-md px-4 py-2.5 text-sm font-medium transition-all ${priceMode === 'total'
-                                            ? 'bg-background text-foreground shadow-sm'
-                                            : 'text-muted-foreground hover:text-foreground'
+                                        ? 'bg-background text-foreground shadow-sm'
+                                        : 'text-muted-foreground hover:text-foreground'
                                         }`}
                                 >
                                     Total Price
@@ -129,8 +129,8 @@ function ReceiptItemSheet(props: {
                                     type="button"
                                     onClick={() => handlePriceModeChange('unit')}
                                     className={`flex-1 rounded-md px-4 py-2.5 text-sm font-medium transition-all ${priceMode === 'unit'
-                                            ? 'bg-background text-foreground shadow-sm'
-                                            : 'text-muted-foreground hover:text-foreground'
+                                        ? 'bg-background text-foreground shadow-sm'
+                                        : 'text-muted-foreground hover:text-foreground'
                                         }`}
                                 >
                                     Unit Price

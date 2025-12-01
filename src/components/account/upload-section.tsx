@@ -1,10 +1,10 @@
 import { useRateLimit } from "@/hooks/use-account"
 import { Card, CardContent } from "../ui/card";
-import { Progress } from "@radix-ui/react-progress";
 import { CanUploadRateLimitResponse, RateLimitResponse } from "@/server/account/account-service";
-import { Separator } from "@radix-ui/react-separator";
 import { Ticket, Lock, Copy } from "lucide-react";
 import { Button } from "../ui/button";
+import { Progress } from "../ui/progress";
+import { Separator } from "../ui/separator";
 
 
 const canUploadHelper = (
@@ -15,8 +15,8 @@ const canUploadHelper = (
 };
 
 export function AccountUploadsSection() {
-    const { data: rateLimit } = useRateLimit();
-    console.log(rateLimit);
+    const { data: rateLimit, isLoading: rateLimitLoading } = useRateLimit();
+
     return (
         <div className="space-y-2">
             <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider pl-1">
@@ -46,23 +46,23 @@ export function AccountUploadsSection() {
                             <Separator />
 
                             {/* The "Gatekeeper" Invite UI */}
-                            <div className="bg-gradient-to-b from-indigo-50/50 to-background p-4">
+                            <div className="bg-gradient-to-b from-indigo-50/50 to-background flex flex-col gap-4 p-4">
                                 <div className="flex items-start gap-3">
                                     <div className="bg-indigo-100 p-2 rounded-full text-indigo-600 shrink-0">
                                         <Ticket className="h-4 w-4" />
                                     </div>
                                     <div className="space-y-3 flex-1">
                                         <div>
-                                            <h4 className="text-sm font-semibold text-indigo-950">Grant Access</h4>
+                                            <h4 className="text-sm font-semibold text-indigo-950">Share Access</h4>
                                             <p className="text-xs text-indigo-900/70 mt-0.5 leading-relaxed">
-                                                Parcener is invite-only. You have <strong>5 invites</strong> left to share with friends.
+                                                Parcener is invite-only. You can create invitations to share with friends.
                                             </p>
                                         </div>
-                                        <Button size="sm" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm h-8 text-xs">
-                                            Copy Invite Link <Copy className="ml-2 h-3 w-3" />
-                                        </Button>
                                     </div>
                                 </div>
+                                <Button size="sm" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm h-8 text-xs">
+                                    Create an Invitation<Copy className="ml-2 h-3 w-3" />
+                                </Button>
                             </div>
                         </CardContent>
                     </Card>

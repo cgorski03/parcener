@@ -14,8 +14,8 @@ import { ReceiptLayoutShell } from '../layout/receipt-layout-shell'
 import { ReviewReceiptHeader } from './receipt-header'
 import { ReviewItemCard } from '../item-card/review-item-card'
 import { PriceBreakdown } from '../price-breakdown'
-import { ReceiptSummarySheet } from '../receipt-summary-sheet'
-import ReceiptItemSheet from '../edit-item-sheet'
+import { ReceiptSummarySheet } from './receipt-summary-sheet'
+import ReceiptItemSheet from './edit-item-sheet'
 
 export function ErrorReceiptView(props: { attempts: number }) {
     return (
