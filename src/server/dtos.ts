@@ -1,7 +1,7 @@
 import z from 'zod'
 import {
     ReceiptEntityWithItems,
-    ReceiptItemSelect,
+    ReceiptItem,
 } from './db/schema'
 
 // ----- RECEIPT ITEM SCHEMA
@@ -84,6 +84,13 @@ export const getRoomPulseSchema = z.object({
     roomId: z.string().uuid(),
     since: z.date().optional().nullable(),
 })
+
+
+// Invites
+export const inviteIdSearchParamsSchema = z.object({
+    token: z.string().uuid({ version: 'v4' }),
+})
+
 // ------------- CLAIMS SCHEMA
 export const claimItemRequestSchema = z.object({
     roomId: roomIdSchema,
@@ -130,7 +137,7 @@ export const receiptEntityWithReferencesToDtoHelper = (
 export const parseNullable = (v: string | null): number | null =>
     v === null ? null : parseFloat(v)
 
-export const receiptItemEntityToDtoHelper = (item: ReceiptItemSelect) => {
+export const receiptItemEntityToDtoHelper = (item: ReceiptItem) => {
     return {
         receiptItemId: item.id,
         rawText: item.rawText,

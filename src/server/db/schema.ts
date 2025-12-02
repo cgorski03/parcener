@@ -119,6 +119,23 @@ export const claim = pgTable(
     }),
 )
 
+
+export const invite = pgTable(
+    'invite',
+    {
+        id: uuid('id').primaryKey().defaultRandom(),
+        createdBy: uuid('created_by')
+            .notNull()
+            .references(() => user.id, { onDelete: 'cascade' }),
+        createdAt: timestamp('created_at')
+            .notNull()
+            .defaultNow(),
+        usedBy: text('used_by')
+            .references(() => user.id, { onDelete: 'cascade' }),
+        usedAt: timestamp('used_at'),
+    })
+
+
 // ---------- Relations
 // 
 export const receiptRelations = relations(receipt, ({ many }) => ({
@@ -167,6 +184,20 @@ export const claimRelations = relations(claim, ({ one }) => ({
         references: [receiptItem.id],
     }),
 }))
+
+export const inviteRelations = relations(invite, ({ one }) => ({
+    creator: one(user, {
+        fields: [invite.createdBy],
+        references: [user.id],
+        relationName: "invitesCreated"
+    }),
+    redeemer: one(user, {
+        fields: [invite.usedBy],
+        references: [user.id],
+        relationName: "invitesRedeemed"
+    }),
+}))
+
 // ---------- Types
 // 
 export type Receipt = typeof receipt.$inferSelect
@@ -180,6 +211,8 @@ export type ReceiptItem = typeof receiptItem.$inferSelect
 export type NewReceiptItem = typeof receiptItem.$inferInsert
 
 export type AppUser = typeof user.$inferInsert
+
+export type Invite = typeof invite.$inferSelect
 
 export type ReceiptEntityWithItems = Receipt & {
     items: ReceiptItem[]

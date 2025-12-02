@@ -14,6 +14,7 @@ import { useState } from 'react'
 import QRCode from 'react-qr-code'
 import { RoomMemberDto } from '@/server/dtos'
 import { RoomMemberAvatar } from '../room/room-member-avatar'
+import { QrShareSheet } from '../common/qr-code-shareable-sheet'
 
 interface CollaborativeRoomHeaderProps {
     roomName: string
@@ -75,41 +76,23 @@ export function CollaborativeRoomHeader({
 
                 <div className="flex gap-2">
                     {/* Share Sheet / Button */}
-                    <Sheet open={isShareOpen} onOpenChange={setIsShareOpen}>
-                        <SheetTrigger asChild>
-                            <Button
-                                variant="secondary"
-                                size="sm"
-                                className="rounded-full h-9 px-4"
-                            >
+                    <QrShareSheet
+                        value={shareUrl}
+                        title="Invite Friends"
+                        description={
+                            <>
+                                Scan to join <strong>{roomName}</strong>
+                                <br />
+                                or click below to share the link.
+                            </>
+                        }
+                        trigger={
+                            <Button variant="secondary" size="sm" className="rounded-full h-9 px-4">
                                 <Share2 className="h-4 w-4 mr-2" />
                                 Invite
                             </Button>
-                        </SheetTrigger>
-                        <SheetContent side="bottom" className="rounded-t-xl">
-                            <SheetHeader className="mb-6">
-                                <SheetTitle>Invite Friends</SheetTitle>
-                            </SheetHeader>
-                            <div className="flex flex-col items-center justify-center space-y-6 pb-8">
-                                <div className="bg-white p-4 rounded-xl shadow-sm border">
-                                    <QRCode value={shareUrl} size={128} />
-                                </div>
-                                <p className="text-sm text-muted-foreground text-center max-w-xs">
-                                    Scan to join <strong>{roomName}</strong>
-                                    <br />
-                                    or click below to share the link.
-                                </p>
-                                <Button
-                                    className="w-full max-w-sm"
-                                    size="lg"
-                                    onClick={handleNativeShare}
-                                >
-                                    <Share2 className="h-4 w-4 mr-2" />
-                                    Share Link
-                                </Button>
-                            </div>
-                        </SheetContent>
-                    </Sheet>
+                        }
+                    />
                 </div>
             </div>
 
