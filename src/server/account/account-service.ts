@@ -2,8 +2,9 @@ import { eq, and, gte, isNull } from "drizzle-orm";
 import { AppUser, DbType, Invite, invite, receipt, user } from "../db";
 
 const DAILY_UPLOAD_LIMIT = 5;
+const DAILY_INVITE_LIMIT = 1;
 
-export type CanUploadRateLimitResponse = {
+export type RateLimit = {
     used: number,
     limit: number,
 }
@@ -11,7 +12,7 @@ export type CanUploadRateLimitResponse = {
 type NoUploadRateLimitResponse = {
     canUpload: false
 }
-export type RateLimitResponse = NoUploadRateLimitResponse | CanUploadRateLimitResponse;
+export type RateLimitResponse = NoUploadRateLimitResponse | RateLimit;
 export async function getUserRateLimit(db: DbType, user: AppUser): Promise<RateLimitResponse> {
 
     if (!user.canUpload) {
@@ -21,6 +22,15 @@ export async function getUserRateLimit(db: DbType, user: AppUser): Promise<RateL
     return {
         used: uploads.length,
         limit: DAILY_UPLOAD_LIMIT,
+    }
+}
+
+export async function getUserInviteRateLimit(db: DbType, userId: string): Promise<RateLimit> {
+
+    const invitations = await getUserInvitationsToday(db, userId);
+    return {
+        used: invitations.length,
+        limit: DAILY_INVITE_LIMIT,
     }
 }
 
@@ -52,13 +62,36 @@ async function getUserUploadsToday(db: DbType, userId: string) {
         );
 }
 
+export async function authorizeUserCreateInvite(db: DbType, userId: string): Promise<boolean> {
+    const rateLimit = await getUserInviteRateLimit(db, userId);
+    return rateLimit.used < rateLimit.limit;
+}
 
-export type AcceptInvitationResponse {
+async function getUserInvitationsToday(db: DbType, userId: string) {
+    const now = new Date();
+    const startOfDay = new Date(Date.UTC(
+        now.getUTCFullYear(),
+        now.getUTCMonth(),
+        now.getUTCDate()
+    ));
+
+    return await db
+        .select()
+        .from(invite)
+        .where(
+            and(
+                eq(invite.createdBy, userId),
+                gte(invite.createdAt, startOfDay)
+            )
+        );
+}
+
+
+export type AcceptInvitationResponse = {
     success: boolean;
     status: 'SUCCESS' | 'NOT_FOUND' | 'USER_ALREADY_AUTHORIZED' | 'ERROR';
     message?: string;
 }
-
 export async function AcceptInvitationToUpload(
     db: DbType,
     userId: string,
@@ -110,7 +143,18 @@ export async function AcceptInvitationToUpload(
     return { success: true, status: 'SUCCESS' };
 }
 
-
+export async function CreateUploadInvitation(
+    db: DbType,
+    userId: string) {
+    const canCreateInvite = await authorizeUserCreateInvite(db, userId);
+    if (!canCreateInvite) {
+        return "RATE_LIMIT"
+    }
+    const [newInvitation] = await db.insert(invite).values({
+        createdBy: userId
+    }).returning();
+    return newInvitation.id;
+}
 
 
 
