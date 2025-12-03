@@ -2,12 +2,9 @@ import { AccountUploadsSection } from "@/components/account/upload-section";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { Separator } from "@/components/ui/separator";
 import { authClient } from '@/lib/auth-client';
 import { createFileRoute, redirect, Link } from '@tanstack/react-router';
-import { ChevronRight, LogOut, Plus, Receipt, Ticket, Lock, Copy } from "lucide-react";
+import { ChevronRight, LogOut, Plus, Receipt } from "lucide-react";
 import { useState } from "react";
 
 // --- MOCK DATA ---

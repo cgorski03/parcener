@@ -11,9 +11,7 @@ import {
     CardTitle,
 } from '@/components/ui/card'
 import { CheckCircle2, XCircle, ShieldCheck, AlertCircle, ArrowRight, Home } from 'lucide-react'
-import { AcceptInvitationResponse } from '@/server/account/account-service'
-
-
+import { InviteStatus } from '@/server/account/account-service'
 
 export const Route = createFileRoute('/acceptInvite')({
     validateSearch: inviteIdSearchParamsSchema,
@@ -24,14 +22,16 @@ export const Route = createFileRoute('/acceptInvite')({
         return await acceptInviteRpc({ data: { token: deps.token } })
     },
     component: RouteComponent,
-    // TODO Zod error component
 })
 
 function RouteComponent() {
-    const { message, status } = Route.useLoaderData()
+    const { data, message } = Route.useLoaderData()
+
+    const status = (data?.status as InviteStatus) || 'ERROR'
 
     const config = getStatusConfig(status)
     const Icon = config.icon
+
     return (
         <div className="min-h-screen w-full flex items-center justify-center bg-muted/40 p-4">
             <Card className="w-full max-w-md shadow-lg border-border/50">
@@ -41,6 +41,7 @@ function RouteComponent() {
                     </div>
                     <CardTitle className="text-2xl font-bold">{config.title}</CardTitle>
                     <CardDescription className="text-base mt-2">
+                        {/* 3. Use the server message if present, otherwise fallback to static config */}
                         {message || config.description}
                     </CardDescription>
                 </CardHeader>
@@ -59,7 +60,6 @@ function RouteComponent() {
     )
 }
 
-
 type StatusConfig = {
     title: string
     description: string
@@ -71,7 +71,8 @@ type StatusConfig = {
     linkTo: string
 }
 
-function getStatusConfig(status: AcceptInvitationResponse['status']): StatusConfig {
+// 4. Update the argument type to use the local InviteStatus type
+function getStatusConfig(status: InviteStatus): StatusConfig {
     switch (status) {
         case 'SUCCESS':
             return {
@@ -93,7 +94,7 @@ function getStatusConfig(status: AcceptInvitationResponse['status']): StatusConf
                 buttonText: 'Go to Dashboard',
                 buttonIcon: Home,
                 buttonVariant: 'secondary',
-                linkTo: '/', // Change to your dashboard route
+                linkTo: '/',
             }
         case 'NOT_FOUND':
             return {
@@ -120,4 +121,3 @@ function getStatusConfig(status: AcceptInvitationResponse['status']): StatusConf
             }
     }
 }
-
