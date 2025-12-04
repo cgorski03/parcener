@@ -19,7 +19,6 @@ export const getDb = (env: any) => {
 export * from './schema'
 export * from './auth-schema'
 export * as authSchema from './auth-schema'
-export type { ReceiptSelect, ReceiptInsert } from './schema'
 export type DbType = ReturnType<
     typeof drizzle<typeof schema & typeof authSchema>
 >

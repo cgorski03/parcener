@@ -1,6 +1,6 @@
-import { useInviteRateLimit, useUploadRateLimit } from "@/hooks/use-account"
+import { useCreateInvitation, useInviteRateLimit, useUploadRateLimit } from "@/hooks/use-account"
 import { Card, CardContent } from "../ui/card";
-import { Ticket, Lock, Copy, Loader2, CheckCircle2 } from "lucide-react";
+import { Ticket, Lock, Copy, Loader2, CheckCircle2, } from "lucide-react";
 import { Button } from "../ui/button";
 import { Progress } from "../ui/progress";
 import { Separator } from "../ui/separator";
@@ -8,7 +8,6 @@ import { Skeleton } from "../ui/skeleton";
 
 export function AccountUploadsSection() {
     const { data: uploadData, isLoading: isUploadLoading } = useUploadRateLimit();
-    const { data: inviteData, isLoading: isInviteLoading } = useInviteRateLimit();
 
     if (isUploadLoading) {
         return <AccountUploadsSkeleton />
@@ -49,10 +48,7 @@ export function AccountUploadsSection() {
                         <Separator />
 
                         {/* Invite Section */}
-                        <InviteSection
-                            inviteData={inviteData}
-                            isLoading={isInviteLoading}
-                        />
+                        <InviteSection />
                     </CardContent>
                 </Card>
             ) : (
@@ -78,20 +74,19 @@ export function AccountUploadsSection() {
     )
 }
 
-function InviteSection({
-    inviteData,
-    isLoading
-}: {
-    inviteData: { canInvite: boolean; used: number; limit: number } | undefined,
-    isLoading: boolean
-}) {
+
+export function InviteSection() {
+    const { data: inviteData, isLoading: isQueryLoading } = useInviteRateLimit();
+    const { mutate: createInvitation, isPending: isMutationPending } = useCreateInvitation();
+
     // Determine state
     const isMaxedOut = inviteData ? inviteData.used >= inviteData.limit : false;
-    const isDisabled = isLoading || !inviteData?.canInvite || isMaxedOut;
+    const isDisabled = isQueryLoading || !inviteData?.canInvite || isMaxedOut || isMutationPending;
 
     // Determine button text/icon
     const getButtonContent = () => {
-        if (isLoading) return <><Loader2 className="mr-2 h-3 w-3 animate-spin" /> Checking...</>;
+        if (isMutationPending) return <><Loader2 className="mr-2 h-3 w-3 animate-spin" /> Creating...</>;
+        if (isQueryLoading) return <><Loader2 className="mr-2 h-3 w-3 animate-spin" /> Checking...</>;
         if (!inviteData?.canInvite) return <><Lock className="mr-2 h-3 w-3" /> Invites Locked</>;
         if (isMaxedOut) return <><CheckCircle2 className="mr-2 h-3 w-3" /> Daily Limit Reached</>;
         return <>Create an Invitation <Copy className="ml-2 h-3 w-3" /></>;
@@ -122,6 +117,7 @@ function InviteSection({
             <Button
                 size="sm"
                 disabled={isDisabled}
+                onClick={() => createInvitation()}
                 className="w-full h-8 text-xs shadow-sm"
                 variant={isDisabled ? "outline" : "default"}
             >

@@ -1,8 +1,9 @@
 import {
+    createInviteRpc,
     getUserInviteRateLimitRpc,
     getUserUploadRateLimitRpc
 } from "@/server/account/account-rpc"
-import { useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 
 
 export const useUploadRateLimit = () => {
@@ -38,5 +39,51 @@ export const useInviteRateLimit = () => {
         refetchOnMount: false,
         retry: 2,
         retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
+    });
+};
+
+export const useCreateInvitation = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async () => {
+            const result = await createInviteRpc();
+            if (!result.success) {
+                throw new Error(result.message || 'Failed to create invitation');
+            }
+            if (result.data.status !== "SUCCESS") {
+                if (result.data.status === "RATE_LIMIT") {
+                    throw new Error("You've reached your daily invitation limit");
+                }
+                throw new Error("Failed to create invitation");
+            }
+            return result.data;
+        },
+
+        onMutate: async () => {
+            await queryClient.cancelQueries({ queryKey: ['inviteRateLimit'] });
+            const previousData = queryClient.getQueryData(['inviteRateLimit']);
+            queryClient.setQueryData(['inviteRateLimit'], (old: any) => {
+                if (!old) return old;
+                return {
+                    ...old,
+                    used: old.used + 1,
+                    canInvite: old.used + 1 < old.limit,
+                };
+            });
+
+            return { previousData };
+        },
+
+        onError: (error, variables, context) => {
+            if (context?.previousData) {
+                queryClient.setQueryData(['inviteRateLimit'], context.previousData);
+            }
+            console.error("Invitation creation failed:", error);
+        },
+
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: ['inviteRateLimit'] });
+        },
     });
 };
