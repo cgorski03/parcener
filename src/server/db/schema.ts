@@ -124,7 +124,7 @@ export const invite = pgTable(
     'invite',
     {
         id: uuid('id').primaryKey().defaultRandom(),
-        createdBy: uuid('created_by')
+        createdBy: text('created_by')
             .notNull()
             .references(() => user.id, { onDelete: 'cascade' }),
         createdAt: timestamp('created_at')
@@ -212,8 +212,7 @@ export type NewReceiptItem = typeof receiptItem.$inferInsert
 
 export type AppUser = typeof user.$inferInsert
 
-export type Invite = typeof invite.$inferSelect
-
+export type Invite = typeof receiptItem.$inferSelect
 export type ReceiptEntityWithItems = Receipt & {
     items: ReceiptItem[]
 }
