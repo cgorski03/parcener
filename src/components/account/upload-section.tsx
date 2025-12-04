@@ -4,14 +4,12 @@ import { Ticket, Lock, Copy, Loader2, CheckCircle2 } from "lucide-react";
 import { Button } from "../ui/button";
 import { Progress } from "../ui/progress";
 import { Separator } from "../ui/separator";
-import { Skeleton } from "../ui/skeleton"
+import { Skeleton } from "../ui/skeleton";
 
 export function AccountUploadsSection() {
     const { data: uploadData, isLoading: isUploadLoading } = useUploadRateLimit();
     const { data: inviteData, isLoading: isInviteLoading } = useInviteRateLimit();
-    console.log(inviteData)
 
-    // prevent UI flashing or crashing while initial data fetches
     if (isUploadLoading) {
         return <AccountUploadsSkeleton />
     }
@@ -26,7 +24,7 @@ export function AccountUploadsSection() {
 
             {hasAccess ? (
                 /* CASE A: HAS ACCESS */
-                <Card className="py-0 border shadow-sm overflow-hidden">
+                <Card className="py-0 shadow-sm overflow-hidden">
                     <CardContent className="p-0">
                         {/* Upload Limits Section */}
                         <div className="p-4 space-y-3">
@@ -59,17 +57,17 @@ export function AccountUploadsSection() {
                 </Card>
             ) : (
                 /* CASE B: NO ACCESS (Needs Invite) */
-                <Card className="py-0 border border-amber-200 shadow-sm overflow-hidden">
+                <Card className="py-0 shadow-sm overflow-hidden border-dashed">
                     <CardContent className="p-0">
-                        <div className="bg-amber-50/50 p-5 text-center space-y-4">
-                            <div className="bg-amber-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto text-amber-600">
+                        <div className="bg-muted/30 p-5 text-center space-y-4">
+                            <div className="bg-background w-12 h-12 rounded-full flex items-center justify-center mx-auto border shadow-sm text-muted-foreground">
                                 <Lock className="h-5 w-5" />
                             </div>
                             <div className="space-y-1">
-                                <h4 className="font-semibold text-amber-950">Invitation Required</h4>
-                                <p className="text-xs text-amber-800/80 leading-relaxed px-4">
+                                <h4 className="font-semibold text-foreground">Invitation Required</h4>
+                                <p className="text-xs text-muted-foreground leading-relaxed px-4">
                                     To control costs and quality, uploading receipts is currently restricted.
-                                    <br /><span className="font-medium">Ask a friend on Parcener for an invite link.</span>
+                                    <br /><span className="font-medium text-foreground">Ask a friend on Parcener for an invite link.</span>
                                 </p>
                             </div>
                         </div>
@@ -100,22 +98,22 @@ function InviteSection({
     };
 
     return (
-        <div className="bg-gradient-to-b from-indigo-50/50 to-background flex flex-col gap-4 p-4">
+        <div className="bg-muted/20 flex flex-col gap-4 p-4">
             <div className="flex items-start gap-3">
-                <div className="bg-indigo-100 p-2 rounded-full text-indigo-600 shrink-0">
+                <div className="bg-primary/10 p-2 rounded-full text-primary shrink-0">
                     <Ticket className="h-4 w-4" />
                 </div>
                 <div className="space-y-3 flex-1">
                     <div>
                         <div className="flex justify-between items-center">
-                            <h4 className="text-sm font-semibold text-indigo-950">Share Access</h4>
+                            <h4 className="text-sm font-semibold text-foreground">Share Access</h4>
                             {inviteData && (
-                                <span className="text-[10px] font-medium bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">
+                                <span className="text-[10px] font-medium bg-background border text-muted-foreground px-2 py-0.5 rounded-full shadow-sm">
                                     {inviteData.limit - inviteData.used} remaining
                                 </span>
                             )}
                         </div>
-                        <p className="text-xs text-indigo-900/70 mt-0.5 leading-relaxed">
+                        <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
                             Parcener is invite-only. You can create invitations to share with friends.
                         </p>
                     </div>
@@ -124,7 +122,8 @@ function InviteSection({
             <Button
                 size="sm"
                 disabled={isDisabled}
-                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm h-8 text-xs disabled:opacity-70 disabled:cursor-not-allowed"
+                className="w-full h-8 text-xs shadow-sm"
+                variant={isDisabled ? "outline" : "default"}
             >
                 {getButtonContent()}
             </Button>
@@ -138,7 +137,7 @@ function AccountUploadsSkeleton() {
             <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider pl-1">
                 Membership Status
             </h3>
-            <Card className="py-0 border shadow-sm">
+            <Card className="py-0 shadow-sm">
                 <CardContent className="p-4 space-y-4">
                     <div className="space-y-2">
                         <Skeleton className="h-4 w-24" />
