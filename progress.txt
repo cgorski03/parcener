@@ -1,0 +1,4 @@
+set up all the rate limiting endpoints, the invitation creation endpoint
+
+- i need to integrate teh qr code sheet pop up with the onsuccess of the invite generation
+

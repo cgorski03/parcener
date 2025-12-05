@@ -1,32 +1,12 @@
 import { AccountUploadsSection } from "@/components/account/upload-section";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { authClient } from '@/lib/auth-client';
 import { createFileRoute, redirect, Link } from '@tanstack/react-router';
 import { ChevronRight, LogOut, Plus, Receipt } from "lucide-react";
-import { useState } from "react";
-
-// --- MOCK DATA ---
-const useMockRateLimit = (canUploadMock: boolean) => {
-    return {
-        data: {
-            canUpload: canUploadMock,
-            limit: 3,
-            used: 1,
-            resetInHours: 14,
-            planName: canUploadMock ? "Early Adopter" : "Guest",
-            invitesRemaining: 2 // New field: How many friends they can invite
-        }
-    };
-};
-
 const useMockHistory = () => {
     return {
         data: [
-            { id: '1', title: 'Square Peg Pizza', date: 'Oct 24', total: 45.20, role: 'Owner' },
-            { id: '2', title: 'Walmart Grocery', date: 'Oct 22', total: 112.50, role: 'Owner' },
-            { id: '3', title: 'Saturday Brunch', date: 'Oct 18', total: 85.00, role: 'Participant' },
         ]
     };
 };
@@ -38,10 +18,6 @@ export const Route = createFileRoute('/account')({
 function RouteComponent() {
     const { data: session, isPending } = authClient.useSession();
 
-    // DEV TOGGLE: Set to false to see the "Invite Code Required" view
-    const [mockCanUpload] = useState(true);
-
-    const { data: rateLimit } = useMockRateLimit(mockCanUpload);
     const { data: history } = useMockHistory();
 
     if (!isPending && !session) {
@@ -77,9 +53,6 @@ function RouteComponent() {
                     <div className="flex-1 min-w-0 relative z-10">
                         <div className="flex items-center justify-between">
                             <h2 className="font-bold text-lg truncate pr-2">{user?.name}</h2>
-                            <Badge variant={rateLimit.canUpload ? "default" : "outline"} className="rounded-full text-[10px] h-5 px-2 shadow-none border-primary/20 bg-primary/10 text-primary hover:bg-primary/20">
-                                {rateLimit.planName}
-                            </Badge>
                         </div>
                         <p className="text-sm text-muted-foreground truncate">{user?.email}</p>
                     </div>
@@ -94,9 +67,9 @@ function RouteComponent() {
                         <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                             Recent Receipts
                         </h3>
-                        {rateLimit.canUpload && (
+                        {user?.canUpload && (
                             <Link
-                                to="/scan"
+                                to="/upload"
                                 className="text-xs font-medium text-primary hover:underline flex items-center gap-1">
                                 Scan New <Plus className="h-3 w-3" />
                             </Link>

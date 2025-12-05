@@ -2,7 +2,7 @@ import { eq, and, gte } from "drizzle-orm";
 import { AppUser, DbType, invite, receipt } from "../db";
 
 const DAILY_UPLOAD_LIMIT = 5;
-const DAILY_INVITE_LIMIT = 1;
+const DAILY_INVITE_LIMIT = 10;
 
 export interface AccountResponse<T = any> {
     success: boolean;

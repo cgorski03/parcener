@@ -1,10 +1,12 @@
 import { useCreateInvitation, useInviteRateLimit, useUploadRateLimit } from "@/hooks/use-account"
 import { Card, CardContent } from "../ui/card";
-import { Ticket, Lock, Copy, Loader2, CheckCircle2, } from "lucide-react";
+import { Ticket, Lock, Loader2, CheckCircle2, Share, } from "lucide-react";
 import { Button } from "../ui/button";
 import { Progress } from "../ui/progress";
 import { Separator } from "../ui/separator";
 import { Skeleton } from "../ui/skeleton";
+import { useState } from "react";
+import { QrShareSheet } from "../common/qr-code-shareable-sheet";
 
 export function AccountUploadsSection() {
     const { data: uploadData, isLoading: isUploadLoading } = useUploadRateLimit();
@@ -79,6 +81,10 @@ export function InviteSection() {
     const { data: inviteData, isLoading: isQueryLoading } = useInviteRateLimit();
     const { mutate: createInvitation, isPending: isMutationPending } = useCreateInvitation();
 
+    // State for the QR sheet
+    const [isSheetOpen, setIsSheetOpen] = useState(false);
+    const [inviteUrl, setInviteUrl] = useState<string>("");
+
     // Determine state
     const isMaxedOut = inviteData ? inviteData.used >= inviteData.limit : false;
     const isDisabled = isQueryLoading || !inviteData?.canInvite || isMaxedOut || isMutationPending;
@@ -89,41 +95,73 @@ export function InviteSection() {
         if (isQueryLoading) return <><Loader2 className="mr-2 h-3 w-3 animate-spin" /> Checking...</>;
         if (!inviteData?.canInvite) return <><Lock className="mr-2 h-3 w-3" /> Invites Locked</>;
         if (isMaxedOut) return <><CheckCircle2 className="mr-2 h-3 w-3" /> Daily Limit Reached</>;
-        return <>Create an Invitation <Copy className="ml-2 h-3 w-3" /></>;
+        return <>Create an Invitation <Share className="ml-2 h-3 w-3" /></>;
+    };
+
+    const handleCreateInvite = () => {
+        createInvitation(undefined, {
+            onSuccess: (data) => {
+                // Construct the share URL from the returned inviteId
+                const url = `${window.location.origin}/acceptInvite?id=${data.inviteId}`;
+                setInviteUrl(url);
+                setIsSheetOpen(true);
+            },
+            // Errors are handled by the hook's onError
+        });
     };
 
     return (
-        <div className="bg-muted/20 flex flex-col gap-4 p-4">
-            <div className="flex items-start gap-3">
-                <div className="bg-primary/10 p-2 rounded-full text-primary shrink-0">
-                    <Ticket className="h-4 w-4" />
-                </div>
-                <div className="space-y-3 flex-1">
-                    <div>
-                        <div className="flex justify-between items-center">
-                            <h4 className="text-sm font-semibold text-foreground">Share Access</h4>
-                            {inviteData && (
-                                <span className="text-[10px] font-medium bg-background border text-muted-foreground px-2 py-0.5 rounded-full shadow-sm">
-                                    {inviteData.limit - inviteData.used} remaining
-                                </span>
-                            )}
+        <>
+            <div className="bg-muted/20 flex flex-col gap-4 p-4">
+                <div className="flex items-start gap-3">
+                    <div className="bg-primary/10 p-2 rounded-full text-primary shrink-0">
+                        <Ticket className="h-4 w-4" />
+                    </div>
+                    <div className="space-y-3 flex-1">
+                        <div>
+                            <div className="flex justify-between items-center">
+                                <h4 className="text-sm font-semibold text-foreground">Share Access</h4>
+                                {inviteData && (
+                                    <span className="text-[10px] font-medium bg-background border text-muted-foreground px-2 py-0.5 rounded-full shadow-sm">
+                                        {inviteData.limit - inviteData.used} remaining
+                                    </span>
+                                )}
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                                Parcener is invite-only. You can create invitations to share with friends.
+                            </p>
                         </div>
-                        <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-                            Parcener is invite-only. You can create invitations to share with friends.
-                        </p>
                     </div>
                 </div>
+                <Button
+                    size="sm"
+                    disabled={isDisabled}
+                    onClick={handleCreateInvite}
+                    className="w-full h-8 text-xs shadow-sm"
+                    variant={isDisabled ? "outline" : "default"}
+                >
+                    {getButtonContent()}
+                </Button>
             </div>
-            <Button
-                size="sm"
-                disabled={isDisabled}
-                onClick={() => createInvitation()}
-                className="w-full h-8 text-xs shadow-sm"
-                variant={isDisabled ? "outline" : "default"}
-            >
-                {getButtonContent()}
-            </Button>
-        </div>
+
+            {/* Sheet opens programmatically when inviteUrl is set */}
+            {inviteUrl && (
+                <QrShareSheet
+                    title="Invitation Created"
+                    description={
+                        <>
+                            Share this invite link with a friend
+                            <br />
+                            to grant them access to Parcener.
+                        </>
+                    }
+                    value={inviteUrl}
+                    shareText="Copy Invite Link"
+                    open={isSheetOpen}
+                    onOpenChange={setIsSheetOpen}
+                />
+            )}
+        </>
     );
 }
 
