@@ -102,11 +102,10 @@ export function InviteSection() {
         createInvitation(undefined, {
             onSuccess: (data) => {
                 // Construct the share URL from the returned inviteId
-                const url = `${window.location.origin}/acceptInvite?id=${data.inviteId}`;
+                const url = `${window.location.origin}/acceptInvite?token=${data.inviteId}`;
                 setInviteUrl(url);
                 setIsSheetOpen(true);
             },
-            // Errors are handled by the hook's onError
         });
     };
 
@@ -156,7 +155,7 @@ export function InviteSection() {
                         </>
                     }
                     value={inviteUrl}
-                    shareText="Copy Invite Link"
+                    shareText="Share Invite Link"
                     open={isSheetOpen}
                     onOpenChange={setIsSheetOpen}
                 />

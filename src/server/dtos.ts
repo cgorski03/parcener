@@ -37,7 +37,7 @@ export const receiptDtoSchema = z.object({
     subtotal: z.number().nonnegative(),
     tax: z.number().nonnegative(),
     tip: z.number().nonnegative(),
-    grandTotal: z.number().positive(),
+    grandTotal: z.number().nonnegative(),
     createdAt: z.date().nullable(),
     items: z.array(receiptItemDtoSchema),
 })
@@ -130,6 +130,7 @@ export const receiptEntityWithReferencesToDtoHelper = (
         createdAt: entity.createdAt,
         items: entity.items.map(receiptItemEntityToDtoHelper),
     }
+    console.log(transformed);
 
     return receiptDtoSchema.parse(transformed)
 }

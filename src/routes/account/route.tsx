@@ -1,15 +1,10 @@
 import { AccountUploadsSection } from "@/components/account/upload-section";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { useRecentReceipts } from "@/hooks/useGetReceipt";
 import { authClient } from '@/lib/auth-client';
 import { createFileRoute, redirect, Link } from '@tanstack/react-router';
 import { ChevronRight, LogOut, Plus, Receipt } from "lucide-react";
-const useMockHistory = () => {
-    return {
-        data: [
-        ]
-    };
-};
 
 export const Route = createFileRoute('/account')({
     component: RouteComponent,
@@ -17,8 +12,7 @@ export const Route = createFileRoute('/account')({
 
 function RouteComponent() {
     const { data: session, isPending } = authClient.useSession();
-
-    const { data: history } = useMockHistory();
+    const { data: recentReceipts, isLoading: recentReceiptsLoading } = useRecentReceipts();
 
     if (!isPending && !session) {
         throw redirect({ to: '/' });
@@ -77,10 +71,10 @@ function RouteComponent() {
                     </div>
 
                     <div className="bg-background rounded-xl border shadow-sm divide-y">
-                        {history?.map((item) => (
+                        {recentReceipts?.map((receipt) => (
                             <Link
-                                key={item.id}
-                                to={`/receipt/review/${item.id}`}
+                                key={receipt.receiptId}
+                                to={`/receipt/review/${receipt.receiptId}`}
                                 className="flex items-center p-3 hover:bg-muted/50 transition-colors group"
                             >
                                 {/* Compact Icon */}
@@ -91,20 +85,14 @@ function RouteComponent() {
                                 {/* Info - Horizontal Layout */}
                                 <div className="ml-3 flex-1 min-w-0 flex items-center justify-between gap-4">
                                     <div className="min-w-0">
-                                        <h4 className="text-sm font-medium truncate text-foreground">{item.title}</h4>
+                                        <h4 className="text-sm font-medium truncate text-foreground">{receipt.title}</h4>
                                         <div className="flex items-center text-[10px] text-muted-foreground mt-0.5">
-                                            <span>{item.date}</span>
-                                            {item.role !== 'Owner' && (
-                                                <>
-                                                    <span className="mx-1.5">•</span>
-                                                    <span>Shared with you</span>
-                                                </>
-                                            )}
+                                            <span>{receipt.createdAt?.toLocaleDateString()}</span>
                                         </div>
                                     </div>
 
                                     <div className="text-right shrink-0">
-                                        <div className="text-sm font-semibold">${item.total.toFixed(2)}</div>
+                                        <div className="text-sm font-semibold">${receipt.grandTotal.toFixed(2)}</div>
                                     </div>
                                 </div>
 

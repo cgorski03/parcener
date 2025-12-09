@@ -42,7 +42,7 @@ export async function GetUserUploadRateLimit(
     }
 }
 
-export async function getUserInviteRateLimit(
+export async function GetUserInviteRateLimit(
     db: DbType,
     user: AppUser
 ): Promise<AccountResponse<{ canInvite: boolean; used: number; limit: number }>> {
@@ -95,7 +95,7 @@ export async function authorizeUserCreateInvite(
     user: AppUser
 ): Promise<AccountResponse<boolean>> {
     try {
-        const rateLimitResult = await getUserInviteRateLimit(db, user);
+        const rateLimitResult = await GetUserInviteRateLimit(db, user);
 
         if (!rateLimitResult.success) {
             return success(false, rateLimitResult.message);

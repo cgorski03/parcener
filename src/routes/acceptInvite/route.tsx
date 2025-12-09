@@ -1,6 +1,5 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { inviteIdSearchParamsSchema } from '@/server/dtos'
-import { acceptInviteRpc } from '@/server/account/account-rpc'
 import { Button } from '@/components/ui/button'
 import {
     Card,
@@ -11,7 +10,8 @@ import {
     CardTitle,
 } from '@/components/ui/card'
 import { CheckCircle2, XCircle, ShieldCheck, AlertCircle, ArrowRight, Home } from 'lucide-react'
-import { InviteStatus } from '@/server/account/account-service'
+import { acceptInviteRpc } from '@/server/account/account-rpc'
+import { InviteStatus } from '@/server/account/invitation-service'
 
 export const Route = createFileRoute('/acceptInvite')({
     validateSearch: inviteIdSearchParamsSchema,

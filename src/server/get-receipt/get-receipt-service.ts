@@ -12,7 +12,7 @@ import {
 import { isFailed, isProcessing, receiptNotFound } from '@/lib/receipt-utils'
 import { calculateItemTotal, moneyValuesEqual } from '../money-math'
 import { DbType, receipt } from '../db'
-import { and, eq } from 'drizzle-orm'
+import { and, desc, eq } from 'drizzle-orm'
 
 export type GetReceiptResponse =
     | NotFoundResponse
@@ -119,6 +119,22 @@ async function getReceiptWithItemsHelper(
 ) {
     return await db.query.receipt.findFirst({
         where: and(eq(receipt.id, receiptId), eq(receipt.userId, userId)),
+        with: {
+            items: true,
+            processingInfo: true,
+        },
+    })
+}
+
+export async function getUserRecentReceiptsHelper(
+    db: DbType,
+    limit: number,
+    userId: string,
+) {
+    return await db.query.receipt.findMany({
+        orderBy: desc(receipt.createdAt),
+        where: eq(receipt.userId, userId),
+        limit,
         with: {
             items: true,
             processingInfo: true,

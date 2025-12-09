@@ -1,5 +1,4 @@
 import { createFileRoute, notFound } from '@tanstack/react-router'
-import { getReceiptRpc } from '@/server/get-receipt/rpc-get-receipt'
 import { isFailed, isProcessing, receiptNotFound } from '@/lib/receipt-utils'
 import { useGetReceiptReview } from '@/hooks/useGetReceipt'
 import {
@@ -10,29 +9,17 @@ import {
 import { ReviewNotFound } from '@/components/layout/not-found'
 
 export const Route = createFileRoute('/receipt/review/$receiptId')({
-    loader: async ({ params }) => {
-        const receipt = await getReceiptRpc({ data: params.receiptId })
-        if (!receipt || receiptNotFound(receipt)) {
-            console.log('Thorwing the not found')
-            throw notFound()
-        }
-        return receipt
-    },
     component: RouteComponent,
     notFoundComponent: ReviewNotFound,
 })
 
 function RouteComponent() {
-    const receiptInfoFromServer = Route.useLoaderData()
     const { receiptId } = Route.useParams()
 
-    const { data: receipt, isFetching } = useGetReceiptReview(
-        receiptId,
-        receiptInfoFromServer,
-    )
+    const { data: receipt, isFetching } = useGetReceiptReview(receiptId);
 
     if (!receipt || receiptNotFound(receipt)) {
-        throw notFound()
+        throw notFound();
     }
 
     if (isProcessing(receipt)) {
