@@ -13,12 +13,19 @@ import { CheckCircle2, XCircle, ShieldCheck, AlertCircle, ArrowRight, Home } fro
 import { acceptInviteRpc } from '@/server/account/account-rpc'
 import { InviteStatus } from '@/server/account/invitation-service'
 
-export const Route = createFileRoute('/acceptInvite')({
+export const Route = createFileRoute('/_authed/acceptInvite')({
     validateSearch: inviteIdSearchParamsSchema,
     loaderDeps: ({ search }) => ({
         token: search.token,
     }),
-    loader: async ({ deps }) => {
+    loader: async ({ deps, context }) => {
+        if (context.user.canUpload) {
+            // Skip a DB call 
+            return {
+                data: { status: 'USER_ALREADY_AUTHORIZED' as InviteStatus },
+                message: "You are already verified to upload receipts."
+            }
+        }
         return await acceptInviteRpc({ data: { token: deps.token } })
     },
     component: RouteComponent,
@@ -26,7 +33,6 @@ export const Route = createFileRoute('/acceptInvite')({
 
 function RouteComponent() {
     const { data, message } = Route.useLoaderData()
-
     const status = (data?.status as InviteStatus) || 'ERROR'
 
     const config = getStatusConfig(status)

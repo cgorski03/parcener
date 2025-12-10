@@ -11,10 +11,7 @@ export const Route = createFileRoute('/_authed/account')({
 })
 
 function RouteComponent() {
-    const { data: session, isPending } = authClient.useSession();
-    if (isPending) return null;
-
-    const user = session?.user;
+    const { user } = Route.useRouteContext();
 
     return (
         <div className="min-h-screen bg-muted/20 pb-20 font-sans">

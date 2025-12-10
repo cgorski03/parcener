@@ -4,11 +4,14 @@ import { inviteIdSearchParamsSchema } from "../dtos"
 import { GetUserInviteRateLimit, GetUserUploadRateLimit } from "./rate-limit-service"
 import { AcceptInvitationToUpload, CreateUploadInvitation } from "./invitation-service"
 import { GetRecentReceipts } from "./account-service"
+import { getServerSession } from "../auth/get-server-session"
+import { getRequest } from "@tanstack/react-start/server"
 
 export const getUserRpc = createServerFn({ method: 'GET' })
-    .middleware([protectedFunctionMiddleware])
     .handler(async ({ context }) => {
-        return context.user;
+        const request = getRequest();
+        const session = await getServerSession(request, context.auth);
+        return session?.user;
     })
 
 export const getUserUploadRateLimitRpc = createServerFn({ method: 'GET' })

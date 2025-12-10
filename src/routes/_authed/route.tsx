@@ -1,11 +1,15 @@
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
-import { authClient } from '@/lib/auth-client'
+import { AppUser } from '@/server/db';
+import { getUserRpc } from '@/server/account/account-rpc';
+
+type AuthedContext = {
+    user: AppUser;
+}
 
 export const Route = createFileRoute('/_authed')({
     beforeLoad: async ({ location }) => {
-        const session = await authClient.getSession()
-
-        if (!session.data) {
+        const user = await getUserRpc();
+        if (!user) {
             throw redirect({
                 to: '/login',
                 search: {
@@ -13,6 +17,8 @@ export const Route = createFileRoute('/_authed')({
                 },
             })
         }
+
+        return { user } as AuthedContext;
     },
-    component: () => <Outlet />, // Render the child route (account.tsx)
+    component: () => <Outlet />,
 })
