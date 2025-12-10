@@ -5,6 +5,12 @@ import { GetUserInviteRateLimit, GetUserUploadRateLimit } from "./rate-limit-ser
 import { AcceptInvitationToUpload, CreateUploadInvitation } from "./invitation-service"
 import { GetRecentReceipts } from "./account-service"
 
+export const getUserRpc = createServerFn({ method: 'GET' })
+    .middleware([protectedFunctionMiddleware])
+    .handler(async ({ context }) => {
+        return context.user;
+    })
+
 export const getUserUploadRateLimitRpc = createServerFn({ method: 'GET' })
     .middleware([protectedFunctionMiddleware])
     .handler(async ({ context }) => {
