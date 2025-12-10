@@ -10,25 +10,19 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as UploadRouteRouteImport } from './routes/upload/route'
 import { Route as AuthedRouteRouteImport } from './routes/_authed/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthedUploadRouteImport } from './routes/_authed/upload'
 import { Route as AuthedAccountRouteImport } from './routes/_authed/account'
 import { Route as AuthedAcceptInviteRouteImport } from './routes/_authed/acceptInvite'
-import { Route as ReceiptReviewRouteRouteImport } from './routes/receipt/review/route'
 import { Route as ReceiptParceRouteRouteImport } from './routes/receipt/parce/route'
-import { Route as ReceiptReviewReceiptIdRouteImport } from './routes/receipt/review/$receiptId'
 import { Route as ReceiptParceRoomIdRouteImport } from './routes/receipt/parce/$roomId'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as AuthedReceiptReviewReceiptIdRouteImport } from './routes/_authed/receipt.review.$receiptId'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const UploadRouteRoute = UploadRouteRouteImport.update({
-  id: '/upload',
-  path: '/upload',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthedRouteRoute = AuthedRouteRouteImport.update({
@@ -40,6 +34,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthedUploadRoute = AuthedUploadRouteImport.update({
+  id: '/upload',
+  path: '/upload',
+  getParentRoute: () => AuthedRouteRoute,
+} as any)
 const AuthedAccountRoute = AuthedAccountRouteImport.update({
   id: '/account',
   path: '/account',
@@ -50,20 +49,10 @@ const AuthedAcceptInviteRoute = AuthedAcceptInviteRouteImport.update({
   path: '/acceptInvite',
   getParentRoute: () => AuthedRouteRoute,
 } as any)
-const ReceiptReviewRouteRoute = ReceiptReviewRouteRouteImport.update({
-  id: '/receipt/review',
-  path: '/receipt/review',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ReceiptParceRouteRoute = ReceiptParceRouteRouteImport.update({
   id: '/receipt/parce',
   path: '/receipt/parce',
   getParentRoute: () => rootRouteImport,
-} as any)
-const ReceiptReviewReceiptIdRoute = ReceiptReviewReceiptIdRouteImport.update({
-  id: '/$receiptId',
-  path: '/$receiptId',
-  getParentRoute: () => ReceiptReviewRouteRoute,
 } as any)
 const ReceiptParceRoomIdRoute = ReceiptParceRoomIdRouteImport.update({
   id: '/$roomId',
@@ -75,67 +64,68 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthedReceiptReviewReceiptIdRoute =
+  AuthedReceiptReviewReceiptIdRouteImport.update({
+    id: '/receipt/review/$receiptId',
+    path: '/receipt/review/$receiptId',
+    getParentRoute: () => AuthedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/upload': typeof UploadRouteRoute
   '/login': typeof LoginRoute
   '/receipt/parce': typeof ReceiptParceRouteRouteWithChildren
-  '/receipt/review': typeof ReceiptReviewRouteRouteWithChildren
   '/acceptInvite': typeof AuthedAcceptInviteRoute
   '/account': typeof AuthedAccountRoute
+  '/upload': typeof AuthedUploadRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/receipt/parce/$roomId': typeof ReceiptParceRoomIdRoute
-  '/receipt/review/$receiptId': typeof ReceiptReviewReceiptIdRoute
+  '/receipt/review/$receiptId': typeof AuthedReceiptReviewReceiptIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/upload': typeof UploadRouteRoute
   '/login': typeof LoginRoute
   '/receipt/parce': typeof ReceiptParceRouteRouteWithChildren
-  '/receipt/review': typeof ReceiptReviewRouteRouteWithChildren
   '/acceptInvite': typeof AuthedAcceptInviteRoute
   '/account': typeof AuthedAccountRoute
+  '/upload': typeof AuthedUploadRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/receipt/parce/$roomId': typeof ReceiptParceRoomIdRoute
-  '/receipt/review/$receiptId': typeof ReceiptReviewReceiptIdRoute
+  '/receipt/review/$receiptId': typeof AuthedReceiptReviewReceiptIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authed': typeof AuthedRouteRouteWithChildren
-  '/upload': typeof UploadRouteRoute
   '/login': typeof LoginRoute
   '/receipt/parce': typeof ReceiptParceRouteRouteWithChildren
-  '/receipt/review': typeof ReceiptReviewRouteRouteWithChildren
   '/_authed/acceptInvite': typeof AuthedAcceptInviteRoute
   '/_authed/account': typeof AuthedAccountRoute
+  '/_authed/upload': typeof AuthedUploadRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/receipt/parce/$roomId': typeof ReceiptParceRoomIdRoute
-  '/receipt/review/$receiptId': typeof ReceiptReviewReceiptIdRoute
+  '/_authed/receipt/review/$receiptId': typeof AuthedReceiptReviewReceiptIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/upload'
     | '/login'
     | '/receipt/parce'
-    | '/receipt/review'
     | '/acceptInvite'
     | '/account'
+    | '/upload'
     | '/api/auth/$'
     | '/receipt/parce/$roomId'
     | '/receipt/review/$receiptId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/upload'
     | '/login'
     | '/receipt/parce'
-    | '/receipt/review'
     | '/acceptInvite'
     | '/account'
+    | '/upload'
     | '/api/auth/$'
     | '/receipt/parce/$roomId'
     | '/receipt/review/$receiptId'
@@ -143,24 +133,21 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authed'
-    | '/upload'
     | '/login'
     | '/receipt/parce'
-    | '/receipt/review'
     | '/_authed/acceptInvite'
     | '/_authed/account'
+    | '/_authed/upload'
     | '/api/auth/$'
     | '/receipt/parce/$roomId'
-    | '/receipt/review/$receiptId'
+    | '/_authed/receipt/review/$receiptId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthedRouteRoute: typeof AuthedRouteRouteWithChildren
-  UploadRouteRoute: typeof UploadRouteRoute
   LoginRoute: typeof LoginRoute
   ReceiptParceRouteRoute: typeof ReceiptParceRouteRouteWithChildren
-  ReceiptReviewRouteRoute: typeof ReceiptReviewRouteRouteWithChildren
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
@@ -171,13 +158,6 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/upload': {
-      id: '/upload'
-      path: '/upload'
-      fullPath: '/upload'
-      preLoaderRoute: typeof UploadRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authed': {
@@ -194,6 +174,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authed/upload': {
+      id: '/_authed/upload'
+      path: '/upload'
+      fullPath: '/upload'
+      preLoaderRoute: typeof AuthedUploadRouteImport
+      parentRoute: typeof AuthedRouteRoute
+    }
     '/_authed/account': {
       id: '/_authed/account'
       path: '/account'
@@ -208,26 +195,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedAcceptInviteRouteImport
       parentRoute: typeof AuthedRouteRoute
     }
-    '/receipt/review': {
-      id: '/receipt/review'
-      path: '/receipt/review'
-      fullPath: '/receipt/review'
-      preLoaderRoute: typeof ReceiptReviewRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/receipt/parce': {
       id: '/receipt/parce'
       path: '/receipt/parce'
       fullPath: '/receipt/parce'
       preLoaderRoute: typeof ReceiptParceRouteRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/receipt/review/$receiptId': {
-      id: '/receipt/review/$receiptId'
-      path: '/$receiptId'
-      fullPath: '/receipt/review/$receiptId'
-      preLoaderRoute: typeof ReceiptReviewReceiptIdRouteImport
-      parentRoute: typeof ReceiptReviewRouteRoute
     }
     '/receipt/parce/$roomId': {
       id: '/receipt/parce/$roomId'
@@ -243,17 +216,28 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authed/receipt/review/$receiptId': {
+      id: '/_authed/receipt/review/$receiptId'
+      path: '/receipt/review/$receiptId'
+      fullPath: '/receipt/review/$receiptId'
+      preLoaderRoute: typeof AuthedReceiptReviewReceiptIdRouteImport
+      parentRoute: typeof AuthedRouteRoute
+    }
   }
 }
 
 interface AuthedRouteRouteChildren {
   AuthedAcceptInviteRoute: typeof AuthedAcceptInviteRoute
   AuthedAccountRoute: typeof AuthedAccountRoute
+  AuthedUploadRoute: typeof AuthedUploadRoute
+  AuthedReceiptReviewReceiptIdRoute: typeof AuthedReceiptReviewReceiptIdRoute
 }
 
 const AuthedRouteRouteChildren: AuthedRouteRouteChildren = {
   AuthedAcceptInviteRoute: AuthedAcceptInviteRoute,
   AuthedAccountRoute: AuthedAccountRoute,
+  AuthedUploadRoute: AuthedUploadRoute,
+  AuthedReceiptReviewReceiptIdRoute: AuthedReceiptReviewReceiptIdRoute,
 }
 
 const AuthedRouteRouteWithChildren = AuthedRouteRoute._addFileChildren(
@@ -271,24 +255,11 @@ const ReceiptParceRouteRouteChildren: ReceiptParceRouteRouteChildren = {
 const ReceiptParceRouteRouteWithChildren =
   ReceiptParceRouteRoute._addFileChildren(ReceiptParceRouteRouteChildren)
 
-interface ReceiptReviewRouteRouteChildren {
-  ReceiptReviewReceiptIdRoute: typeof ReceiptReviewReceiptIdRoute
-}
-
-const ReceiptReviewRouteRouteChildren: ReceiptReviewRouteRouteChildren = {
-  ReceiptReviewReceiptIdRoute: ReceiptReviewReceiptIdRoute,
-}
-
-const ReceiptReviewRouteRouteWithChildren =
-  ReceiptReviewRouteRoute._addFileChildren(ReceiptReviewRouteRouteChildren)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthedRouteRoute: AuthedRouteRouteWithChildren,
-  UploadRouteRoute: UploadRouteRoute,
   LoginRoute: LoginRoute,
   ReceiptParceRouteRoute: ReceiptParceRouteRouteWithChildren,
-  ReceiptReviewRouteRoute: ReceiptReviewRouteRouteWithChildren,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
 export const routeTree = rootRouteImport

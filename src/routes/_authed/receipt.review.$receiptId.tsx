@@ -8,14 +8,13 @@ import {
 } from '@/components/review/views'
 import { ReviewNotFound } from '@/components/layout/not-found'
 
-export const Route = createFileRoute('/receipt/review/$receiptId')({
+export const Route = createFileRoute('/_authed/receipt/review/$receiptId')({
     component: RouteComponent,
     notFoundComponent: ReviewNotFound,
 })
 
 function RouteComponent() {
     const { receiptId } = Route.useParams()
-
     const { data: receipt, isFetching } = useGetReceiptReview(receiptId);
 
     if (!receipt || receiptNotFound(receipt)) {
