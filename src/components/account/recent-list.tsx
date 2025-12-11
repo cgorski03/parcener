@@ -9,8 +9,8 @@ interface RecentListProps<T> {
         icon: React.ReactNode;
         title: string;
         description: string;
-        cta: string;
-        ctaLink: string;
+        cta?: string;
+        ctaLink?: string;
     };
     renderItem: (item: T) => React.ReactNode;
     addButton?: {
@@ -62,11 +62,15 @@ export function RecentList<T>({
                     <p className="text-sm font-medium text-foreground mb-1">{emptyState.title}</p>
                     <p className="text-xs text-muted-foreground mb-4">{emptyState.description}</p>
                 </div>
-                <Link to={emptyState.ctaLink} className="block">
-                    <Button className="w-full bg-primary text-primary-foreground shadow-md hover:bg-primary/90">
-                        {emptyState.cta}
-                    </Button>
-                </Link>
+                {
+                    emptyState.ctaLink && emptyState.cta &&
+                    (<Link to={emptyState.ctaLink} className="block">
+                        <Button className="w-full bg-primary text-primary-foreground shadow-md hover:bg-primary/90">
+                            {emptyState.cta}
+                        </Button>
+                    </Link>
+                    )
+                }
             </div>
         );
     }

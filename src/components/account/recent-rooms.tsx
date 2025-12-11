@@ -1,6 +1,6 @@
 import { useRecentRooms } from '@/hooks/useRoom';
 import { RecentRoomInfoDto } from '@/server/dtos';
-import { Users, Plus, ChevronRight } from 'lucide-react';
+import { Users, ChevronRight } from 'lucide-react';
 import { RecentList } from './recent-list';
 import { Link } from '@tanstack/react-router';
 
@@ -15,14 +15,7 @@ export function RecentRooms() {
             emptyState={{
                 icon: <Users className="h-10 w-10 text-muted-foreground mx-auto mb-3" />,
                 title: "No rooms yet",
-                description: "Create a room to start splitting bills",
-                cta: "Create Your First Room",
-                ctaLink: "/rooms/create",
-            }}
-            addButton={{
-                link: "/rooms/create",
-                text: "Create Room",
-                icon: <Plus className="h-4 w-4 mr-1.5" />,
+                description: "Join or create a room to start splitting bills",
             }}
             renderItem={({ joinedAt, room }: RecentRoomInfoDto) => (
                 <Link
