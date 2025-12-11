@@ -45,7 +45,7 @@ export const receiptDtoSchema = z.object({
 // ---------- ROOM SCHEMA
 export const roomIdSchema = z.string().uuid({ version: 'v4' });
 export const roomMemberIdSchema = z.string().uuid({ version: 'v4' });
-export const userIdSchema = z.string().uuid({ version: 'v4' });
+export const userIdSchema = z.string().length(32);
 
 export const roomSchema = z.object({
     roomId: roomIdSchema,
@@ -115,11 +115,14 @@ export type FullRoomInfoDto = RoomDto & {
     claims: any[]
     members: RoomMemberDto[]
 }
+export type RecentRoomInfoDto = {
+    joinedAt: string;
+    room: RoomDto;
+}
 
 export const receiptEntityWithReferencesToDtoHelper = (
-    entity: ReceiptEntityWithItems | null,
-): ReceiptDto | null => {
-    if (!entity) return null
+    entity: ReceiptEntityWithItems,
+): ReceiptDto => {
     const transformed = {
         receiptId: entity.id,
         title: entity.title,
@@ -130,8 +133,6 @@ export const receiptEntityWithReferencesToDtoHelper = (
         createdAt: entity.createdAt,
         items: entity.items.map(receiptItemEntityToDtoHelper),
     }
-    console.log(transformed);
-
     return receiptDtoSchema.parse(transformed)
 }
 

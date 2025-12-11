@@ -3,7 +3,7 @@ import { protectedFunctionMiddleware } from "../auth/protected-function"
 import { inviteIdSearchParamsSchema } from "../dtos"
 import { GetUserInviteRateLimit, GetUserUploadRateLimit } from "./rate-limit-service"
 import { AcceptInvitationToUpload, CreateUploadInvitation } from "./invitation-service"
-import { GetRecentReceipts } from "./account-service"
+import { GetRecentReceipts, GetRecentRooms } from "./account-service"
 import { getServerSession } from "../auth/get-server-session"
 import { getRequest } from "@tanstack/react-start/server"
 
@@ -30,6 +30,12 @@ export const getUserRecentReceipts = createServerFn({ method: 'GET' })
     .middleware([protectedFunctionMiddleware])
     .handler(async ({ context }) => {
         return await GetRecentReceipts(context.db, context.user)
+    })
+
+export const getUserRecentRooms = createServerFn({ method: 'GET' })
+    .middleware([protectedFunctionMiddleware])
+    .handler(async ({ context }) => {
+        return await GetRecentRooms(context.db, context.user)
     })
 
 export const createInviteRpc = createServerFn({ method: 'POST' })

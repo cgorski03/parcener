@@ -1,3 +1,4 @@
+import { getUserRecentRooms } from '@/server/account/account-rpc'
 import { FullRoomInfoDto } from '@/server/dtos'
 import { createRoomRpc, getRoomPulseRpc } from '@/server/room/room-rpc'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -37,6 +38,16 @@ export const useGetRoomPulse = (initialData: FullRoomInfoDto) => {
         },
     })
 }
+
+export function useRecentRooms() {
+    return useQuery({
+        queryKey: [...RoomQueryKeys.all, 'recent'],
+        queryFn: async () => await getUserRecentRooms(),
+        staleTime: 1000 * 60 * 5,
+    });
+}
+
+
 export function useCreateReceiptRoom() {
     return useMutation({
         mutationFn: async (receiptId: string) => {

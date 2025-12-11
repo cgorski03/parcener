@@ -1,5 +1,6 @@
-import { AppUser, DbType } from "../db";
-import { receiptEntityWithReferencesToDtoHelper } from "../dtos";
+import { desc, eq } from "drizzle-orm";
+import { AppUser, DbType, room, roomMember } from "../db";
+import { receiptEntityWithReferencesToDtoHelper, RecentRoomInfoDto, roomSchema } from "../dtos";
 import { getUserRecentReceiptsHelper } from "../get-receipt/get-receipt-service";
 
 export async function GetRecentReceipts(
@@ -18,7 +19,29 @@ export async function GetRecentReceipts(
 export async function GetRecentRooms(
     db: DbType,
     user: AppUser
-) {
+): Promise<RecentRoomInfoDto[]> {
+    const roomMembers = await db
+        .select({
+            joinedAt: roomMember.joinedAt,
+            room: {
+                roomId: room.id,
+                receiptId: room.receiptId,
+                title: room.title,
+                createdBy: room.createdBy,
+                createdAt: room.createdAt,
+                updatedAt: room.updatedAt,
+            },
+        })
+        .from(roomMember)
+        .innerJoin(room, eq(roomMember.roomId, room.id))
+        .where(eq(roomMember.userId, user.id))
+        .orderBy(desc(roomMember.joinedAt))
+        .limit(5);
 
+    const result = roomMembers.map(({ joinedAt, room }) => ({
+        joinedAt: joinedAt.toISOString(),
+        room: roomSchema.parse(room),
+    }));
+    return result;
 }
 
