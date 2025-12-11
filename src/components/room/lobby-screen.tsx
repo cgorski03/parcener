@@ -3,14 +3,15 @@ import { useRouter } from '@tanstack/react-router'
 import { useMutation } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
-import { Loader2, Receipt, ArrowRight, User } from 'lucide-react'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Loader2, ArrowRight, User } from 'lucide-react'
 import { joinRoomRpc } from '@/server/room/room-rpc'
 import type { User as UserType } from 'better-auth'
-import GithubIcon from '../icons/github'
 import { authClient } from '@/lib/auth-client'
 import { RoomMemberAvatar } from './room-member-avatar'
 import { FullRoomInfoDto } from '@/server/dtos'
+import { PageShell } from '../layout/branded-page-shell'
+import { BrandedCardFooter } from '../layout/branded-footer'
 
 interface LobbyScreenProps {
     room: FullRoomInfoDto
@@ -39,17 +40,7 @@ export function LobbyScreen({ room, user }: LobbyScreenProps) {
     const subtotal = room.receipt?.subtotal ?? 0
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-muted/40 to-background flex flex-col items-center justify-center p-4 relative overflow-hidden">
-            {/* Background Decoration */}
-            <div className="absolute top-[-10%] right-[-5%] w-96 h-96 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute bottom-[-10%] left-[-5%] w-96 h-96 bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
-
-            {/*BRanding*/}
-            <div className="absolute top-8 flex items-center gap-2 text-foreground/80">
-                <Receipt className="h-6 w-6 text-primary" />
-                <span className="text-xl font-bold tracking-tight">Parcener</span>
-            </div>
-
+        <PageShell>
             <Card className="w-full max-w-md shadow-2xl border-t-4 border-t-primary">
                 <CardHeader className="text-center space-y-4 pb-2">
                     <div>
@@ -70,6 +61,7 @@ export function LobbyScreen({ room, user }: LobbyScreenProps) {
                             <div className="flex -space-x-3 hover:space-x-1 transition-all duration-300">
                                 {room.members.slice(0, 5).map((m) => (
                                     <RoomMemberAvatar
+                                        key={m.roomMemberId}
                                         id={m.roomMemberId}
                                         avatarUrl={m.avatarUrl}
                                         displayName={m.displayName}
@@ -130,20 +122,9 @@ export function LobbyScreen({ room, user }: LobbyScreenProps) {
                     )}
                 </CardContent>
 
-                <div className="h-1 w-full bg-gradient-to-r from-transparent via-muted to-transparent opacity-50" />
-
-                <CardFooter className="flex flex-col gap-4 py-6 bg-muted/10">
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground/80">
-                        <GithubIcon size={16} className="text-secondary" />
-                        <span>Completely free & open source</span>
-                    </div>
-                </CardFooter>
+                <BrandedCardFooter />
             </Card>
-
-            <div className="mt-8 text-[10px] text-muted-foreground/40">
-                © {new Date().getFullYear()} Parcener. Built for friends.
-            </div>
-        </div>
+        </PageShell>
     )
 }
 

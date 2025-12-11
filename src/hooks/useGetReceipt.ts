@@ -1,6 +1,5 @@
 import { isProcessing } from '@/lib/receipt-utils'
 import { getUserRecentReceipts } from '@/server/account/account-rpc'
-import { GetReceiptResponse } from '@/server/get-receipt/get-receipt-service'
 import {
     getReceiptRpc,
     getReceiptIsValidRpc,
@@ -10,6 +9,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 export const ReceiptQueryKeys = {
     all: ['receipts'] as const,
     validation: ['validations'] as const,
+    recents: () => [...ReceiptQueryKeys.all, 'recents'] as const,
     detail: (id: string) => [...ReceiptQueryKeys.all, id] as const,
     valid: (id: string) => [...ReceiptQueryKeys.validation, id] as const,
 }
@@ -39,7 +39,7 @@ export function useGetReceiptReview(
 export function useRecentReceipts() {
     const queryClient = useQueryClient();
     return useQuery({
-        queryKey: [...ReceiptQueryKeys.all, 'recent'],
+        queryKey: ReceiptQueryKeys.recents(),
         queryFn: async () => {
             const receipts = await getUserRecentReceipts();
             if (!receipts) {
@@ -59,6 +59,7 @@ export function useRecentReceipts() {
         staleTime: 1000 * 60 * 5,
     });
 }
+
 
 export const useReceiptIsValid = (receiptId: string) =>
     useQuery({

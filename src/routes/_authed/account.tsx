@@ -30,14 +30,14 @@ function RouteComponent() {
                     {/* Decorative blur blob for extra texture */}
                     <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -translate-y-16 translate-x-16 pointer-events-none" />
 
-                    <Avatar className="h-14 w-14 border-2 border-background shadow-sm relative z-10">
+                    <Avatar className="h-14 w-14 border-2 border-background shadow-sm relative z-3">
                         <AvatarImage src={user?.image || undefined} />
                         <AvatarFallback className="bg-primary text-primary-foreground font-bold text-lg">
                             {user?.name?.[0] || "U"}
                         </AvatarFallback>
                     </Avatar>
 
-                    <div className="flex-1 min-w-0 relative z-10">
+                    <div className="flex-1 min-w-0 relative z-3">
                         <div className="flex items-center justify-between">
                             <h2 className="font-bold text-lg truncate pr-2">{user?.name}</h2>
                         </div>

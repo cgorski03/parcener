@@ -10,7 +10,8 @@ import {
     CardTitle,
 } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { uploadReceipt } from '@/server/processing/rpc-processing'
+import { useUploadReceipt } from '@/hooks/use-upload-receipt'
+import { BrandedPageShell } from '@/components/layout/branded-page-shell'
 
 export const Route = createFileRoute('/_authed/upload')({
     component: UploadComponent,
@@ -18,48 +19,34 @@ export const Route = createFileRoute('/_authed/upload')({
 
 function UploadComponent() {
     const [file, setFile] = useState<File | null>(null)
-    const [loading, setLoading] = useState(false)
-    const [error, setError] = useState('')
     const router = useRouter()
+    const { mutateAsync: uploadReceipt, error, isPending } = useUploadReceipt()
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFile = e.target.files?.[0]
         if (selectedFile) {
-            if (selectedFile.size > 10 * 1024 * 1024) {
-                setError('File too large (max 10MB)')
-                return
-            }
             setFile(selectedFile)
-            setError('')
         }
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         if (!file) {
-            setError('Please fill in all fields')
             return
         }
 
-        setLoading(true)
-        setError('')
+        const formData = new FormData()
+        formData.append('file', file)
 
-        try {
-            const formData = new FormData()
-            formData.append('file', file)
+        const result = await uploadReceipt(formData)
 
-            const { receiptId } = await uploadReceipt({ data: formData })
-            router.navigate({ to: `/receipt/review/${receiptId}` })
-        } catch (err) {
-            const message = err instanceof Error ? err.message : 'Upload failed'
-            setError(message)
-        } finally {
-            setLoading(false)
+        if (result?.receiptId) {
+            router.navigate({ to: `/receipt/review/${result.receiptId}` })
         }
     }
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-primary-foreground p-4">
+        <BrandedPageShell>
             <Card className="w-full max-w-md">
                 <CardHeader>
                     <CardTitle>Split a Receipt</CardTitle>
@@ -71,7 +58,6 @@ function UploadComponent() {
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div className="space-y-2">
                             <label htmlFor="receipt" className="text-sm font-medium">
-                                {' '}
                                 Receipt Image
                             </label>
                             <Input
@@ -79,27 +65,29 @@ function UploadComponent() {
                                 type="file"
                                 accept="image/*"
                                 onChange={handleFileChange}
-                                disabled={loading}
+                                disabled={isPending}
                             />
                             {file && <p className="text-sm text-gray-600">✓ {file.name}</p>}
                         </div>
 
                         {error && (
                             <Alert variant="destructive">
-                                <AlertDescription>{error}</AlertDescription>
+                                <AlertDescription>
+                                    {error instanceof Error ? error.message : 'Upload failed'}
+                                </AlertDescription>
                             </Alert>
                         )}
 
                         <Button
                             type="submit"
-                            disabled={loading || !file}
+                            disabled={isPending || !file}
                             className="w-full bg-primary"
                         >
-                            {loading ? 'Uploading...' : 'Split Receipt'}
+                            {isPending ? 'Uploading...' : 'Split Receipt'}
                         </Button>
                     </form>
                 </CardContent>
             </Card>
-        </div>
+        </BrandedPageShell >
     )
 }
