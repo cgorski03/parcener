@@ -75,7 +75,7 @@ export const useCreateInvitation = () => {
             return { previousData };
         },
 
-        onError: (error, variables, context) => {
+        onError: (error, _, context) => {
             if (context?.previousData) {
                 queryClient.setQueryData(['inviteRateLimit'], context.previousData);
             }

@@ -1,8 +1,8 @@
 import {
+    NewReceiptItem,
     receipt,
     receiptItem,
     receiptProcessingInformation,
-    type ReceiptItemInsert,
 } from '../db/schema'
 import { eq } from 'drizzle-orm'
 import { ParsedReceipt } from './types'
@@ -49,7 +49,6 @@ export async function createProcessingError(
     },
     err: Error | unknown,
 ) {
-    console.log('Creating processing error record for ', request.runId)
     await db
         .update(receiptProcessingInformation)
         .set({
@@ -84,7 +83,7 @@ export async function saveReceiptInformation(
         })
         .where(eq(receipt.id, id))
 
-    const itemDbObject: ReceiptItemInsert[] = parsedReceipt.items.map((item) => ({
+    const itemDbObject: NewReceiptItem[] = parsedReceipt.items.map((item) => ({
         receiptId: id,
         price: item.price?.toString() ?? null,
         rawText: item.rawText,

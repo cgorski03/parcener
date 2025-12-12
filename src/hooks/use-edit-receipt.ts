@@ -6,7 +6,7 @@ import {
     finalizeReceiptTotalsRpc,
 } from '@/server/edit-receipt/rpc-put-receipt'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { ReceiptQueryKeys } from './useGetReceipt'
+import { ReceiptQueryKeys } from './use-get-receipt'
 
 export function useDeleteReceiptItem() {
     const queryClient = useQueryClient()

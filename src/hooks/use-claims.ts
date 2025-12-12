@@ -1,7 +1,7 @@
 import { claimItemRpc } from '@/server/room/room-rpc'
 import type { FullRoomInfoDto, RoomMembership } from '@/server/dtos'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { RoomQueryKeys } from './useRoom'
+import { RoomQueryKeys } from './use-room'
 import { useMemo } from 'react'
 import { ReceiptItemDto } from '@/server/dtos'
 import { generateId } from 'ai'

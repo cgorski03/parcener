@@ -1,7 +1,7 @@
-import { useRecentReceipts } from '@/hooks/useGetReceipt';
 import { Receipt, Plus, ChevronRight } from 'lucide-react';
 import { RecentList } from './recent-list';
 import { Link } from '@tanstack/react-router';
+import { useRecentReceipts } from '@/hooks/use-get-receipt';
 
 export function RecentUploads() {
     const { data, isLoading } = useRecentReceipts();
@@ -26,7 +26,8 @@ export function RecentUploads() {
             renderItem={(receipt) => (
                 <Link
                     key={receipt.receiptId}
-                    to={`/receipt/review/${receipt.receiptId}`}
+                    to='/receipt/review/$receiptId'
+                    params={{ receiptId: receipt.receiptId }}
                     className="flex items-center p-3 hover:bg-muted/50 transition-colors group"
                 >
                     <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center shrink-0 border">

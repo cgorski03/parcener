@@ -1,6 +1,6 @@
 import { uploadReceipt } from "@/server/processing/rpc-processing"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { ReceiptQueryKeys } from "./useGetReceipt"
+import { ReceiptQueryKeys } from "./use-get-receipt"
 
 export function useUploadReceipt() {
     const queryClient = useQueryClient()

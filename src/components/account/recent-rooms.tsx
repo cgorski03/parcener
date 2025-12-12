@@ -1,4 +1,4 @@
-import { useRecentRooms } from '@/hooks/useRoom';
+import { useRecentRooms } from '@/hooks/use-room';
 import { RecentRoomInfoDto } from '@/server/dtos';
 import { Users, ChevronRight } from 'lucide-react';
 import { RecentList } from './recent-list';
@@ -20,7 +20,8 @@ export function RecentRooms() {
             renderItem={({ joinedAt, room }: RecentRoomInfoDto) => (
                 <Link
                     key={room.roomId}
-                    to={`/receipt/parce/${room.roomId}`}
+                    to='/receipt/parce/$roomId'
+                    params={{ roomId: room.roomId }}
                     className="flex items-center p-3 hover:bg-muted/50 transition-colors group"
                 >
                     <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center shrink-0 border">

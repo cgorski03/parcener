@@ -5,7 +5,7 @@ import {
 } from './db/schema'
 
 // ----- RECEIPT ITEM SCHEMA
-export const receiptItemIdSchema = z.string().uuid({ version: 'v4' });
+export const receiptItemIdSchema = z.uuid({ version: 'v4' });
 export const receiptItemDtoSchema = z.object({
     receiptItemId: receiptItemIdSchema,
     rawText: z.string().nullable(),
@@ -14,7 +14,7 @@ export const receiptItemDtoSchema = z.object({
     quantity: z.number().positive(),
 })
 
-export const receiptIdSchema = z.string().uuid({ version: 'v4' });
+export const receiptIdSchema = z.uuid({ version: 'v4' });
 
 // For create operations where id can be null
 export const receiptItemWithReceiptIdSchema = z.object({
@@ -43,8 +43,8 @@ export const receiptDtoSchema = z.object({
 })
 
 // ---------- ROOM SCHEMA
-export const roomIdSchema = z.string().uuid({ version: 'v4' });
-export const roomMemberIdSchema = z.string().uuid({ version: 'v4' });
+export const roomIdSchema = z.uuid({ version: 'v4' });
+export const roomMemberIdSchema = z.uuid({ version: 'v4' });
 export const userIdSchema = z.string().length(32);
 
 export const roomSchema = z.object({
@@ -59,7 +59,7 @@ export const roomSchema = z.object({
 export const baseRoomMemberSchema = z.object({
     roomMemberId: roomMemberIdSchema,
     displayName: z.string().nullable(),
-    avatarUrl: z.string().url().nullable(),
+    avatarUrl: z.url().nullable(),
     isGuest: z.boolean().nullable(),
 })
 
@@ -81,14 +81,14 @@ export const updateDisplayNameRoomRequestSchema = z.object({
     displayName: z.string().max(63),
 });
 export const getRoomPulseSchema = z.object({
-    roomId: z.string().uuid(),
+    roomId: z.uuid({ version: 'v4' }),
     since: z.date().optional().nullable(),
 })
 
 
 // Invites
 export const inviteIdSearchParamsSchema = z.object({
-    token: z.string().uuid({ version: 'v4' }),
+    token: z.uuid({ version: 'v4' }),
 })
 
 // ------------- CLAIMS SCHEMA

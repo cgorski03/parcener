@@ -1,12 +1,12 @@
 import { createFileRoute, notFound } from '@tanstack/react-router'
 import { isFailed, isProcessing, receiptNotFound } from '@/lib/receipt-utils'
-import { useGetReceiptReview } from '@/hooks/useGetReceipt'
 import {
     ErrorReceiptView,
     ProcessingReceiptView,
     ReceiptEditorView,
 } from '@/components/review/views'
 import { ReviewNotFound } from '@/components/layout/not-found'
+import { useGetReceiptReview } from '@/hooks/use-get-receipt'
 
 export const Route = createFileRoute('/_authed/receipt/review/$receiptId')({
     component: RouteComponent,

@@ -11,7 +11,7 @@ import { Label } from '@radix-ui/react-label'
 import { Input } from '../ui/input'
 import { Button } from '../ui/button'
 import { Loader2 } from 'lucide-react'
-import { useFinalizeReceipt } from '@/hooks/useEditReceipt'
+import { useFinalizeReceipt } from '@/hooks/use-edit-receipt'
 
 const calculateAmount = (
     inputValue: string,

@@ -1,14 +1,14 @@
 import { AlertCircle, Loader2, Plus, Share2 } from 'lucide-react'
 import { ReceiptDto, ReceiptItemDto } from '@/server/dtos'
 import { notFound, useRouter } from '@tanstack/react-router'
-import { useReceiptIsValid } from '@/hooks/useGetReceipt'
+import { useReceiptIsValid } from '@/hooks/use-get-receipt'
 import { useMemo, useState } from 'react'
 import {
     useCreateReceiptItem,
     useDeleteReceiptItem,
     useEditReceiptItem,
-} from '@/hooks/useEditReceipt'
-import { useCreateReceiptRoom } from '@/hooks/useRoom'
+} from '@/hooks/use-edit-receipt'
+import { useCreateReceiptRoom } from '@/hooks/use-room'
 import { Button } from '../ui/button'
 import { ReceiptLayoutShell } from '../layout/receipt-layout-shell'
 import { ReviewReceiptHeader } from './receipt-header'

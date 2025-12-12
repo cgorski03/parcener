@@ -9,7 +9,7 @@ import { authClient } from '@/lib/auth-client'
 import { RoomMemberAvatar } from './room-member-avatar'
 import { FullRoomInfoDto } from '@/server/dtos'
 import { BrandedPageShell } from '../layout/branded-page-shell'
-import { useJoinRoom } from '@/hooks/useRoom'
+import { useJoinRoom } from '@/hooks/use-room'
 
 interface LobbyScreenProps {
     room: FullRoomInfoDto
