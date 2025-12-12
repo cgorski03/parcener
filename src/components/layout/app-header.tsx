@@ -28,7 +28,7 @@ export function AppHeader({
             "sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/60",
             className
         )}>
-            <div className="flex h-14 items-center px-4 relative">
+            <div className="flex min-h-[3.5rem] items-center px-4 relative py-2">
 
                 {/* Left Side */}
                 <div className="flex items-center shrink-0 z-10">

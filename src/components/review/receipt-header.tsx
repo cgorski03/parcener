@@ -1,89 +1,95 @@
 import { Receipt, Loader2, XCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { AppHeader } from '../layout/app-header'
 
-interface ReviewReceiptHeaderBasicProps {
-  title: string
-  itemCount: number
-  grandTotal: number
-  receiptIsValidPending: boolean
-  receiptIsInvalid: boolean
+interface ReviewReceiptHeaderProps {
+    title: string
+    itemCount: number
+    grandTotal: number
+    receiptIsValidPending: boolean
+    receiptIsInvalid: boolean
 }
 
 export function ReviewReceiptHeader({
-  title,
-  itemCount,
-  grandTotal,
-  receiptIsValidPending,
-  receiptIsInvalid,
-}: ReviewReceiptHeaderBasicProps) {
-  // Determine status (mutually exclusive for clean UI)
-  const status = receiptIsValidPending
-    ? 'pending'
-    : receiptIsInvalid
-      ? 'invalid'
-      : 'valid'
+    title,
+    itemCount,
+    grandTotal,
+    receiptIsValidPending,
+    receiptIsInvalid,
+}: ReviewReceiptHeaderProps) {
+    const status = receiptIsValidPending
+        ? 'pending'
+        : receiptIsInvalid
+            ? 'invalid'
+            : 'valid'
 
-  const statusConfig = {
-    pending: {
-      icon: Loader2,
-      iconClass: 'h-4 w-4 text-primary animate-spin',
-      containerClass: 'bg-primary/10',
-    },
-    invalid: {
-      icon: XCircle,
-      iconClass: 'h-4 w-4 text-destructive',
-      containerClass: 'bg-destructive/10',
-    },
-    valid: {
-      icon: Receipt,
-      iconClass: 'h-4 w-4 text-primary',
-      containerClass: 'bg-primary/10',
-    },
-  }
+    const statusConfig = {
+        pending: {
+            icon: Loader2,
+            iconClass: 'h-4 w-4 text-primary animate-spin',
+            containerClass: 'bg-primary/10 border-primary/20',
+        },
+        invalid: {
+            icon: XCircle,
+            iconClass: 'h-4 w-4 text-destructive',
+            containerClass: 'bg-destructive/10 border-destructive/20',
+        },
+        valid: {
+            icon: Receipt,
+            iconClass: 'h-4 w-4 text-primary',
+            containerClass: 'bg-primary/10 border-primary/20',
+        },
+    }
 
-  const { icon: StatusIcon, iconClass, containerClass } = statusConfig[status]
+    const { icon: StatusIcon, iconClass, containerClass } = statusConfig[status]
+    return (
+        <AppHeader
+            className={cn(receiptIsInvalid && 'border-b-destructive/30')}
+            title={
+                <div className="flex items-center gap-3.5"> {/* Increased gap */}
+                    {/* Status Icon Box */}
+                    <div
+                        className={cn(
+                            'h-10 w-10 rounded-xl flex items-center justify-center shrink-0 border shadow-sm transition-colors',
+                            containerClass
+                        )}
+                    >
+                        <StatusIcon className={iconClass} />
+                    </div>
 
-  return (
-    <header
-      className={cn(
-        'sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/70 border-b',
-        receiptIsInvalid && 'border-destructive/50',
-      )}
-    >
-      <div className="container max-w-2xl mx-auto px-4 py-3">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2 min-w-0">
-            <div
-              className={cn(
-                'w-8 h-8 rounded-lg flex items-center justify-center shrink-0',
-                containerClass,
-              )}
-            >
-              <StatusIcon className={iconClass} />
-            </div>
-            <div className="min-w-0">
-              <h2 className="text-lg font-bold truncate">{title}</h2>
-              <p className="text-xs text-muted-foreground">
-                {itemCount} items
-                {receiptIsInvalid && (
-                  <span className="text-destructive ml-1">• Invalid</span>
-                )}
-              </p>
-            </div>
-          </div>
+                    {/* Text Info */}
+                    <div className="flex flex-col justify-center min-w-0 gap-0.5"> {/* Added gap-0.5 */}
+                        <span className="font-bold text-base leading-none truncate tracking-tight">
+                            {title}
+                        </span>
+                        <span className="text-xs text-muted-foreground truncate flex items-center">
+                            {itemCount} {itemCount === 1 ? 'item' : 'items'}
+                            {receiptIsInvalid && (
+                                <span className="flex items-center text-destructive font-medium ml-2">
+                                    <span className="w-1 h-1 rounded-full bg-destructive mr-1.5" />
+                                    Action Required
+                                </span>
+                            )}
+                        </span>
+                    </div>
+                </div>
+            }
 
-          <div className="text-right shrink-0">
-            <span
-              className={cn(
-                'text-2xl font-bold',
-                receiptIsInvalid && 'text-destructive',
-              )}
-            >
-              ${grandTotal.toFixed(2)}
-            </span>
-          </div>
-        </div>
-      </div>
-    </header>
-  )
+            right={
+                <div className="flex flex-col items-end justify-center">
+                    <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider mb-0.5">
+                        Total
+                    </span>
+                    <span
+                        className={cn(
+                            'text-xl font-bold leading-none tabular-nums tracking-tight',
+                            receiptIsInvalid ? 'text-destructive' : 'text-foreground',
+                        )}
+                    >
+                        ${grandTotal.toFixed(2)}
+                    </span>
+                </div>
+            }
+        />
+    )
 }

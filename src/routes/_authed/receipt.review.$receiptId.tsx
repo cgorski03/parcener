@@ -7,6 +7,7 @@ import {
 } from '@/components/review/views'
 import { ReviewNotFound } from '@/components/layout/not-found'
 import { useGetReceiptReview } from '@/hooks/use-get-receipt'
+import { AppHeader } from '@/components/layout/app-header'
 
 export const Route = createFileRoute('/_authed/receipt/review/$receiptId')({
     component: RouteComponent,
@@ -19,18 +20,30 @@ function RouteComponent() {
 
     if (isFetching && !receipt) {
 
-        return <ProcessingReceiptView isPolling={isFetching} />
+        return (<>
+            <AppHeader />
+            <ProcessingReceiptView isPolling={isFetching} />
+        </>)
     }
+
     if (!receipt || receiptNotFound(receipt)) {
         throw notFound();
     }
 
     if (isProcessing(receipt)) {
-        return <ProcessingReceiptView isPolling={isFetching} />
+        return (<>
+            <AppHeader />
+            <ProcessingReceiptView isPolling={isFetching} />
+        </>)
     }
 
     if (isFailed(receipt)) {
-        return <ErrorReceiptView attempts={receipt.attempts} />
+        return (
+            <>
+                <AppHeader />
+                <ErrorReceiptView attempts={receipt.attempts} />
+            </>
+        )
     }
 
     // 3. Render the Success View
