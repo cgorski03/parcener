@@ -97,10 +97,10 @@ function getStatusConfig(status: InviteStatus): StatusConfig {
                 description: 'You already have permission to upload receipts.',
                 icon: ShieldCheck,
                 iconColor: 'text-blue-600',
-                buttonText: 'Go to Dashboard',
+                buttonText: 'Go to Account',
                 buttonIcon: Home,
                 buttonVariant: 'secondary',
-                linkTo: '/',
+                linkTo: '/account',
             }
         case 'NOT_FOUND':
             return {

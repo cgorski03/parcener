@@ -1,6 +1,7 @@
 import { RecentRooms } from "@/components/account/recent-rooms";
 import { RecentUploads } from "@/components/account/recent-uploads";
 import { AccountUploadsSection } from "@/components/account/upload-section";
+import { AppHeader } from "@/components/layout/app-header";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { authClient } from '@/lib/auth-client';
@@ -17,13 +18,20 @@ function RouteComponent() {
     return (
         <div className="min-h-screen bg-muted/20 pb-20 font-sans">
             {/* Header */}
-            <div className="bg-background/80 backdrop-blur-md border-b px-4 py-3 flex items-center justify-between sticky top-0 z-10">
-                <h1 className="font-semibold text-lg tracking-tight">Account</h1>
-                <Button variant="ghost" size="sm" className="text-muted-foreground h-8 text-xs hover:text-destructive" onClick={() => authClient.signOut()}>
-                    <LogOut className="h-3.5 w-3.5 mr-1.5" />
-                    Sign Out
-                </Button>
-            </div>
+            <AppHeader
+                title="Account"
+                right={
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-muted-foreground h-8 text-xs hover:text-destructive"
+                        onClick={() => authClient.signOut()}
+                    >
+                        <LogOut className="h-3.5 w-3.5 mr-1.5" />
+                        Sign Out
+                    </Button>
+                }
+            />
 
             <div className="container max-w-md mx-auto p-4 space-y-5">
                 <div className="bg-gradient-to-br from-primary/10 via-background to-background rounded-xl border shadow-sm p-4 flex items-center gap-4 relative overflow-hidden">
@@ -45,13 +53,9 @@ function RouteComponent() {
                     </div>
                 </div>
 
-                {user?.canUpload && (
-                    <>
-                        <AccountUploadsSection />
-                        <RecentUploads />
-                        <RecentRooms />
-                    </>
-                )}
+                <AccountUploadsSection />
+                {user.canUpload && <RecentUploads />}
+                <RecentRooms />
             </div>
         </div>
     );

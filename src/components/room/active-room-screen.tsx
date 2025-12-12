@@ -1,5 +1,5 @@
 import { useGetRoomPulse } from '@/hooks/use-room'
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { ReceiptLayoutShell } from '../layout/receipt-layout-shell'
 import { CollaborativeRoomHeader } from '../layout/collaborative-room-header'
 import { useEnrichedClaimItems } from '@/hooks/use-claims'
@@ -25,12 +25,17 @@ export function ActiveRoomScreen({
         }
     }, [member.guestUuid, room.roomId])
 
+    const isHost = useMemo(() => room.createdBy === member.userId, [room.createdBy, member.userId]);
+
+
     return (
         <ReceiptLayoutShell
             header={
                 <CollaborativeRoomHeader
                     roomId={room.roomId}
-                    roomName={room.title ?? 'Untitled'}
+                    isHost={isHost}
+                    receiptId={room.receiptId}
+                    title={room.title ?? 'Untitled'}
                     members={room.members}
                     activeFilterId={null}
                     onSelectFilter={() => console.log('filter pressed')}

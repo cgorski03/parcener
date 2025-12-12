@@ -1,126 +1,123 @@
 import { Button } from '@/components/ui/button'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 import {
-    Sheet,
-    SheetContent,
-    SheetHeader,
-    SheetTitle,
-    SheetTrigger,
-} from '@/components/ui/sheet'
-import { ArrowLeft, Share2, Users } from 'lucide-react'
+    Share2,
+    Users,
+    MoreHorizontal,
+    Pencil,
+    Settings,
+    LogOut,
+    Receipt
+} from 'lucide-react'
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
 import { Link } from '@tanstack/react-router'
-import { useState } from 'react'
-import QRCode from 'react-qr-code'
 import { RoomMemberDto } from '@/server/dtos'
 import { RoomMemberAvatar } from '../room/room-member-avatar'
 import { QrShareSheet } from '../common/qr-code-shareable-sheet'
+import { AppHeader } from './app-header'
 
 interface CollaborativeRoomHeaderProps {
-    roomName: string
-    roomId: string
-    members: RoomMemberDto[]
-    activeFilterId: string | null
-    onSelectFilter: (memberId: string | null) => void
+    roomId: string;
+    receiptId: string;
+    title: string;
+    members: RoomMemberDto[];
+    activeFilterId: string | null;
+    isHost: boolean;
+    onSelectFilter: (memberId: string | null) => void;
 }
 
 export function CollaborativeRoomHeader({
-    roomName,
     roomId,
+    receiptId,
+    title,
     members,
     activeFilterId,
+    isHost,
     onSelectFilter,
 }: CollaborativeRoomHeaderProps) {
-    const [isShareOpen, setIsShareOpen] = useState(false)
-    // TODO
-    const shareUrl = `http://192.168.86.235:3000/parce/${roomId}`
-
-    const handleNativeShare = async () => {
-        if (navigator.share) {
-            try {
-                await navigator.share({
-                    title: `Join bill split: ${roomName}`,
-                    url: shareUrl,
-                })
-            } catch (err) {
-                console.log('Share cancelled')
-            }
-        } else {
-            // Fallback to copying to clipboard
-            navigator.clipboard.writeText(shareUrl)
-            // Show toast here
-        }
-    }
+    // TODO ENV VAR 
+    const shareUrl = `http://192.168.86.235:3000/receipt/parce/${roomId}`
 
     return (
-        <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b supports-[backdrop-filter]:bg-background/60">
-            {/* Row 1: Navigation & Actions */}
-            <div className="flex items-center justify-between px-4 py-3">
-                <div className="flex items-center gap-3">
-                    <Button variant="ghost" size="icon" className="h-8 w-8 -ml-2" asChild>
-                        <Link to="/login">
-                            {' '}
-                            {/* Or wherever back goes */}
-                            <ArrowLeft className="h-5 w-5" />
-                        </Link>
-                    </Button>
-                    <div className="min-w-0">
-                        <h1 className="font-bold text-lg leading-tight truncate max-w-[200px]">
-                            {roomName}
-                        </h1>
-                        <p className="text-xs text-muted-foreground">
-                            {`${members.length} ${members.length === 1 ? 'person' : 'people'} active `}
-                        </p>
-                    </div>
+        <AppHeader
+            title={
+                <div className="flex flex-col">
+                    <span className="truncate">{title}</span>
+                    <span className="text-xs font-normal text-muted-foreground truncate">
+                        {members.length} {members.length === 1 ? 'person' : 'people'} active
+                    </span>
                 </div>
+            }
 
-                <div className="flex gap-2">
-                    {/* Share Sheet / Button */}
+            // Right Slot: Actions (Invite + Dropdown)
+            right={
+                <>
                     <QrShareSheet
                         value={shareUrl}
                         title="Invite Friends"
-                        description={
-                            <>
-                                Scan to join <strong>{roomName}</strong>
-                                <br />
-                                or click below to share the link.
-                            </>
-                        }
+                        description={<>Scan to join <strong>{title}</strong></>}
                         trigger={
-                            <Button variant="secondary" size="sm" className="rounded-full h-9 px-4">
-                                <Share2 className="h-4 w-4 mr-2" />
+                            <Button variant="secondary" size="sm" className="rounded-full h-8 px-3 text-xs">
+                                <Share2 className="h-3.5 w-3.5 mr-1.5" />
                                 Invite
                             </Button>
                         }
                     />
-                </div>
-            </div>
 
-            {/* Row 2: Members Filter Bar */}
-            <div className="pb-3">
+                    {isHost && (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
+                                    <MoreHorizontal className="h-5 w-5 text-muted-foreground" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-56">
+                                <DropdownMenuLabel>Room Options</DropdownMenuLabel>
+
+                                <>
+                                    <DropdownMenuItem asChild>
+                                        <Link to='/receipt/review/$receiptId'
+                                            params={{ receiptId: receiptId }}>
+                                            <Pencil className="mr-2 h-4 w-4" />
+                                            <span>Edit Receipt</span>
+                                        </Link>
+                                    </DropdownMenuItem>
+                                </>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    )}
+                </>
+            }
+
+            // Bottom Slot: Filter Pills
+            bottom={
                 <ScrollArea className="w-full whitespace-nowrap">
                     <div className="flex w-max space-x-3 px-4 items-center">
-                        {/* "All Items" Filter */}
                         <FilterPill
-                            label="All Items"
+                            label="Everyone"
                             isActive={activeFilterId === null}
                             onClick={() => onSelectFilter(null)}
                         >
-                            <div
-                                className={cn(
-                                    'h-8 w-8 rounded-full flex items-center justify-center border-2 transition-colors',
-                                    activeFilterId === null
-                                        ? 'bg-primary border-primary text-primary-foreground'
-                                        : 'bg-muted border-transparent text-muted-foreground',
-                                )}
-                            >
+                            <div className={cn(
+                                'h-8 w-8 rounded-full flex items-center justify-center border transition-all',
+                                activeFilterId === null
+                                    ? 'bg-primary border-primary text-primary-foreground shadow-sm'
+                                    : 'bg-muted/50 border-transparent text-muted-foreground hover:bg-muted',
+                            )}>
                                 <Users className="h-4 w-4" />
                             </div>
                         </FilterPill>
 
-                        <div className="h-8 w-px bg-border mx-1" />
+                        <div className="h-6 w-px bg-border/50 mx-1" />
 
-                        {/* Individual Members */}
                         {members.map((m) => (
                             <FilterPill
                                 key={m.roomMemberId}
@@ -139,8 +136,8 @@ export function CollaborativeRoomHeader({
                     </div>
                     <ScrollBar orientation="horizontal" className="hidden" />
                 </ScrollArea>
-            </div>
-        </header>
+            }
+        />
     )
 }
 
@@ -148,15 +145,15 @@ function FilterPill({ children, label, isActive, onClick }: any) {
     return (
         <button
             onClick={onClick}
-            className="group flex flex-col items-center gap-1.5 transition-all focus:outline-none"
+            className="group flex flex-col items-center gap-1.5 transition-all focus:outline-none select-none"
         >
             {children}
             <span
                 className={cn(
-                    'text-[10px] font-medium transition-colors max-w-[60px] truncate',
+                    'text-[10px] font-medium transition-colors max-w-[64px] truncate leading-tight',
                     isActive
-                        ? 'text-primary'
-                        : 'text-muted-foreground group-hover:text-foreground',
+                        ? 'text-foreground font-semibold'
+                        : 'text-muted-foreground/80 group-hover:text-foreground',
                 )}
             >
                 {label}

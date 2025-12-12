@@ -115,9 +115,9 @@ export const claim = pgTable(
             .default('1'),
         claimedAt: timestamp('claimed_at').defaultNow(),
     },
-    (table) => ({
-        uniqueClaim: unique().on(table.roomId, table.memberId, table.receiptItemId),
-    }),
+    (table) => [
+        unique().on(table.roomId, table.memberId, table.receiptItemId),
+    ],
 )
 
 
