@@ -1,4 +1,4 @@
-import { receiptEntityWithReferencesToDtoHelper, ReceiptDto, NullableReceiptDto } from '../dtos'
+import { receiptWithItemsToDto, ReceiptDto } from '../dtos'
 import {
     NOT_FOUND,
     RECEIPT_PROCESSING,
@@ -14,48 +14,57 @@ import { calculateItemTotal, moneyValuesEqual } from '../money-math'
 import { DbType, receipt } from '../db'
 import { and, desc, eq } from 'drizzle-orm'
 
+export type ReceiptWithRoom = ReceiptDto & { roomId?: string }
+
 export type GetReceiptResponse =
     | NotFoundResponse
     | ReceiptProcessingResponse
     | ReceiptProcessingFailedResponse
-    | NullableReceiptDto
+    | ReceiptWithRoom
 
 export async function getReceiptWithItems(
     db: DbType,
     receiptId: string,
     userId: string,
 ): Promise<GetReceiptResponse> {
-    const receiptInformation = await getReceiptWithItemsHelper(
+    const receiptInformation = await getReceiptWithRelationsHelper(
         db,
         receiptId,
         userId,
     )
 
     if (!receiptInformation || receiptInformation.processingInfo.length === 0) {
-        return NOT_FOUND
+        return NOT_FOUND;
     }
 
     if (receiptInformation?.processingInfo.some(
         (x) => x.processingStatus === 'processing')) {
-        return RECEIPT_PROCESSING
+        return RECEIPT_PROCESSING;
     }
 
     const hasSuccesses = receiptInformation.processingInfo.some(
         (receipt) => receipt.processingStatus === 'success',
-    )
+    );
 
     // have we failed, and dont have a success or a processing
     if (!hasSuccesses && receiptInformation.processingInfo.length > 0) {
         const failedAttemptsCount = receiptInformation.processingInfo.filter(
             (info) => info.processingStatus === 'failed',
-        ).length
+        ).length;
 
         if (failedAttemptsCount === receiptInformation.processingInfo.length) {
-            return RECEIPT_PROCESSING_FAILED(failedAttemptsCount)
+            return RECEIPT_PROCESSING_FAILED(failedAttemptsCount);
         }
     }
+    const receiptDto = receiptWithItemsToDto(receiptInformation);
 
-    return receiptEntityWithReferencesToDtoHelper(receiptInformation)
+    if (receiptInformation.room) {
+        return {
+            ...receiptDto,
+            roomId: receiptInformation.room.id,
+        }
+    }
+    return receiptDto;
 }
 
 export type GetReceiptIsValidResponse =
@@ -112,7 +121,7 @@ export async function getReceiptIsValid(
     return { success: true, receipt: receiptInformation }
 }
 
-async function getReceiptWithItemsHelper(
+async function getReceiptWithRelationsHelper(
     db: DbType,
     receiptId: string,
     userId: string,
@@ -121,6 +130,7 @@ async function getReceiptWithItemsHelper(
         where: and(eq(receipt.id, receiptId), eq(receipt.userId, userId)),
         with: {
             items: true,
+            room: true,
             processingInfo: true,
         },
     })

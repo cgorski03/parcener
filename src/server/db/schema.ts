@@ -72,6 +72,7 @@ export const room = pgTable('room', {
     id: uuid('id').primaryKey().defaultRandom(),
     receiptId: uuid('receipt_id')
         .notNull()
+        .unique()
         .references(() => receipt.id, { onDelete: 'cascade' }),
     title: varchar('title', { length: 255 }),
     createdBy: text('created_by')
@@ -137,10 +138,13 @@ export const invite = pgTable(
 
 
 // ---------- Relations
-// 
-export const receiptRelations = relations(receipt, ({ many }) => ({
+export const receiptRelations = relations(receipt, ({ one, many }) => ({
     items: many(receiptItem),
     processingInfo: many(receiptProcessingInformation),
+    room: one(room, {
+        fields: [receipt.id],
+        references: [room.receiptId],
+    }),
 }))
 
 export const roomMemberRelations = relations(roomMember, ({ one, many }) => ({

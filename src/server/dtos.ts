@@ -109,7 +109,7 @@ export type RoomDto = z.infer<typeof roomSchema>
 export type JoinRoomRequest = z.infer<typeof joinRoomRequestSchema>
 export type NullableReceiptDto = ReceiptDto | null
 export type NullableReceiptTotalsDto = ReceiptTotalsDto | null
-//
+
 // For FullRoomInfoDto, extend the DB type pragmatically
 export type FullRoomInfoDto = RoomDto & {
     receipt: ReceiptDto
@@ -121,7 +121,7 @@ export type RecentRoomInfoDto = {
     room: RoomDto;
 }
 
-export const receiptEntityWithReferencesToDtoHelper = (
+export const receiptWithItemsToDto = (
     entity: ReceiptEntityWithItems,
 ): ReceiptDto => {
     const transformed = {

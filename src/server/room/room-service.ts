@@ -1,7 +1,7 @@
 import { and, eq } from 'drizzle-orm'
-import { DbType, room, roomMember } from '../db'
+import { DbType, room, room, roomMember } from '../db'
 import { getReceiptIsValid } from '../get-receipt/get-receipt-service'
-import { ROOM_CREATE_ERROR } from '../response-types'
+import { ROOM_CREATE_ERROR, ROOM_EXISTS_ERROR } from '../response-types'
 import { RoomIdentity } from '../auth/parse-room-identity'
 import { RoomMemberDto, RoomMembership } from '../dtos'
 
@@ -21,6 +21,12 @@ export async function CreateRoom(
         return validResponse
     }
 
+    // DB would prevent an existing room, but checking anyway 
+    const existingRoom = await GetRoomByReceiptId(db, receiptId);
+    if (existingRoom) {
+        return ROOM_EXISTS_ERROR;
+    }
+
     // We know the receipt is in a valid state
     // We can create the room
     try {
@@ -31,7 +37,8 @@ export async function CreateRoom(
                 title: validResponse.receipt?.title ?? 'Untitled Room',
                 createdBy: userId,
             })
-            .returning()
+            .returning();
+
         return { success: true, room: newRoom }
     } catch (error: any) {
         console.error(error)
@@ -55,14 +62,14 @@ export async function GetFullRoomInfo(db: DbType, roomId: string) {
             },
             claims: true,
         },
-    })
-    if (result == null) return
+    });
+    if (result == null) return;
     const processedMembers: RoomMemberDto[] = result?.members.map((m) => ({
         roomMemberId: m.id,
         displayName: m.displayName,
         avatarUrl: m.user?.image ?? null,
         isGuest: !m.userId,
-    }))
+    }));
     return { ...result, members: processedMembers }
 }
 
@@ -90,8 +97,15 @@ export async function GetRoomHeader(db: DbType, roomId: string) {
     const [header] = await db
         .select({ updatedAt: room.updatedAt })
         .from(room)
-        .where(eq(room.id, roomId))
+        .where(eq(room.id, roomId));
     return header
+}
+
+async function GetRoomByReceiptId(db: DbType, receiptId: string) {
+    const roomEntity = await db.query.room.findFirst({
+        where: eq(room.receiptId, receiptId)
+    });
+    return roomEntity
 }
 
 export async function joinRoomAction(

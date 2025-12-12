@@ -1,6 +1,6 @@
-import { AlertCircle, Loader2, Plus, Share2 } from 'lucide-react'
-import { ReceiptDto, ReceiptItemDto } from '@/server/dtos'
-import { notFound, useRouter } from '@tanstack/react-router'
+import { AlertCircle, Loader2, Plus, Share2, Users } from 'lucide-react'
+import { ReceiptItemDto } from '@/server/dtos'
+import { Link, notFound, useRouter } from '@tanstack/react-router'
 import { useReceiptIsValid } from '@/hooks/use-get-receipt'
 import { useMemo, useState } from 'react'
 import {
@@ -16,6 +16,7 @@ import { ReviewItemCard } from '../item-card/review-item-card'
 import { PriceBreakdown } from '../price-breakdown'
 import { ReceiptSummarySheet } from './receipt-summary-sheet'
 import ReceiptItemSheet from './edit-item-sheet'
+import { ReceiptWithRoom } from '@/server/get-receipt/get-receipt-service'
 
 export function ErrorReceiptView(props: { attempts: number }) {
     return (
@@ -61,7 +62,7 @@ export function ProcessingReceiptView({ isPolling }: ProcessingReceiptViewProps)
 }
 
 interface ReceiptEditorProps {
-    receipt: ReceiptDto
+    receipt: ReceiptWithRoom
 }
 
 export function ReceiptEditorView({ receipt }: ReceiptEditorProps) {
@@ -140,16 +141,47 @@ export function ReceiptEditorView({ receipt }: ReceiptEditorProps) {
     }
 
     const handleCreateReceiptRoom = async () => {
-        if (receiptNotValid) return
-        const response = await createReceiptRoom(receipt.receiptId)
+        if (receiptNotValid) return;
+        const response = await createReceiptRoom(receipt.receiptId);
         if ('success' in response) {
             router.navigate({
                 to: '/receipt/parce/$roomId',
                 params: { roomId: response.room.id },
-            })
+            });
         }
     }
+    const ActionButton = () => {
+        if (receipt.roomId) {
+            return (
+                <Link to='/receipt/parce/$roomId' params={{ roomId: receipt.roomId }}>
+                    <Button className="w-full h-11">
+                        <Users className="h-4 w-4 mr-2" />
+                        Go To Room
+                    </Button>
+                </Link>
+            )
+        }
 
+        return (
+            <Button
+                className="w-full h-11"
+                disabled={totalHasError}
+                onClick={handleCreateReceiptRoom}
+            >
+                {createReceiptRoomLoading ? (
+                    <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Creating Room...
+                    </>
+                ) : (
+                    <>
+                        <Share2 className="h-4 w-4 mr-2" />
+                        Create Split Room
+                    </>
+                )}
+            </Button>
+        )
+    }
     return (
         <ReceiptLayoutShell
             header={
@@ -199,23 +231,7 @@ export function ReceiptEditorView({ receipt }: ReceiptEditorProps) {
                         <span>Fix total mismatch before continuing</span>
                     </div>
                 )}
-                <Button
-                    className="w-full h-11"
-                    disabled={totalHasError}
-                    onClick={handleCreateReceiptRoom}
-                >
-                    {createReceiptRoomLoading ? (
-                        <>
-                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                            Creating Room...
-                        </>
-                    ) : (
-                        <>
-                            <Share2 className="h-4 w-4 mr-2" />
-                            Create Split Room
-                        </>
-                    )}
-                </Button>
+                <ActionButton />
             </div>
 
             <div className="h-4 md:hidden" />

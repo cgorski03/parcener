@@ -1,6 +1,6 @@
 import { desc, eq } from "drizzle-orm";
 import { AppUser, DbType, room, roomMember } from "../db";
-import { receiptEntityWithReferencesToDtoHelper, RecentRoomInfoDto, roomSchema } from "../dtos";
+import { receiptWithItemsToDto, RecentRoomInfoDto, roomSchema } from "../dtos";
 import { getUserRecentReceiptsHelper } from "../get-receipt/get-receipt-service";
 
 export async function GetRecentReceipts(
@@ -12,7 +12,7 @@ export async function GetRecentReceipts(
         return null;
     }
     const receiptEntities = await getUserRecentReceiptsHelper(db, 5, user.id);
-    const receiptDtos = receiptEntities.map((receipt) => receiptEntityWithReferencesToDtoHelper(receipt));
+    const receiptDtos = receiptEntities.map((receipt) => receiptWithItemsToDto(receipt));
     return receiptDtos;
 }
 

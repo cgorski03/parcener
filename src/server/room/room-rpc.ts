@@ -15,7 +15,7 @@ import {
     FullRoomInfoDto,
     getRoomPulseSchema,
     joinRoomRequestSchema,
-    receiptEntityWithReferencesToDtoHelper,
+    receiptWithItemsToDto,
     receiptIdSchema,
     roomIdSchema,
     updateDisplayNameRoomRequestSchema,
@@ -45,7 +45,7 @@ export const getRoomAndMembership = createServerFn({ method: 'GET' })
         const userInformation = await getRoomMembership(context.db, ident, roomId)
 
         if (!roomData) return null;
-        const receipt = receiptEntityWithReferencesToDtoHelper(roomData.receipt);
+        const receipt = receiptWithItemsToDto(roomData.receipt);
         if (!receipt) return null;
 
         const roomInfo: FullRoomInfoDto = {
@@ -89,7 +89,7 @@ export const getRoomPulseRpc = createServerFn({ method: 'GET' })
         const roomData = await GetFullRoomInfo(context.db, roomId)
 
         if (!roomData) return null;
-        const receipt = receiptEntityWithReferencesToDtoHelper(roomData.receipt);
+        const receipt = receiptWithItemsToDto(roomData.receipt);
         if (!receipt) return null;
 
         const roomInfo: FullRoomInfoDto = {
