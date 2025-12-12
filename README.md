@@ -1,297 +1,183 @@
-Welcome to your new TanStack app!
+# Parcener - Collaborative Receipt Splitting
 
-# Getting Started
+Parcener is a web application that allows users to upload receipt photos, automatically processes them using AI, and creates collaborative rooms where friends can split expenses in real-time.
 
-To run this application:
+The application is designed to be used on-the-spot and as such UI design is heavily mobile-first. It looks sort of strange on desktop. Usable, but kind of like when they first came out with the iPad, and there were a ton of apps not designed for it and there was that little button in the corner to zoom in on an iPhone app and it led to a strange UI.
+
+## Tech Stack
+
+- **Frontend**: React, TanStack Start, TanStack Query, Tailwind
+- **Backend**: Cloudflare Workers, Drizzle ORM, PostgreSQL
+- **AI**: Google Gemini 2.5 Flash for receipt processing
+- **Auth**: Better Auth with guest support
+- **Deployment**: Cloudflare Pages/Workers
+
+## Architecture Overview
+
+### High-Level Structure
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Cloudflare Edge Runtime                   │
+│  ┌─────────────────────┐    ┌────────────────────────────┐  │
+│  │   Frontend (Vite)   │    │   Backend (Workers)        │  │
+│  │   React + Router    │    │   Services + API           │  │
+│  └──────────┬──────────┘    └──────────┬─────────────────┘  │
+│             │                          │                        │
+│  ┌──────────┴──────────────────────────┴──────────┐          │
+│  │              PostgreSQL (Drizzle ORM)          │          │
+│  └────────────────────────────────────────────────┘          │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Directory Structure
+
+#### Frontend Layer (`src/`)
+
+- `routes/` - TanStack Start file-based routing
+- `components/` - React components (atomic design)
+- `hooks/` - Custom React hooks, React Query wrappers
+- `lib/` - Frontend utilities
+
+#### Backend Services Layer (`src/server/`)
+
+- `entry.ts` - Cloudflare Worker entry point
+- `router.tsx` - API routing configuration
+- `db/` - Database schema and connection
+- `processing/` - AI receipt processing pipeline
+- `room/` - Collaborative room services
+- `auth/` - Authentication layer
+- `get-receipt/` - get receipt layer
+- `edit-receipt/` - edit receipt layer
+
+### API Architecture
+
+**Current**: RPC-first with thin wrappers  
+**Future**: REST API migration planned. I kind of think RPC was a mistake in general but wanted to get this moving quick. RPC calls are intentionally thin and wrapped in custom hooks + React Query for easy transition
+
+## Features
+
+### Implemented
+
+- **Receipt Processing**: AI-powered receipt parsing with Google Gemini
+- **Collaborative Rooms**: Real-time expense splitting with friends
+- **Guest Support**: Anonymous users can join and participate
+- **Manual Editing**: Fix AI mistakes with intuitive UI
+- **Flexible Claims**: Split items by quantity (e.g., "I had 2 of 4 tacos")
+
+### MVP remainging work
+
+- **Receipt Settlement**: Final payment calculation and settlement features - the actual functionality 
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- pnpm
+- Cloudflare account (for deployment)
+- PostgreSQL database
+
+### Installation
 
 ```bash
+# Install dependencies
 pnpm install
-pnpm start
+
+# Set up environment variables
+cp .env.example .env.local
+# Edit .env.local with your database and API keys
+
+# Run database migrations
+pnpm db:migrate
+
+# Start development server
+pnpm dev
 ```
 
-# Building For Production
-
-To build this application for production:
+### Development Scripts
 
 ```bash
-pnpm build
+# Development
+pnpm dev          # Start dev server
+pnpm build        # Build for production
+pnpm test         # Run tests
+
+# Database
+pnpm db:generate  # Generate migrations
+pnpm db:migrate   # Run migrations
+
+# Code Quality
+pnpm lint         # Run ESLint
+pnpm format       # Run Prettier
+pnpm check        # Format + lint
 ```
 
-## Testing
+## Architecture Details
 
-This project uses [Vitest](https://vitest.dev/) for testing. You can run the tests with:
+### Data Flow
+
+```
+User → React Component → Hook → RPC/REST → Service → Database
+     ↓                                                    ↑
+Browser ← UI Update ← Cache Update ← Response ← Query ← Drizzle
+```
+
+### Key Services
+
+#### Receipt Processing Pipeline
+
+1. **Upload**: User uploads receipt image
+2. **Storage**: Image stored in Cloudflare R2
+3. **Queue**: Processing job queued
+4. **AI**: Google Gemini extracts items and totals
+5. **Validation**: Manual review and editing
+6. **Room Creation**: Shareable room generated
+
+#### Room Management
+
+- **Real-time Updates**: Live claim synchronization
+- **Guest Support**: Cookie-based identity persistence
+- **Flexible Membership**: Users and guests can coexist
+- **Identity Upgrades**: Seamless guest → user transition
+
+### Database Schema
+
+- `receipt` - Main receipt data
+- `receipt_item` - Individual line items
+- `room` - Collaborative sessions
+- `room_member` - Participants (users + guests)
+- `claim` - Item ownership claims
+- `receipt_processing_information` - AI processing metadata
+
+## Deployment
+
+### Cloudflare Stack
+
+- **Pages**: Frontend hosting
+- **Workers**: Backend services
+- **R2**: Image storage
+- **Queue**: Processing jobs
+- **PostgreSQL**: Database
+
+### Environment Setup
 
 ```bash
-pnpm test
+# Deploy to Cloudflare
+pnpm deploy
+
+# Preview build
+pnpm preview
 ```
 
-## Styling
+## Contributing
 
-This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
+This project is in active development. The architecture is designed to be:
 
-## Linting & Formatting
+- **Modular**: Easy to swap RPC for REST
+- **Scalable**: Edge-first design
+- **Maintainable**: Type-safe end-to-end
 
-This project uses [eslint](https://eslint.org/) and [prettier](https://prettier.io/) for linting and formatting. Eslint is configured using [tanstack/eslint-config](https://tanstack.com/config/latest/docs/eslint). The following scripts are available:
+## License
 
-```bash
-pnpm lint
-pnpm format
-pnpm check
-```
-
-## Routing
-
-This project uses [TanStack Router](https://tanstack.com/router). The initial setup is a file based router. Which means that the routes are managed as files in `src/routes`.
-
-### Adding A Route
-
-To add a new route to your application just add another a new file in the `./src/routes` directory.
-
-TanStack will automatically generate the content of the route file for you.
-
-Now that you have two routes you can use a `Link` component to navigate between them.
-
-### Adding Links
-
-To use SPA (Single Page Application) navigation you will need to import the `Link` component from `@tanstack/react-router`.
-
-```tsx
-import { Link } from '@tanstack/react-router'
-```
-
-Then anywhere in your JSX you can use it like so:
-
-```tsx
-<Link to="/about">About</Link>
-```
-
-This will create a link that will navigate to the `/about` route.
-
-More information on the `Link` component can be found in the [Link documentation](https://tanstack.com/router/v1/docs/framework/react/api/router/linkComponent).
-
-### Using A Layout
-
-In the File Based Routing setup the layout is located in `src/routes/__root.tsx`. Anything you add to the root route will appear in all the routes. The route content will appear in the JSX where you use the `<Outlet />` component.
-
-Here is an example layout that includes a header:
-
-```tsx
-import { Outlet, createRootRoute } from '@tanstack/react-router'
-import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
-
-import { Link } from '@tanstack/react-router'
-
-export const Route = createRootRoute({
-  component: () => (
-    <>
-      <header>
-        <nav>
-          <Link to="/">Home</Link>
-          <Link to="/about">About</Link>
-        </nav>
-      </header>
-      <Outlet />
-      <TanStackRouterDevtools />
-    </>
-  ),
-})
-```
-
-The `<TanStackRouterDevtools />` component is not required so you can remove it if you don't want it in your layout.
-
-More information on layouts can be found in the [Layouts documentation](https://tanstack.com/router/latest/docs/framework/react/guide/routing-concepts#layouts).
-
-## Data Fetching
-
-There are multiple ways to fetch data in your application. You can use TanStack Query to fetch data from a server. But you can also use the `loader` functionality built into TanStack Router to load the data for a route before it's rendered.
-
-For example:
-
-```tsx
-const peopleRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/people',
-  loader: async () => {
-    const response = await fetch('https://swapi.dev/api/people')
-    return response.json() as Promise<{
-      results: {
-        name: string
-      }[]
-    }>
-  },
-  component: () => {
-    const data = peopleRoute.useLoaderData()
-    return (
-      <ul>
-        {data.results.map((person) => (
-          <li key={person.name}>{person.name}</li>
-        ))}
-      </ul>
-    )
-  },
-})
-```
-
-Loaders simplify your data fetching logic dramatically. Check out more information in the [Loader documentation](https://tanstack.com/router/latest/docs/framework/react/guide/data-loading#loader-parameters).
-
-### React-Query
-
-React-Query is an excellent addition or alternative to route loading and integrating it into you application is a breeze.
-
-First add your dependencies:
-
-```bash
-pnpm add @tanstack/react-query @tanstack/react-query-devtools
-```
-
-Next we'll need to create a query client and provider. We recommend putting those in `main.tsx`.
-
-```tsx
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-
-// ...
-
-const queryClient = new QueryClient()
-
-// ...
-
-if (!rootElement.innerHTML) {
-  const root = ReactDOM.createRoot(rootElement)
-
-  root.render(
-    <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
-    </QueryClientProvider>,
-  )
-}
-```
-
-You can also add TanStack Query Devtools to the root route (optional).
-
-```tsx
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-
-const rootRoute = createRootRoute({
-  component: () => (
-    <>
-      <Outlet />
-      <ReactQueryDevtools buttonPosition="top-right" />
-      <TanStackRouterDevtools />
-    </>
-  ),
-})
-```
-
-Now you can use `useQuery` to fetch your data.
-
-```tsx
-import { useQuery } from '@tanstack/react-query'
-
-import './App.css'
-
-function App() {
-  const { data } = useQuery({
-    queryKey: ['people'],
-    queryFn: () =>
-      fetch('https://swapi.dev/api/people')
-        .then((res) => res.json())
-        .then((data) => data.results as { name: string }[]),
-    initialData: [],
-  })
-
-  return (
-    <div>
-      <ul>
-        {data.map((person) => (
-          <li key={person.name}>{person.name}</li>
-        ))}
-      </ul>
-    </div>
-  )
-}
-
-export default App
-```
-
-You can find out everything you need to know on how to use React-Query in the [React-Query documentation](https://tanstack.com/query/latest/docs/framework/react/overview).
-
-## State Management
-
-Another common requirement for React applications is state management. There are many options for state management in React. TanStack Store provides a great starting point for your project.
-
-First you need to add TanStack Store as a dependency:
-
-```bash
-pnpm add @tanstack/store
-```
-
-Now let's create a simple counter in the `src/App.tsx` file as a demonstration.
-
-```tsx
-import { useStore } from '@tanstack/react-store'
-import { Store } from '@tanstack/store'
-import './App.css'
-
-const countStore = new Store(0)
-
-function App() {
-  const count = useStore(countStore)
-  return (
-    <div>
-      <button onClick={() => countStore.setState((n) => n + 1)}>
-        Increment - {count}
-      </button>
-    </div>
-  )
-}
-
-export default App
-```
-
-One of the many nice features of TanStack Store is the ability to derive state from other state. That derived state will update when the base state updates.
-
-Let's check this out by doubling the count using derived state.
-
-```tsx
-import { useStore } from '@tanstack/react-store'
-import { Store, Derived } from '@tanstack/store'
-import './App.css'
-
-const countStore = new Store(0)
-
-const doubledStore = new Derived({
-  fn: () => countStore.state * 2,
-  deps: [countStore],
-})
-doubledStore.mount()
-
-function App() {
-  const count = useStore(countStore)
-  const doubledCount = useStore(doubledStore)
-
-  return (
-    <div>
-      <button onClick={() => countStore.setState((n) => n + 1)}>
-        Increment - {count}
-      </button>
-      <div>Doubled - {doubledCount}</div>
-    </div>
-  )
-}
-
-export default App
-```
-
-We use the `Derived` class to create a new store that is derived from another store. The `Derived` class has a `mount` method that will start the derived store updating.
-
-Once we've created the derived store we can use it in the `App` component just like we would any other store using the `useStore` hook.
-
-You can find out everything you need to know on how to use TanStack Store in the [TanStack Store documentation](https://tanstack.com/store/latest).
-
-# Demo files
-
-Files prefixed with `demo` can be safely deleted. They are there to provide a starting point for you to play around with the features you've installed.
-
-# Learn More
-
-You can learn more about all of the offerings from TanStack in the [TanStack documentation](https://tanstack.com).
+MIT License

@@ -1,3 +1,0 @@
-
-determine some way of locking rooms? if the person goes back and edits something in a receipt when a room exists already
-recent rooms endpoint
