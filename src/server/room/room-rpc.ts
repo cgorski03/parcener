@@ -140,7 +140,6 @@ export const claimItemRpc = createServerFn({ method: 'POST' })
     .inputValidator(claimItemRequestSchema)
     .handler(async ({ data, context }) => {
         const { roomId, receiptItemId, quantity } = data
-        console.log('someone is trying to claim')
         const request = getRequest()
         const session = await getServerSession(request, context.auth)
         const identity = await parseRoomIdentity(request, roomId, session?.user)

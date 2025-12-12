@@ -22,6 +22,5 @@ export const uploadReceipt = createServerFn({ method: 'POST' })
             receiptId,
         }
         await env.RECEIPT_QUEUE.send(job)
-        console.log('processed successfully', receiptId)
         return { receiptId, created: true }
     })

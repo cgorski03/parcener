@@ -17,6 +17,10 @@ function RouteComponent() {
     const { receiptId } = Route.useParams()
     const { data: receipt, isFetching } = useGetReceiptReview(receiptId);
 
+    if (isFetching && !receipt) {
+
+        return <ProcessingReceiptView isPolling={isFetching} />
+    }
     if (!receipt || receiptNotFound(receipt)) {
         throw notFound();
     }
