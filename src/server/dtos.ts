@@ -106,6 +106,7 @@ export type ReceiptTotalsDto = z.infer<typeof receiptTotalsSchema>
 export type RoomMemberDto = z.infer<typeof baseRoomMemberSchema>
 export type RoomMembership = z.infer<typeof roomMembershipSchema>
 export type RoomDto = z.infer<typeof roomSchema>
+export type JoinRoomRequest = z.infer<typeof joinRoomRequestSchema>
 export type NullableReceiptDto = ReceiptDto | null
 export type NullableReceiptTotalsDto = ReceiptTotalsDto | null
 //

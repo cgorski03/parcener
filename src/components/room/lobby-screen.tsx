@@ -1,17 +1,15 @@
 import { useState } from 'react'
 import { useRouter } from '@tanstack/react-router'
-import { useMutation } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Loader2, ArrowRight, User } from 'lucide-react'
-import { joinRoomRpc } from '@/server/room/room-rpc'
 import type { User as UserType } from 'better-auth'
 import { authClient } from '@/lib/auth-client'
 import { RoomMemberAvatar } from './room-member-avatar'
 import { FullRoomInfoDto } from '@/server/dtos'
-import { PageShell } from '../layout/branded-page-shell'
-import { BrandedCardFooter } from '../layout/branded-footer'
+import { BrandedPageShell } from '../layout/branded-page-shell'
+import { useJoinRoom } from '@/hooks/useRoom'
 
 interface LobbyScreenProps {
     room: FullRoomInfoDto
@@ -19,28 +17,14 @@ interface LobbyScreenProps {
 }
 
 export function LobbyScreen({ room, user }: LobbyScreenProps) {
-    const router = useRouter()
     const [name, setName] = useState(user?.name ?? '')
-
-    const { mutate: joinRoom, isPending } = useMutation({
-        mutationFn: async () => {
-            return await joinRoomRpc({
-                data: { roomId: room.roomId, displayName: name || null },
-            })
-        },
-        onSuccess: (response) => {
-            const cookieName = `guest_uuid_room_${room.roomId}`
-            const maxAge = 60 * 60 * 24 * 7
-            document.cookie = `${cookieName}=${response.generatedUuid}; path=/; max-age=${maxAge}; SameSite=Lax`
-            router.invalidate()
-        },
-    })
+    const { joinRoom, isPending } = useJoinRoom();
 
     const activeMembers = room.members.length
     const subtotal = room.receipt?.subtotal ?? 0
 
     return (
-        <PageShell>
+        <BrandedPageShell>
             <Card className="w-full max-w-md shadow-2xl border-t-4 border-t-primary">
                 <CardHeader className="text-center space-y-4 pb-2">
                     <div>
@@ -86,7 +70,7 @@ export function LobbyScreen({ room, user }: LobbyScreenProps) {
                     <Button
                         size="lg"
                         className="w-full h-12 text-base font-semibold shadow-lg shadow-primary/20"
-                        onClick={() => joinRoom()}
+                        onClick={() => joinRoom({ roomId: room.roomId, displayName: name })}
                         disabled={isPending || (!name && !user)}
                     >
                         {isPending ? (
@@ -122,9 +106,8 @@ export function LobbyScreen({ room, user }: LobbyScreenProps) {
                     )}
                 </CardContent>
 
-                <BrandedCardFooter />
             </Card>
-        </PageShell>
+        </BrandedPageShell>
     )
 }
 
