@@ -82,9 +82,9 @@ export function ReceiptEditorView({ receipt }: ReceiptEditorProps) {
         useState<ReceiptItemDto | null>(null)
 
     // Mutation Hooks
-    const { mutateAsync: editReceiptItem } = useEditReceiptItem(receipt.receiptId)
-    const { mutateAsync: deleteReceiptItem } = useDeleteReceiptItem()
-    const { mutateAsync: createReceiptItem } = useCreateReceiptItem()
+    const { mutateAsync: editReceiptItem } = useEditReceiptItem(receipt.receiptId, receipt.roomId ?? null)
+    const { mutateAsync: deleteReceiptItem } = useDeleteReceiptItem(receipt.roomId ?? null)
+    const { mutateAsync: createReceiptItem } = useCreateReceiptItem(receipt.roomId ?? null)
     const {
         mutateAsync: createReceiptRoom,
         isPending: createReceiptRoomLoading,

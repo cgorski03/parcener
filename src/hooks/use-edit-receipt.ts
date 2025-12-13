@@ -7,10 +7,11 @@ import {
 } from '@/server/edit-receipt/rpc-put-receipt'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { ReceiptQueryKeys } from './use-get-receipt'
+import { RoomQueryKeys } from './use-room'
 
-export function useDeleteReceiptItem() {
+export function useDeleteReceiptItem(roomId: string | null) {
     const queryClient = useQueryClient()
-
+    const _linkedRoom = roomId;
     return useMutation({
         mutationFn: async (args: { receiptId: string; item: ReceiptItemDto }) => {
             return await deleteReceiptItemRpc({ data: args.item })
@@ -22,6 +23,12 @@ export function useDeleteReceiptItem() {
             queryClient.invalidateQueries({
                 queryKey: ReceiptQueryKeys.valid(receiptId),
             })
+
+            if (_linkedRoom) {
+                queryClient.invalidateQueries({
+                    queryKey: RoomQueryKeys.detail(_linkedRoom),
+                })
+            }
         },
         onError: (error) => {
             console.error('Failed to delete item:', error)
@@ -29,9 +36,9 @@ export function useDeleteReceiptItem() {
     })
 }
 
-export function useCreateReceiptItem() {
+export function useCreateReceiptItem(roomId: string | null) {
     const queryClient = useQueryClient()
-
+    const _linkedRoom = roomId;
     return useMutation({
         mutationFn: async (args: { receiptId: string; item: ReceiptItemDto }) => {
             return await createReceiptItemRpc({
@@ -45,6 +52,12 @@ export function useCreateReceiptItem() {
             queryClient.invalidateQueries({
                 queryKey: ReceiptQueryKeys.valid(receiptId),
             })
+
+            if (_linkedRoom) {
+                queryClient.invalidateQueries({
+                    queryKey: RoomQueryKeys.detail(_linkedRoom),
+                })
+            }
         },
         onError: (error) => {
             console.error('Failed to save item:', error)
@@ -52,21 +65,26 @@ export function useCreateReceiptItem() {
     })
 }
 
-export function useEditReceiptItem(receiptId: string) {
-    const queryClient = useQueryClient()
-    const _receiptId = receiptId
+export function useEditReceiptItem(receiptId: string, roomId: string | null) {
+    const queryClient = useQueryClient();
+    const _receiptId = receiptId;
+    const _linkedRoom = roomId;
     return useMutation({
         mutationFn: async (item: ReceiptItemDto) => {
             return await editReceiptItemRpc({ data: item })
         },
         onSuccess: () => {
-            console.log(_receiptId)
             queryClient.invalidateQueries({
                 queryKey: ReceiptQueryKeys.detail(_receiptId),
-            })
+            });
             queryClient.invalidateQueries({
                 queryKey: ReceiptQueryKeys.valid(_receiptId),
-            })
+            });
+            if (_linkedRoom) {
+                queryClient.invalidateQueries({
+                    queryKey: RoomQueryKeys.detail(_linkedRoom),
+                });
+            }
         },
         onError: (error) => {
             console.error('Failed to save item:', error)
@@ -74,8 +92,9 @@ export function useEditReceiptItem(receiptId: string) {
     })
 }
 
-export function useFinalizeReceipt() {
+export function useFinalizeReceipt(roomId: string | null) {
     const queryClient = useQueryClient()
+    const _linkedRoom = roomId;
 
     return useMutation({
         mutationFn: async (item: ReceiptTotalsDto) => {
@@ -89,6 +108,11 @@ export function useFinalizeReceipt() {
             queryClient.invalidateQueries({
                 queryKey: ReceiptQueryKeys.valid(item.receiptId),
             })
+            if (_linkedRoom) {
+                queryClient.invalidateQueries({
+                    queryKey: RoomQueryKeys.detail(_linkedRoom),
+                });
+            }
         },
         onError: (error) => {
             console.error('Failed to save item:', error)

@@ -1,5 +1,5 @@
 import { and, eq } from 'drizzle-orm'
-import { DbType, room, room, roomMember } from '../db'
+import { DbTxType, DbType, room, roomMember } from '../db'
 import { getReceiptIsValid } from '../get-receipt/get-receipt-service'
 import { ROOM_CREATE_ERROR, ROOM_EXISTS_ERROR } from '../response-types'
 import { RoomIdentity } from '../auth/parse-room-identity'
@@ -134,11 +134,7 @@ export async function joinRoomAction(
                 .returning()
 
             // Touch room
-            await tx
-                .update(room)
-                .set({ updatedAt: new Date() })
-                .where(eq(room.id, roomId))
-
+            await touchRoomId(tx, roomId);
             return { member: upgraded, generatedUuid: existing.guestUuid }
         })
     }
@@ -168,11 +164,7 @@ export async function joinRoomAction(
             })
             .returning()
 
-        // Touch room
-        await tx
-            .update(room)
-            .set({ updatedAt: new Date() })
-            .where(eq(room.id, roomId))
+        await touchRoomId(tx, roomId);
 
         return { member: newMember, generatedUuid: newGuestUuid }
     })
@@ -198,11 +190,16 @@ export async function editRoomMemberDisplayName(
             )
             .returning()
 
-        await tx
-            .update(room)
-            .set({ updatedAt: new Date() })
-            .where(eq(room.id, roomId))
-
+        await touchRoomId(tx, roomId);
         return updatedRoomMember
     })
+}
+
+// Helper: Blindly try to touch the room. 
+// If the receipt has not been turned into a room yet, this affects 0 rows and does nothing.
+export async function touchRoomId(db: DbTxType | DbType, receiptId: string) {
+    await db
+        .update(room)
+        .set({ updatedAt: new Date() })
+        .where(eq(room.receiptId, receiptId));
 }

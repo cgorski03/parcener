@@ -18,10 +18,12 @@ import {
     ReceiptSubtotalMismatchResponse,
 } from '../response-types'
 import { calculateItemTotal, moneyValuesEqual } from '../money-math'
-import { DbType } from '../db'
+import { DbTxType, DbType } from '../db'
+import { touchRoomId } from '../room/room-service'
+import { pruneExcessClaimsHelper } from '../room/room-claims-service'
 
 export function receiptItemOwnershipCheck(
-    db: DbType,
+    db: DbTxType | DbType,
     userId: string,
 ) {
     return exists(
@@ -38,22 +40,34 @@ export function receiptItemOwnershipCheck(
 }
 
 export async function editReceiptItem(db: DbType, item: ReceiptItemDto, userId: string) {
-    // Ugly funciton to make sure that the user owns the receipt
-    const [updatedItem] = await db
-        .update(receiptItem)
-        .set({
-            interpretedText: item.interpretedText,
-            price: item.price.toString(),
-            quantity: item.quantity.toString(),
-        })
-        .where(
-            and(
-                eq(receiptItem.id, item.receiptItemId),
-                receiptItemOwnershipCheck(db, userId)
+    return await db.transaction(async (tx) => {
+        // TODO clean up architecture.
+        // This is to handle the issue where an item has 4 claims for quantity 4 and you 
+        // change the quantity to 3 - what happens to the last claim
+        // we basically do first-write-wins
+        // cut the most recent ones until it works
+        await pruneExcessClaimsHelper(tx, item.receiptItemId, item.quantity);
+        const [updatedItem] = await tx
+            .update(receiptItem)
+            .set({
+                interpretedText: item.interpretedText,
+                price: item.price.toString(),
+                quantity: item.quantity.toString(),
+            })
+            .where(
+                and(
+                    eq(receiptItem.id, item.receiptItemId),
+                    receiptItemOwnershipCheck(tx, userId)
+                )
             )
-        )
-        .returning()
-    return receiptItemEntityToDtoHelper(updatedItem)
+            .returning();
+
+        if (updatedItem) {
+            // 2. Touch the room (if it exists)
+            await touchRoomId(tx, updatedItem.receiptId);
+        }
+        return receiptItemEntityToDtoHelper(updatedItem);
+    });
 }
 
 export async function createReceiptItem(
@@ -76,27 +90,43 @@ export async function createReceiptItem(
         throw new Error('Receipt not found or unauthorized');
     }
 
-    const [insertedItem] = await db
-        .insert(receiptItem)
-        .values({
-            id: item.receiptItemId,
-            receiptId: receiptId,
-            interpretedText: item.interpretedText,
-            price: item.price.toString(),
-            quantity: item.quantity.toString(),
-        })
-        .returning()
-    return receiptItemEntityToDtoHelper(insertedItem)
+    return await db.transaction(async (tx) => {
+        const [insertedItem] = await tx
+            .insert(receiptItem)
+            .values({
+                id: item.receiptItemId,
+                receiptId: receiptId,
+                interpretedText: item.interpretedText,
+                price: item.price.toString(),
+                quantity: item.quantity.toString(),
+            })
+            .returning();
+
+        // Touch the room
+        await touchRoomId(tx, receiptId);
+
+        return receiptItemEntityToDtoHelper(insertedItem);
+    });
 }
 
 export async function deleteReceiptItem(db: DbType, item: ReceiptItemDto, userId: string) {
-    await db.delete(receiptItem)
-        .where(
-            and(
-                eq(receiptItem.id, item.receiptItemId),
-                receiptItemOwnershipCheck(db, userId)
-            )
-        )
+    await db.transaction(async (tx) => {
+        const itemToDelete = await tx.query.receiptItem.findFirst({
+            where: eq(receiptItem.id, item.receiptItemId),
+            columns: { receiptId: true }
+        });
+
+        if (!itemToDelete) return;
+
+        await tx.delete(receiptItem)
+            .where(
+                and(
+                    eq(receiptItem.id, item.receiptItemId),
+                    receiptItemOwnershipCheck(tx, userId)
+                )
+            );
+        await touchRoomId(tx, itemToDelete.receiptId);
+    });
 }
 
 type FinalizeReceiptResponse =
@@ -161,17 +191,20 @@ export async function finalizeReceiptTotals(
         }
     }
 
-    await db
-        .update(receipt)
-        .set({
-            subtotal: subtotal.toString(),
-            tip: tip.toString(),
-            tax: tax.toString(),
-            grandTotal: calculatedGrandTotal.toString(),
-        })
-        .where(and(eq(receipt.id, receiptId), eq(receipt.userId, userId)))
+    await db.transaction(async (tx) => {
+        await tx
+            .update(receipt)
+            .set({
+                subtotal: subtotal.toString(),
+                tip: tip.toString(),
+                tax: tax.toString(),
+                grandTotal: calculatedGrandTotal.toString(),
+            })
+            .where(and(eq(receipt.id, receiptId), eq(receipt.userId, userId)));
 
-    return {
-        success: true,
-    }
+        // Touch the room
+        await touchRoomId(tx, receiptId);
+    });
+    return { success: true };
 }
+

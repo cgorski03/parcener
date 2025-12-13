@@ -5,16 +5,12 @@ import {
     Users,
     MoreHorizontal,
     Pencil,
-    Settings,
-    LogOut,
-    Receipt
 } from 'lucide-react'
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuLabel,
-    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
@@ -44,7 +40,7 @@ export function CollaborativeRoomHeader({
     onSelectFilter,
 }: CollaborativeRoomHeaderProps) {
     // TODO ENV VAR 
-    const shareUrl = `http://192.168.86.235:3000/receipt/parce/${roomId}`
+    const shareUrl = `http://192.168.86.30:3000/receipt/parce/${roomId}`
 
     return (
         <AppHeader
