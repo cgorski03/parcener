@@ -112,9 +112,10 @@ export type NullableReceiptTotalsDto = ReceiptTotalsDto | null
 
 // For FullRoomInfoDto, extend the DB type pragmatically
 export type FullRoomInfoDto = RoomDto & {
-    receipt: ReceiptDto
-    claims: any[]
-    members: RoomMemberDto[]
+    receipt: ReceiptDto;
+    claims: any[];
+    members: RoomMemberDto[];
+    receiptIsValid: boolean;
 }
 export type RecentRoomInfoDto = {
     joinedAt: string;

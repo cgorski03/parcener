@@ -1,4 +1,4 @@
-import { AlertCircle, Loader2, Plus, Share2, Users } from 'lucide-react'
+import { AlertCircle, Loader2, Pencil, Plus, Share2, Users } from 'lucide-react'
 import { ReceiptItemDto } from '@/server/dtos'
 import { Link, notFound, useRouter } from '@tanstack/react-router'
 import { useReceiptIsValid } from '@/hooks/use-get-receipt'
@@ -151,6 +151,17 @@ export function ReceiptEditorView({ receipt }: ReceiptEditorProps) {
         }
     }
     const ActionButton = () => {
+        if (totalHasError) {
+            return (
+                <Button
+                    className="w-full h-11"
+                    onClick={() => setShowingItemSheet(true)}
+                >
+                    <Pencil className="h-4 w-4 mr-2" />
+                    Edit Receipt Totals
+                </Button>);
+        }
+
         if (receipt.roomId) {
             return (
                 <Link to='/receipt/parce/$roomId' params={{ roomId: receipt.roomId }}>
@@ -222,17 +233,9 @@ export function ReceiptEditorView({ receipt }: ReceiptEditorProps) {
                 label="Receipt Totals"
                 onClick={() => setShowSummarySheet(true)}
                 className="mt-6"
+                errorMessage={totalHasError ? "Fix total mismatch before continuing" : undefined}
+                actionButton={<ActionButton />}
             />
-
-            <div className="space-y-3">
-                {totalHasError && (
-                    <div className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive flex items-center gap-2">
-                        <AlertCircle className="h-4 w-4 flex-shrink-0" />
-                        <span>Fix total mismatch before continuing</span>
-                    </div>
-                )}
-                <ActionButton />
-            </div>
 
             <div className="h-4 md:hidden" />
 

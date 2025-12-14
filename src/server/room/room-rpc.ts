@@ -21,6 +21,7 @@ import {
     updateDisplayNameRoomRequestSchema,
 } from '../dtos'
 import { claimItem } from './room-claims-service'
+import { validateReceiptCalculations } from '../money-math'
 
 export const createRoomRpc = createServerFn({ method: 'POST' })
     .inputValidator(receiptIdSchema)
@@ -42,12 +43,13 @@ export const getRoomAndMembership = createServerFn({ method: 'GET' })
         const ident = await parseRoomIdentity(request, roomId, session?.user)
 
         const roomData = await GetFullRoomInfo(context.db, roomId)
+        if (!roomData) return null;
         const userInformation = await getRoomMembership(context.db, ident, roomId)
 
-        if (!roomData) return null;
         const receipt = receiptWithItemsToDto(roomData.receipt);
-        if (!receipt) return null;
+        const receiptValidResponse = validateReceiptCalculations(receipt);
 
+        if (!receipt) return null;
         const roomInfo: FullRoomInfoDto = {
             roomId: roomData.id,
             title: roomData.title,
@@ -58,6 +60,7 @@ export const getRoomAndMembership = createServerFn({ method: 'GET' })
             members: roomData.members,
             claims: roomData.claims,
             receipt,
+            receiptIsValid: receiptValidResponse.isValid,
         }
 
         return {
@@ -90,8 +93,9 @@ export const getRoomPulseRpc = createServerFn({ method: 'GET' })
 
         if (!roomData) return null;
         const receipt = receiptWithItemsToDto(roomData.receipt);
-        if (!receipt) return null;
+        const receiptValidResponse = validateReceiptCalculations(receipt);
 
+        if (!receipt) return null;
         const roomInfo: FullRoomInfoDto = {
             roomId: roomData.id,
             title: roomData.title,
@@ -102,6 +106,7 @@ export const getRoomPulseRpc = createServerFn({ method: 'GET' })
             members: roomData.members,
             claims: roomData.claims,
             receipt,
+            receiptIsValid: receiptValidResponse.isValid,
         }
 
         // 6. Return the Data wrapper

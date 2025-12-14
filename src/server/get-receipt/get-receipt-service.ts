@@ -10,7 +10,7 @@ import {
     ReceiptSubtotalMismatchResponse,
 } from '../response-types'
 import { isFailed, isProcessing, receiptNotFound } from '@/lib/receipt-utils'
-import { calculateItemTotal, moneyValuesEqual } from '../money-math'
+import { calculateItemTotal, moneyValuesEqual, validateReceiptCalculations } from '../money-math'
 import { DbType, receipt } from '../db'
 import { and, desc, eq } from 'drizzle-orm'
 
@@ -93,32 +93,29 @@ export async function getReceiptIsValid(
     if (isProcessing(receiptInformation)) {
         return RECEIPT_PROCESSING
     }
-    const calculatedSubtotal = calculateItemTotal(receiptInformation.items)
+    const validationResult = validateReceiptCalculations(receiptInformation);
 
-    if (!moneyValuesEqual(receiptInformation.subtotal, calculatedSubtotal)) {
-        return {
-            error: true,
-            code: 'SUBTOTAL_MISMATCH',
-            clientSubtotal: calculatedSubtotal,
-            serverSubtotal: receiptInformation.subtotal,
+    if (!validationResult.isValid) {
+        // Map validation error to API response format
+        const { error } = validationResult;
+        if (error.code === "SUBTOTAL_MISMATCH") {
+            return {
+                error: true,
+                code: error.code,
+                clientSubtotal: error.clientSubtotal,
+                serverSubtotal: error.serverSubtotal,
+            };
+        } else {
+            return {
+                error: true,
+                code: error.code,
+                clientGrandTotal: error.clientGrandTotal,
+                serverGrandTotal: error.serverGrandTotal,
+            };
         }
     }
-    const calculatedGrandTotal =
-        receiptInformation.subtotal +
-        receiptInformation.tax +
-        receiptInformation.tip
 
-    if (
-        !moneyValuesEqual(receiptInformation.grandTotal ?? 0, calculatedGrandTotal)
-    ) {
-        return {
-            error: true,
-            code: 'GRANDTOTAL_MISMATCH',
-            clientGrandTotal: calculatedGrandTotal,
-            serverGrandTotal: receiptInformation.grandTotal,
-        }
-    }
-    return { success: true, receipt: receiptInformation }
+    return { success: true, receipt: receiptInformation };
 }
 
 async function getReceiptWithRelationsHelper(

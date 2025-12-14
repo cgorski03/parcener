@@ -40,7 +40,7 @@ export function CollaborativeRoomHeader({
     onSelectFilter,
 }: CollaborativeRoomHeaderProps) {
     // TODO ENV VAR 
-    const shareUrl = `http://192.168.86.30:3000/receipt/parce/${roomId}`
+    const shareUrl = `${process.env.NODE_ENV! === 'development' ? 'http://192.168.86.30:3000' : process.env.BASE_URL}/receipt/parce/${roomId}`
 
     return (
         <AppHeader

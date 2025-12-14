@@ -197,9 +197,9 @@ export async function editRoomMemberDisplayName(
 
 // Helper: Blindly try to touch the room. 
 // If the receipt has not been turned into a room yet, this affects 0 rows and does nothing.
-export async function touchRoomId(db: DbTxType | DbType, receiptId: string) {
+export async function touchRoomId(db: DbTxType | DbType, roomId: string) {
     await db
         .update(room)
         .set({ updatedAt: new Date() })
-        .where(eq(room.receiptId, receiptId));
+        .where(eq(room.id, roomId));
 }

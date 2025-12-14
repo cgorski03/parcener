@@ -6,6 +6,9 @@ import { useEnrichedClaimItems } from '@/hooks/use-claims'
 import { CollabItemCard } from '../item-card/collab-item-card'
 import { PriceBreakdown } from '../price-breakdown'
 import { FullRoomInfoDto, RoomMembership } from '@/server/dtos'
+import { Link } from '@tanstack/react-router'
+import { Button } from '../ui/button'
+import { Wrench } from 'lucide-react'
 
 export function ActiveRoomScreen({
     initialRoom,
@@ -26,8 +29,15 @@ export function ActiveRoomScreen({
     }, [member.guestUuid, room.roomId])
 
     const isHost = useMemo(() => room.createdBy === member.userId, [room.createdBy, member.userId]);
-
-
+    const getReceiptErrorMessage = () => {
+        if (room.receiptIsValid) {
+            return undefined;
+        }
+        if (isHost) {
+            return 'Fix total mismatch in order to allow settling the bill';
+        }
+        return 'Host must fix subtotal mismatch before settling';
+    }
     return (
         <ReceiptLayoutShell
             header={
@@ -58,6 +68,15 @@ export function ActiveRoomScreen({
                 grandTotal={room.receipt.grandTotal ?? 0}
                 label="Receipt Totals"
                 className="mt-6"
+                errorMessage={getReceiptErrorMessage()}
+                actionButton={!room.receiptIsValid && isHost ?
+                    (<Link to='/receipt/review/$receiptId' params={{ receiptId: room.receiptId }}>
+                        <Button className="w-full h-11">
+                            <Wrench className="h-4 w-4 mr-2" />
+                            Resolve Total Mismatch
+                        </Button>
+                    </Link>) : undefined
+                }
             />
         </ReceiptLayoutShell>
     )
