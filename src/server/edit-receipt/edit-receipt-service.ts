@@ -19,7 +19,7 @@ import {
 } from '../response-types'
 import { calculateItemTotal, moneyValuesEqual } from '../money-math'
 import { DbTxType, DbType } from '../db'
-import { touchRoomId } from '../room/room-service'
+import { touchRoomFromReceipt } from '../room/room-service'
 import { pruneExcessClaimsHelper } from '../room/room-claims-service'
 
 export function receiptItemOwnershipCheck(
@@ -64,7 +64,7 @@ export async function editReceiptItem(db: DbType, item: ReceiptItemDto, userId: 
 
         if (updatedItem) {
             // 2. Touch the room (if it exists)
-            await touchRoomId(tx, updatedItem.receiptId);
+            await touchRoomFromReceipt(tx, updatedItem.receiptId);
         }
         return receiptItemEntityToDtoHelper(updatedItem);
     });
@@ -103,7 +103,7 @@ export async function createReceiptItem(
             .returning();
 
         // Touch the room
-        await touchRoomId(tx, receiptId);
+        await touchRoomFromReceipt(tx, receiptId);
 
         return receiptItemEntityToDtoHelper(insertedItem);
     });
@@ -125,7 +125,7 @@ export async function deleteReceiptItem(db: DbType, item: ReceiptItemDto, userId
                     receiptItemOwnershipCheck(tx, userId)
                 )
             );
-        await touchRoomId(tx, itemToDelete.receiptId);
+        await touchRoomFromReceipt(tx, itemToDelete.receiptId);
     });
 }
 
@@ -203,7 +203,7 @@ export async function finalizeReceiptTotals(
             .where(and(eq(receipt.id, receiptId), eq(receipt.userId, userId)));
 
         // Touch the room
-        await touchRoomId(tx, receiptId);
+        await touchRoomFromReceipt(tx, receiptId);
     });
     return { success: true };
 }

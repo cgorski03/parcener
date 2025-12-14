@@ -7,7 +7,6 @@ export const getReceiptRpc = createServerFn({ method: 'GET' })
     .middleware([protectedFunctionMiddleware])
     .inputValidator(receiptIdSchema)
     .handler(async ({ data: receiptId, context }) => {
-        console.log("FDJKLSJLFKD:JFKLSkl");
         return getReceiptWithItems(context.db, receiptId, context.user.id)
     })
 

@@ -203,3 +203,10 @@ export async function touchRoomId(db: DbTxType | DbType, roomId: string) {
         .set({ updatedAt: new Date() })
         .where(eq(room.id, roomId));
 }
+
+export async function touchRoomFromReceipt(db: DbTxType | DbType, receiptId: string) {
+    await db
+        .update(room)
+        .set({ updatedAt: new Date() })
+        .where(eq(room.receiptId, receiptId));
+}
