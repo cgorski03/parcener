@@ -10,7 +10,7 @@ import {
     ReceiptSubtotalMismatchResponse,
 } from '../response-types'
 import { isFailed, isProcessing, receiptNotFound } from '@/lib/receipt-utils'
-import { calculateItemTotal, moneyValuesEqual, validateReceiptCalculations } from '../money-math'
+import { validateReceiptCalculations } from '../money-math'
 import { DbType, receipt } from '../db'
 import { and, desc, eq } from 'drizzle-orm'
 

@@ -8,15 +8,22 @@ export const uploadReceipt = createServerFn({ method: 'POST' })
     .middleware([protectedFunctionMiddleware])
     .inputValidator((data: FormData) => data)
     .handler(async ({ data, context }) => {
-        // Authenticate and Authorie req
         const file = data.get('file') as File
-        const buffer = await file.arrayBuffer()
+        const MAX_FILE_SIZE = 5 * 1024 * 1024
+
+        if (file.size > MAX_FILE_SIZE) {
+            throw new Error(`File size exceeds maximum allowed size of 5MB`)
+        }
 
         if (!file) throw new Error('No file provided')
 
         const receiptId = crypto.randomUUID()
         // Save the receipt image to R3
-        await env.parcener_receipt_images.put(receiptId, buffer)
+
+        await env.parcener_receipt_images.put(receiptId, file.stream(), {
+            httpMetadata: { contentType: file.type }
+        })
+
         await createReceiptStub(context.db, receiptId, context.user.id)
         const job: ReceiptJob = {
             receiptId,
