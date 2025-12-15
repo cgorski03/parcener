@@ -1,5 +1,5 @@
 import { useGetRoomPulse } from '@/hooks/use-room'
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { ReceiptLayoutShell } from '../layout/receipt-layout-shell'
 import { CollaborativeRoomHeader } from '../layout/collaborative-room-header'
 import { useEnrichedClaimItems } from '@/hooks/use-claims'
@@ -9,6 +9,7 @@ import { FullRoomInfoDto, RoomMembership } from '@/server/dtos'
 import { Link } from '@tanstack/react-router'
 import { Button } from '../ui/button'
 import { Wrench } from 'lucide-react'
+import { SettlementView } from './settlement-view'
 
 export function ActiveRoomScreen({
     initialRoom,
@@ -19,6 +20,7 @@ export function ActiveRoomScreen({
 }) {
     const { data: room } = useGetRoomPulse(initialRoom)
     const { itemsWithClaims } = useEnrichedClaimItems(room, member)
+    const [view, setView] = useState<'items' | 'settlement'>('items');
 
     useEffect(() => {
         if (member.guestUuid && !member.userId) {
@@ -37,6 +39,16 @@ export function ActiveRoomScreen({
             return 'Fix total mismatch in order to allow settling the bill';
         }
         return 'Host must fix subtotal mismatch before settling';
+    }
+
+    if (view === 'settlement') {
+        return (
+            <SettlementView
+                room={room}
+                currentMember={member}
+                onBack={() => setView('items')}
+            />
+        )
     }
     return (
         <ReceiptLayoutShell
@@ -75,7 +87,15 @@ export function ActiveRoomScreen({
                             <Wrench className="h-4 w-4 mr-2" />
                             Resolve Total Mismatch
                         </Button>
-                    </Link>) : undefined
+                    </Link>) : (
+                        <Button
+                            className="w-full mt-2"
+                            onClick={() => setView('settlement')}
+                            variant="secondary"
+                        >
+                            View Settlement & Pay
+                        </Button>
+                    )
                 }
             />
         </ReceiptLayoutShell>
