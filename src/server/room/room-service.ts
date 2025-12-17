@@ -1,9 +1,10 @@
-import { and, eq } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
 import { DbTxType, DbType, room, roomMember } from '../db'
 import { getReceiptIsValid } from '../get-receipt/get-receipt-service'
 import { ROOM_CREATE_ERROR, ROOM_EXISTS_ERROR } from '../response-types'
 import { RoomIdentity } from '../auth/parse-room-identity'
-import { RoomMemberDto, RoomMembership } from '../dtos'
+import { RoomMemberDto } from '../dtos'
+import { getRoomMembership } from './room-member-service'
 
 export type CreateRoomRequest = {
     title: string
@@ -73,25 +74,6 @@ export async function GetFullRoomInfo(db: DbType, roomId: string) {
     return { ...result, members: processedMembers }
 }
 
-export async function getRoomMembership(
-    db: DbType,
-    identity: RoomIdentity,
-    roomId: string,
-): Promise<RoomMembership | null> {
-    if (!identity.guestUuid && !identity.userId) {
-        return null
-    }
-    const whereClause = identity.userId
-        ? eq(roomMember.userId, identity.userId)
-        : eq(roomMember.guestUuid, identity.guestUuid!)
-
-    const member = await db.query.roomMember.findFirst({
-        where: and(eq(roomMember.roomId, roomId), whereClause),
-    })
-    if (!member) return null;
-    const { id, ...rest } = member;
-    return { roomMemberId: id, ...rest }
-}
 
 export async function GetRoomHeader(db: DbType, roomId: string) {
     const [header] = await db
@@ -170,30 +152,6 @@ export async function joinRoomAction(
     })
 }
 
-export async function editRoomMemberDisplayName(
-    db: DbType,
-    identity: RoomIdentity,
-    roomId: string,
-    displayName: string,
-) {
-    return await db.transaction(async (tx) => {
-        const [updatedRoomMember] = await tx
-            .update(roomMember)
-            .set({ displayName })
-            .where(
-                and(
-                    eq(roomMember.roomId, roomId),
-                    identity.userId
-                        ? eq(roomMember.userId, identity.userId)
-                        : eq(roomMember.guestUuid, identity.guestUuid!),
-                ),
-            )
-            .returning()
-
-        await touchRoomId(tx, roomId);
-        return updatedRoomMember
-    })
-}
 
 // Helper: Blindly try to touch the room. 
 // If the receipt has not been turned into a room yet, this affects 0 rows and does nothing.

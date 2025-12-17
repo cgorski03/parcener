@@ -1,5 +1,6 @@
 import z from 'zod'
 import {
+    Claim,
     ReceiptEntityWithItems,
     ReceiptItem,
 } from './db/schema'
@@ -113,7 +114,7 @@ export type NullableReceiptTotalsDto = ReceiptTotalsDto | null
 // For FullRoomInfoDto, extend the DB type pragmatically
 export type FullRoomInfoDto = RoomDto & {
     receipt: ReceiptDto;
-    claims: any[];
+    claims: Claim[];
     members: RoomMemberDto[];
     receiptIsValid: boolean;
 }

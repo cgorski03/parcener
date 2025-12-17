@@ -1,10 +1,8 @@
 import { createServerFn } from '@tanstack/react-start'
 import {
     CreateRoom,
-    editRoomMemberDisplayName,
     GetFullRoomInfo,
     GetRoomHeader,
-    getRoomMembership,
     joinRoomAction,
 } from './room-service'
 import { getRequest } from '@tanstack/react-start/server'
@@ -22,6 +20,7 @@ import {
 } from '../dtos'
 import { claimItem } from './room-claims-service'
 import { validateReceiptCalculations } from '../money-math'
+import { editRoomMemberDisplayName, getRoomMembership, resolveMembershipState, upgradeRoomMember } from './room-member-service'
 
 export const createRoomRpc = createServerFn({ method: 'POST' })
     .inputValidator(receiptIdSchema)
@@ -44,7 +43,8 @@ export const getRoomAndMembership = createServerFn({ method: 'GET' })
 
         const roomData = await GetFullRoomInfo(context.db, roomId)
         if (!roomData) return null;
-        const userInformation = await getRoomMembership(context.db, ident, roomId)
+
+        const membershipState = await resolveMembershipState(context.db, roomId, ident);
 
         const receipt = receiptWithItemsToDto(roomData.receipt);
         const receiptValidResponse = validateReceiptCalculations(receipt);
@@ -65,9 +65,24 @@ export const getRoomAndMembership = createServerFn({ method: 'GET' })
 
         return {
             room: roomInfo,
-            membership: userInformation,
+            membership: membershipState.membership,
             user: session?.user,
+            canMergeGuestToMember: membershipState.canMerge
         }
+    })
+
+export const upgradeGuestToUser = createServerFn({ method: 'POST' })
+    .inputValidator(roomIdSchema)
+    .handler(async ({ data: roomId, context }) => {
+        const request = getRequest()
+        const session = await getServerSession(request, context.auth)
+        const ident = await parseRoomIdentity(request, roomId, session?.user)
+
+        const membershipState = await resolveMembershipState(context.db, roomId, ident);
+        if (membershipState.canMerge) {
+            return await upgradeRoomMember(context.db, ident, roomId);
+        }
+        return null;
     })
 
 export const getRoomPulseRpc = createServerFn({ method: 'GET' })

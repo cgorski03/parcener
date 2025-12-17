@@ -38,6 +38,7 @@ export function ActiveRoomScreen({
             document.cookie = `${cookieName}=${member.guestUuid}; path=/; max-age=${maxAge}; SameSite=Lax`
         }
     }, [member.guestUuid, room.roomId])
+
     const isHost = useMemo(() => room.createdBy === member.userId, [room.createdBy, member.userId]);
     const getReceiptErrorMessage = () => {
         if (room.receiptIsValid) {
@@ -58,6 +59,7 @@ export function ActiveRoomScreen({
             />
         )
     }
+
     return (
         <ReceiptLayoutShell
             header={
