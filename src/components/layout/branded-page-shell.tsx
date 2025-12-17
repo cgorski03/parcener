@@ -29,7 +29,9 @@ export function BrandedPageShell({ children, className = '' }: PageShellProps) {
 
             {/* Main content */}
             <main className="flex-1 flex flex-col items-center justify-center w-full p-4 pt-8 pb-8">
-                {children}
+                <div className="w-full max-w-md">
+                    {children}
+                </div>
             </main>
 
             {/* Footer */}

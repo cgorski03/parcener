@@ -1,32 +1,47 @@
 import { Button } from '@/components/ui/button'
-import { createFileRoute, useSearch, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, useSearch, redirect } from '@tanstack/react-router'
 import { authClient } from '@/lib/auth-client'
-import { useEffect } from 'react'
+import { useState } from 'react'
+import { BrandedPageShell } from '@/components/layout/branded-page-shell';
+import { ExternalLink, ChevronDown, ChevronUp } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import z from 'zod';
 
-interface LoginSearch {
-    redirect?: string
-}
+
+export const loginSearchSchema = z.object({
+    redirect: z.string().optional(),
+})
 
 export const Route = createFileRoute('/login')({
-    validateSearch: (search: Record<string, unknown>): LoginSearch => ({
-        redirect: search.redirect as string | undefined,
-    }),
+    validateSearch: loginSearchSchema,
+
+    pendingComponent: () => (
+        <BrandedPageShell>
+            <div className="flex-1 flex items-center justify-center">
+                <div className="text-sm text-muted-foreground">Checking session...</div>
+            </div>
+        </BrandedPageShell>
+    ),
+
+    beforeLoad: async ({ search }) => {
+        const { data: session } = await authClient.getSession()
+
+        if (session?.user) {
+            throw redirect({
+                to: search.redirect || '/account',
+                replace: true
+            })
+        }
+    },
+
     component: RouteComponent,
 })
 
 function RouteComponent() {
-    const navigate = useNavigate()
     const search = useSearch({ from: '/login' })
     const redirectUrl = search.redirect
 
-    const { data: session, isPending } = authClient.useSession()
-
-    // Redirect if already logged in
-    useEffect(() => {
-        if (session?.user) {
-            navigate({ to: redirectUrl || '/account' })
-        }
-    }, [session, navigate, redirectUrl])
+    const [showFullUrl, setShowFullUrl] = useState(false)
 
     const signIn = () => {
         authClient.signIn.social({
@@ -35,19 +50,77 @@ function RouteComponent() {
         })
     }
 
-    if (isPending) {
-        return <div>Loading...</div>
-    }
+    const displayUrl = redirectUrl
+        ? (redirectUrl.length > 50
+            ? `${redirectUrl.substring(0, 50)}…`
+            : redirectUrl)
+        : null
 
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen">
-            <h1 className="text-2xl font-bold mb-4">Login</h1>
-            <Button onClick={signIn}>Sign in with Google</Button>
-            {redirectUrl && (
-                <p className="mt-4 text-sm text-muted-foreground">
-                    You will be redirected to: {redirectUrl}
-                </p>
-            )}
-        </div>
+        <BrandedPageShell>
+            <div className="flex-1 flex flex-col items-center pt-[15vh] p-4 min-h-[550px]">
+                <div className="w-full max-w-md space-y-6">
+                    <div className="text-center space-y-2">
+                        <h1 className="text-2xl font-bold">Welcome Back</h1>
+                        <p className="text-sm text-muted-foreground">
+                            Sign in to continue to your receipt
+                        </p>
+                    </div>
+
+                    <Button className="h-12 w-full" onClick={signIn}>
+                        Sign in with Google
+                    </Button>
+
+                    {redirectUrl && (
+                        <div className="rounded-lg border bg-muted/20 p-4 transition-all duration-300">
+                            <div className="flex items-center gap-2 mb-2">
+                                <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                                <span className="text-sm font-medium text-foreground">
+                                    You'll return to:
+                                </span>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                                <code className="flex-1 text-xs text-muted-foreground font-mono truncate">
+                                    {displayUrl}
+                                </code>
+                            </div>
+
+                            {redirectUrl.length > 50 && (
+                                <Button
+                                    variant="link"
+                                    size="sm"
+                                    className="h-auto p-0 mt-2 text-xs text-muted-foreground hover:text-foreground"
+                                    onClick={() => setShowFullUrl(!showFullUrl)}
+                                >
+                                    {showFullUrl ? (
+                                        <>
+                                            <ChevronUp className="h-3 w-3 mr-1" />
+                                            Hide full URL
+                                        </>
+                                    ) : (
+                                        <>
+                                            <ChevronDown className="h-3 w-3 mr-1" />
+                                            Show full URL
+                                        </>
+                                    )}
+                                </Button>
+                            )}
+
+                            <div className={cn(
+                                "grid transition-all duration-300 ease-in-out",
+                                showFullUrl ? "grid-rows-[1fr] mt-3" : "grid-rows-[0fr] mt-0"
+                            )}>
+                                <div className="overflow-hidden">
+                                    <div className="p-3 rounded-md border bg-background text-xs font-mono text-foreground break-all">
+                                        {redirectUrl}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </BrandedPageShell>
     )
 }
