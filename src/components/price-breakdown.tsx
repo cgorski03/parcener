@@ -54,7 +54,7 @@ export function PriceBreakdown({
                 <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     {label}
                 </h4>
-                {items && items.length > 0 && (
+                {items && items.length > 0 ? (
                     <Button
                         variant="ghost"
                         size="sm"
@@ -71,7 +71,9 @@ export function PriceBreakdown({
                             <ChevronDown className="ml-1 h-3 w-3" />
                         )}
                     </Button>
-                )}
+                ) :
+                    /*Prevent Layout Shift */
+                    <div className='h-6' />}
             </div>
 
             {/* Itemized List Section */}

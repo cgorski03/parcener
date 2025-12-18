@@ -38,6 +38,7 @@ export const useGetRoomPulse = (initialData: FullRoomInfoDto) => {
 
             return response.data
         },
+
     })
 }
 

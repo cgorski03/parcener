@@ -1,8 +1,8 @@
 import { BaseReceiptItemCard } from './base-receipt-item-card'
 import { QuantityControl } from './quantity-control'
 import { useDebouncedClaim } from '@/hooks/use-debounced-claim'
-import { ItemWithClaims } from '@/hooks/useClaims'
 import { RoomMemberAvatar } from '../room/room-member-avatar'
+import { ItemWithClaims } from '@/hooks/use-claims'
 
 export function CollabItemCard({
     data,

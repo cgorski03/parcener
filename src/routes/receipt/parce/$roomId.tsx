@@ -17,6 +17,11 @@ export const Route = createFileRoute('/receipt/parce/$roomId')({
             throw notFound()
         }
         const { room, membership, user, canMergeGuestToMember } = response;
+        // This is something I don't love.
+        // I don't think that the loader - for loading data
+        // should be responsible for this
+        // but at the same time, having a client component repsonsible for it also seems wrong
+        // and i don't want to build it into a GET RPC
         if (canMergeGuestToMember) {
             const newMembership = await upgradeGuestToUser({ data: params.roomId });
             return { membership: newMembership, room, user }
