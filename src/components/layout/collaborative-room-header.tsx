@@ -14,14 +14,13 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
-import { Link } from '@tanstack/react-router'
+import { Link, useLocation } from '@tanstack/react-router'
 import { RoomMemberDto } from '@/server/dtos'
 import { RoomMemberAvatar } from '../room/room-member-avatar'
 import { QrShareSheet } from '../common/qr-code-shareable-sheet'
 import { AppHeader } from './app-header'
 
 interface CollaborativeRoomHeaderProps {
-    roomId: string;
     receiptId: string;
     title: string;
     members: RoomMemberDto[];
@@ -31,7 +30,6 @@ interface CollaborativeRoomHeaderProps {
 }
 
 export function CollaborativeRoomHeader({
-    roomId,
     receiptId,
     title,
     members,
@@ -40,7 +38,8 @@ export function CollaborativeRoomHeader({
     onSelectFilter,
 }: CollaborativeRoomHeaderProps) {
     // TODO ENV VAR 
-    const shareUrl = `${process.env.NODE_ENV! === 'development' ? 'http://192.168.86.30:3000' : process.env.BASE_URL}/receipt/parce/${roomId}`
+    const location = useLocation();
+    const shareUrl = `${location.url}${location.pathname}`;
 
     return (
         <AppHeader

@@ -64,7 +64,6 @@ export function ActiveRoomScreen({
         <ReceiptLayoutShell
             header={
                 <CollaborativeRoomHeader
-                    roomId={room.roomId}
                     isHost={isHost}
                     receiptId={room.receiptId}
                     title={room.title ?? 'Untitled'}
