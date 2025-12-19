@@ -54,8 +54,16 @@ export async function GetUserInviteRateLimit(
                 limit: 0,
             })
         }
-        console.log("getting invitations")
         const invitations = await getUserInvitationsToday(db, user.id);
+
+        if (invitations.length >= DAILY_INVITE_LIMIT) {
+            return failure("Out of invitations for today", {
+                canInvite: false,
+                used: invitations.length,
+                limit: DAILY_INVITE_LIMIT,
+            })
+        }
+
         return success({
             canInvite: true,
             used: invitations.length,
@@ -101,8 +109,7 @@ export async function authorizeUserCreateInvite(
             return success(false, rateLimitResult.message);
         }
 
-        const { used, limit } = rateLimitResult.data;
-        return success(used < limit);
+        return success(true);
     } catch (error) {
         console.error("Failed to authorize user create invite:", error);
         return failure("Authorization check failed", false);

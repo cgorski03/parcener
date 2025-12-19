@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start"
-import { protectedFunctionMiddleware } from "../auth/protected-function"
+import { canUploadMiddleware, protectedFunctionMiddleware } from "../auth/protected-function"
 import { inviteIdSearchParamsSchema } from "../dtos"
 import { GetUserInviteRateLimit, GetUserUploadRateLimit } from "./rate-limit-service"
 import { AcceptInvitationToUpload, CreateUploadInvitation } from "./invitation-service"
@@ -39,7 +39,7 @@ export const getUserRecentRooms = createServerFn({ method: 'GET' })
     })
 
 export const createInviteRpc = createServerFn({ method: 'POST' })
-    .middleware([protectedFunctionMiddleware])
+    .middleware([canUploadMiddleware])
     .handler(async ({ context }) => {
         return await CreateUploadInvitation(context.db, context.user)
     })

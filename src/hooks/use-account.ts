@@ -5,10 +5,14 @@ import {
 } from "@/server/account/account-rpc"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 
+export const RateLimitQueryKeys = {
+    upload: ['uploadRateLimit'] as const,
+    invite: ['inviteRateLimit'] as const,
+}
 
 export const useUploadRateLimit = () => {
     return useQuery({
-        queryKey: ['uploadRateLimit'],
+        queryKey: RateLimitQueryKeys.upload,
         queryFn: async () => {
             const result = await getUserUploadRateLimitRpc();
             if (!result.success) {
@@ -26,7 +30,7 @@ export const useUploadRateLimit = () => {
 
 export const useInviteRateLimit = () => {
     return useQuery({
-        queryKey: ['inviteRateLimit'],
+        queryKey: RateLimitQueryKeys.invite,
         queryFn: async () => {
             const result = await getUserInviteRateLimitRpc();
             if (!result.success) {
