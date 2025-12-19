@@ -46,7 +46,7 @@ function RouteComponent() {
     const signIn = () => {
         authClient.signIn.social({
             provider: 'google',
-            callbackURL: redirectUrl
+            callbackURL: redirectUrl || "/account"
         })
     }
 

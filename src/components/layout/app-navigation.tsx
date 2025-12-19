@@ -16,21 +16,24 @@ import {
     LogOut,
     ChevronRight,
 } from 'lucide-react'
-import { Link, useRouter } from '@tanstack/react-router'
+import { Link, useLocation, useNavigate, useRouter } from '@tanstack/react-router'
 import { authClient } from '@/lib/auth-client'
 import { useState } from 'react'
 import Github from '../icons/github'
 
 export function AppNavigation() {
     const [open, setOpen] = useState(false)
+    const navigate = useNavigate()
     const router = useRouter()
+    const location = useLocation()
     const { data: session } = authClient.useSession()
     const user = session?.user
 
     const handleLogout = async () => {
-        await authClient.signOut()
-        setOpen(false)
-        router.invalidate()
+        await authClient.signOut();
+        await router.invalidate();
+        setOpen(false);
+        await navigate({ to: '/' });
     }
 
     return (
@@ -140,7 +143,7 @@ export function AppNavigation() {
                             </Button>
                         </div>
                     ) : (
-                        <Button className="w-full shadow-sm" onClick={() => router.navigate({
+                        <Button className="w-full shadow-sm" onClick={() => navigate({
                             to: '/login',
                             search: {
                                 redirect: location.href,

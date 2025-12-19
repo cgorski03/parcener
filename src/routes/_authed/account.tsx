@@ -5,7 +5,7 @@ import { AppHeader } from "@/components/layout/app-header";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { authClient } from '@/lib/auth-client';
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, useNavigate, useRouter } from '@tanstack/react-router';
 import { LogOut } from "lucide-react";
 
 export const Route = createFileRoute('/_authed/account')({
@@ -14,7 +14,17 @@ export const Route = createFileRoute('/_authed/account')({
 
 function RouteComponent() {
     const { user } = Route.useRouteContext();
-
+    const navigate = useNavigate();
+    const router = useRouter();
+    const onSignOut = async () => {
+        try {
+            await authClient.signOut();
+            await router.invalidate();
+            await navigate({ to: '/' });
+        } catch (error) {
+            console.error("Error signing out:", error);
+        }
+    };
     return (
         <div className="min-h-screen bg-muted/20 pb-20 font-sans">
             {/* Header */}
@@ -25,7 +35,7 @@ function RouteComponent() {
                         variant="ghost"
                         size="sm"
                         className="text-muted-foreground h-8 text-xs hover:text-destructive"
-                        onClick={() => authClient.signOut()}
+                        onClick={onSignOut}
                     >
                         <LogOut className="h-3.5 w-3.5 mr-1.5" />
                         Sign Out

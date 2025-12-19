@@ -1,8 +1,8 @@
 import { eq, and, gte } from "drizzle-orm";
 import { AppUser, DbType, invite, receipt } from "../db";
 
-const DAILY_UPLOAD_LIMIT = 5;
-const DAILY_INVITE_LIMIT = 10;
+const DAILY_UPLOAD_LIMIT = 3;
+const DAILY_INVITE_LIMIT = 3;
 
 export interface AccountResponse<T = any> {
     success: boolean;

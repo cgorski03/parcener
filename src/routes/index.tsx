@@ -8,7 +8,6 @@ import {
     Shield,
     ScanLine,
     Lock,
-    Users
 } from 'lucide-react'
 import GitHubIcon from '@/components/icons/github'
 import { authClient } from '@/lib/auth-client'
@@ -199,7 +198,7 @@ function LandingPage() {
                             </div>
                         </div>
 
-                        {/* Feature 4: The Interactive Vim Card */}
+                        {/*  Interactive Vim Card */}
                         <VimConfigCard />
 
                     </div>

@@ -114,7 +114,7 @@ export function InteractiveDemo() {
     const handleUpdate = (itemId: string, newQty: number) => {
         setMyClaims(prev => ({
             ...prev,
-            [itemId]: Math.max(0, newQty) // Prevent negative
+            [itemId]: Math.max(0, newQty)
         }))
     }
 
