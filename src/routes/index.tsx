@@ -177,7 +177,7 @@ function LandingPage() {
                             <div className="flex-1 order-2 md:order-1 flex items-center justify-center md:justify-start">
                                 <div className="w-full max-w-[280px]">
                                     <PriceBreakdown
-                                        label="Rory's Share"
+                                        label="Eliza's Share"
                                         subtotal={45.00}
                                         tax={3.60}
                                         tip={9.00}
