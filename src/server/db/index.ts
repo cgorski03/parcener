@@ -6,12 +6,7 @@ import { ExtractTablesWithRelations } from 'drizzle-orm'
 import { PgTransaction } from 'drizzle-orm/pg-core'
 
 export const getDb = (env: any) => {
-    const connectionString =
-        process.env.NODE_ENV === 'development'
-            ? process.env.DIRECT_DATABASE_URL
-            : env.HYPERDRIVE.connectionString
-
-    const client = postgres(connectionString)
+    const client = postgres(env.HYPERDRIVE.connectionString)
 
     return drizzle(client, {
         schema: { ...schema, ...authSchema },

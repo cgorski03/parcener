@@ -26,6 +26,27 @@
         "max_batch_size": 1,
         "max_retries": 3,
       },
-    ],
+      ],
+      },
+    "hyperdrive": [
+    {
+      "binding": "HYPERDRIVE",
+      "id": "bd77c28801b54209b84b7a3e4eec38b6",
+      "localConnectionString": "postgres://colin:secure_password@localhost:5432/split?sslmode=disable",
+    }
+  ],
+"env": {
+    "production": {
+      "vars": {
+        "NODE_ENV": "production",
+        "BASE_URL": "https://parcener.app",
+      }
+    }
   },
+"vars": {
+    "GOOGLE_API_KEY": "placeholder",
+    "BETTER_AUTH_SECRET": "placeholder",
+    "GOOGLE_CLIENT_ID": "placeholder",
+    "GOOGLE_CLIENT_SECRET": "placeholder",
+    }
 }
