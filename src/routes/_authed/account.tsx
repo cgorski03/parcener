@@ -34,7 +34,7 @@ function RouteComponent() {
                     <Button
                         variant="ghost"
                         size="sm"
-                        className="text-muted-foreground h-8 text-xs hover:text-destructive"
+                        className="text-muted-foreground text-xs hover:text-destructive"
                         onClick={onSignOut}
                     >
                         <LogOut className="h-3.5 w-3.5 mr-1.5" />

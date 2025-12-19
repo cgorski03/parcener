@@ -136,7 +136,7 @@ export function InviteSection() {
                     size="sm"
                     disabled={isDisabled}
                     onClick={handleCreateInvite}
-                    className="w-full h-8 text-xs shadow-sm"
+                    className="w-full text-xs shadow-sm"
                     variant={isDisabled ? "outline" : "default"}
                 >
                     {getButtonContent()}
@@ -178,10 +178,10 @@ function AccountUploadsSkeleton() {
                     </div>
                     <Separator />
                     <div className="flex gap-3">
-                        <Skeleton className="h-8 w-8 rounded-full" />
+                        <Skeleton className="h-10 w-8 rounded-full" />
                         <div className="space-y-2 flex-1">
                             <Skeleton className="h-4 w-1/3" />
-                            <Skeleton className="h-8 w-full" />
+                            <Skeleton className="h-10 w-full" />
                         </div>
                     </div>
                 </CardContent>

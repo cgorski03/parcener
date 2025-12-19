@@ -143,7 +143,7 @@ function IdentitySection({ user, name, setName }: IdentitySectionProps) {
                     <Button
                         variant="ghost"
                         size="sm"
-                        className="h-8 text-xs text-muted-foreground hover:text-foreground"
+                        className="text-xs text-muted-foreground hover:text-foreground"
                         onClick={() => {
                             authClient.signOut()
                             router.invalidate()

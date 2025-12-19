@@ -1,4 +1,3 @@
-import { ReceiptDto } from '@/server/dtos'
 import { useState } from 'react'
 import {
     Sheet,
@@ -12,6 +11,7 @@ import { Input } from '../ui/input'
 import { Button } from '../ui/button'
 import { Loader2 } from 'lucide-react'
 import { useFinalizeReceipt } from '@/hooks/use-edit-receipt'
+import { ReceiptWithRoom } from '@/server/get-receipt/get-receipt-service'
 
 const calculateAmount = (
     inputValue: string,
@@ -29,14 +29,14 @@ const calculateAmount = (
 type TipTaxMode = 'percentage' | 'absolute'
 
 export function ReceiptSummarySheet(props: {
-    showSheet: boolean
-    subtotal: string
-    receipt: ReceiptDto
-    closeSheet: () => void
+    showSheet: boolean;
+    subtotal: string;
+    receipt: ReceiptWithRoom;
+    closeSheet: () => void;
 }) {
     const { showSheet, receipt, subtotal, closeSheet } = props
     const { mutateAsync: saveReceiptTotal, isPending: savingReceiptTotal } =
-        useFinalizeReceipt()
+        useFinalizeReceipt(receipt.roomId ?? null);
 
     const [taxMode, setTaxMode] = useState<TipTaxMode>('absolute')
     const [tipMode, setTipMode] = useState<TipTaxMode>('absolute')

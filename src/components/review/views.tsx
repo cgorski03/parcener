@@ -1,6 +1,6 @@
-import { AlertCircle, Loader2, Pencil, Plus, Share2, Users } from 'lucide-react'
+import { Loader2, Pencil, Plus, Share2, Users } from 'lucide-react'
 import { ReceiptItemDto } from '@/server/dtos'
-import { Link, notFound, useRouter } from '@tanstack/react-router'
+import { Link, notFound, useNavigate } from '@tanstack/react-router'
 import { useReceiptIsValid } from '@/hooks/use-get-receipt'
 import { useMemo, useState } from 'react'
 import {
@@ -67,7 +67,7 @@ interface ReceiptEditorProps {
 
 export function ReceiptEditorView({ receipt }: ReceiptEditorProps) {
     if (!receipt) throw notFound()
-    const router = useRouter()
+    const navigate = useNavigate()
     // Validation Hook
     const { isError: receiptNotValid, isFetching: receiptValidFetching } =
         useReceiptIsValid(receipt.receiptId)
@@ -144,9 +144,10 @@ export function ReceiptEditorView({ receipt }: ReceiptEditorProps) {
         if (receiptNotValid) return;
         const response = await createReceiptRoom(receipt.receiptId);
         if ('success' in response) {
-            router.navigate({
+            navigate({
                 to: '/receipt/parce/$roomId',
                 params: { roomId: response.room.id },
+                search: { view: 'items' }
             });
         }
     }
@@ -164,7 +165,7 @@ export function ReceiptEditorView({ receipt }: ReceiptEditorProps) {
 
         if (receipt.roomId) {
             return (
-                <Link to='/receipt/parce/$roomId' params={{ roomId: receipt.roomId }}>
+                <Link to='/receipt/parce/$roomId' params={{ roomId: receipt.roomId }} search={{ view: 'items' }}>
                     <Button className="w-full h-11">
                         <Users className="h-4 w-4 mr-2" />
                         Go To Room

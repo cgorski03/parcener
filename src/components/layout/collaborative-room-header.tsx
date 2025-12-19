@@ -61,7 +61,7 @@ export function CollaborativeRoomHeader({
                         title="Invite Friends"
                         description={<>Scan to join <strong>{title}</strong></>}
                         trigger={
-                            <Button variant="secondary" size="sm" className="rounded-full h-8 px-3 text-xs">
+                            <Button variant="secondary" size="sm" className="rounded-full px-3 text-xs">
                                 <Share2 className="h-3.5 w-3.5 mr-1.5" />
                                 Invite
                             </Button>
@@ -71,7 +71,7 @@ export function CollaborativeRoomHeader({
                     {isHost && (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
+                                <Button variant="ghost" size="icon" className="w-8 rounded-full">
                                     <MoreHorizontal className="h-5 w-5 text-muted-foreground" />
                                 </Button>
                             </DropdownMenuTrigger>

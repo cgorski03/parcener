@@ -136,7 +136,7 @@ export function AppNavigation() {
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
+                                className="w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
                                 onClick={handleLogout}
                             >
                                 <LogOut className="h-4 w-4" />

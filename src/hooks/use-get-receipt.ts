@@ -24,11 +24,11 @@ export function useGetReceiptReview(
         queryFn: () => getReceiptRpc({ data: receiptId }),
         // If data is "processing", poll every 2 seconds. Otherwise stop.
         refetchInterval: (query) => {
-            const data = query.state.data
+            const data = query.state.data;
             if (data && isProcessing(data)) {
-                return 2000
+                return 2000;
             }
-            return false
+            return false;
         },
         staleTime: 1000,
         ...options,

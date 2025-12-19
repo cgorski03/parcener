@@ -65,9 +65,9 @@ The application is designed to be used on-the-spot and as such UI design is heav
 - **Manual Editing**: Fix AI mistakes with intuitive UI
 - **Flexible Claims**: Split items by quantity (e.g., "I had 2 of 4 tacos")
 
-### MVP remainging work
+### Doing right now
 
-- **Receipt Settlement**: Final payment calculation and settlement features - the actual functionality 
+- **Deployment**: Deploy to cloudflare, then pay off tech debt in Review Receipt Page need to have ab etter separation of client and server state
 
 ## Getting Started
 

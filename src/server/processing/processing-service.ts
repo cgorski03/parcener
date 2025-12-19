@@ -18,7 +18,7 @@ import {
 import { DbType, receipt } from '../db'
 import { google } from './llm'
 
-const RECEIPT_PROCESSING_MODEL = 'gemini-2.5-flash'
+const RECEIPT_PROCESSING_MODEL = 'gemini-3-flash-preview'
 
 export async function createReceiptStub(
     db: DbType,
