@@ -15,7 +15,9 @@
     "preview": "npm run build && vite preview --port 3000",
     "cf-typegen": "wrangler types",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "pnpm dotenv -e .env.local -- drizzle-kit migrate"
+    "db:migrate": "pnpm dotenv -e .env.local -- drizzle-kit migrate",
+    "db:migrate:prod": "pnpm dotenv -e .env.prod -- drizzle-kit migrate",
+    "db:migrate:dev": "pnpm dotenv -e .env.dev -- drizzle-kit migrate"
   },
   "dependencies": {
     "@ai-sdk/google": "^2.0.49",
