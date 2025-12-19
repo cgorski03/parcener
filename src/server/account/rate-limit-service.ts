@@ -29,7 +29,7 @@ export async function GetUserUploadRateLimit(
 
         const uploads = await getUserUploadsToday(db, user.id);
         return success({
-            canUpload: true,
+            canUpload: uploads.length < DAILY_UPLOAD_LIMIT,
             used: uploads.length,
             limit: DAILY_UPLOAD_LIMIT,
         });

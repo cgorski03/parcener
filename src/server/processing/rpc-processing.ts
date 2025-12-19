@@ -2,10 +2,10 @@ import { createServerFn } from '@tanstack/react-start'
 import { createReceiptStub } from './processing-service'
 import { env } from 'cloudflare:workers'
 import { ReceiptJob } from './types'
-import { protectedFunctionMiddleware } from '../auth/protected-function'
+import { canUploadMiddleware } from '../auth/protected-function'
 
 export const uploadReceipt = createServerFn({ method: 'POST' })
-    .middleware([protectedFunctionMiddleware])
+    .middleware([canUploadMiddleware])
     .inputValidator((data: FormData) => data)
     .handler(async ({ data, context }) => {
         const file = data.get('file') as File

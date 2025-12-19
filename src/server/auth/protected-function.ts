@@ -16,3 +16,14 @@ export const protectedFunctionMiddleware = createMiddleware().server(
         })
     },
 )
+
+export const canUploadMiddleware = createMiddleware()
+    .middleware([protectedFunctionMiddleware])
+    .server(async ({ next, context }) => {
+        const user = context.user
+        if (!user.canUpload) {
+            throw redirect({ to: '/account' })
+        }
+
+        return next()
+    })

@@ -35,7 +35,8 @@
     "hyperdrive": [
         {
             "binding": "HYPERDRIVE",
-            "id": "2c12d08424e7403b9cdc2b5825af13d5"
+            "id": "2c12d08424e7403b9cdc2b5825af13d5",
+            "localConnectionString": "postgres://colin:secure_password@localhost:5432/split?sslmode=disable"
         }
     ],
     "observability": {
@@ -83,7 +84,8 @@
             "hyperdrive": [
                 {
                     "binding": "HYPERDRIVE",
-                    "id": "5ce88dd038144aceb48b746cf281f22e"
+                    "id": "5ce88dd038144aceb48b746cf281f22e",
+                    "localConnectionString": "postgres://colin:secure_password@localhost:5432/split?sslmode=disable"
                 }
             ],
 
