@@ -33,11 +33,11 @@ export async function getReceiptWithItems(
         userId,
     )
 
-    if (!receiptInformation || receiptInformation.processingInfo.length === 0) {
+    if (!receiptInformation) {
         return NOT_FOUND;
     }
-
-    if (receiptInformation?.processingInfo.some(
+    // Prevent race condition - essentially count the queue as processing
+    if (receiptInformation.processingInfo.length === 0 || receiptInformation?.processingInfo.some(
         (x) => x.processingStatus === 'processing')) {
         return RECEIPT_PROCESSING;
     }
