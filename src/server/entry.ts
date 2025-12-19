@@ -36,7 +36,7 @@ export default {
         // We call the base handler, but we pass the 2nd argument (RequestOptions)
         // to inject the Cloudflare environment into the context
         const db = getDb(env)
-        const auth = createAuth(db)
+        const auth = createAuth(db, env)
         return baseFetch(request, {
             context: {
                 cloudflare: { env, ctx },

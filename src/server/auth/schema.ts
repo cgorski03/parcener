@@ -4,7 +4,6 @@ export const authConfig = {
     emailAndPassword: {
         enabled: false,
     },
-    baseURL: process.env.BASE_URL!,
     socialProviders: {
         google: {
             clientId: process.env.GOOGLE_CLIENT_ID || "",
