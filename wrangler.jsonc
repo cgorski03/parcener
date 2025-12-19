@@ -41,12 +41,9 @@
         "NODE_ENV": "production",
         "BASE_URL": "https://parcener.app",
       }
-    }
+    },
+    "dev": {
+      "workers_dev": true
+    },
   },
-"vars": {
-    "GOOGLE_API_KEY": "placeholder",
-    "BETTER_AUTH_SECRET": "placeholder",
-    "GOOGLE_CLIENT_ID": "placeholder",
-    "GOOGLE_CLIENT_SECRET": "placeholder",
-    }
 }
