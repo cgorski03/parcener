@@ -11,7 +11,7 @@ export const receiptItemDtoSchema = z.object({
     receiptItemId: receiptItemIdSchema,
     rawText: z.string().nullable(),
     interpretedText: z.string().min(1, 'Item name required'),
-    price: z.number().positive(),
+    price: z.number().nonnegative(),
     quantity: z.number().positive(),
 })
 
