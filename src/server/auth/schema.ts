@@ -18,6 +18,15 @@ export const authConfig = {
                 input: false,
             },
         },
+    },
+    // This is an attempt to fix a safari specific oauth bug
+    advanced: {
+        useSecureCookies: true,
+        defaultCookieAttributes: {
+            sameSite: 'lax',
+            secure: true,
+            httpOnly: true,
+        }
     }
 } satisfies BetterAuthOptions;
 
