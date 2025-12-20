@@ -12,6 +12,7 @@
     "format": "prettier",
     "check": "prettier --write . && eslint --fix",
     "deploy": "npm run build && wrangler deploy",
+    "deploy:staging": "npm run build && wrangler deploy --env staging --config wrangler.jsonc",
     "preview": "npm run build && vite preview --port 3000",
     "cf-typegen": "wrangler types",
     "db:generate": "drizzle-kit generate",

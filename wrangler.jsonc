@@ -4,9 +4,7 @@
     "compatibility_date": "2025-09-02",
     "compatibility_flags": ["nodejs_compat"],
     "main": "src/server/entry.ts",
-    "observability": {
-        "enabled": true,
-    },
+    "workers_dev": false,
     "vars": {
         "NODE_ENV": "production",
         "BASE_URL": "https://parcener.app",
@@ -40,6 +38,7 @@
         }
     ],
     "observability": {
+        "enabled": true,
         "logs": {
             "enabled": true,
             "head_sampling_rate": 1,
@@ -58,11 +57,20 @@
         }
     ],    
     "env": {
-        "dev": {
-            "workers_dev": true,
+        "staging": {
+            "workers_dev": false,
+            "main": "./dist/server/index.js",
+            "assets": {
+                "directory": "./dist/client",
+                "binding": "ASSETS"
+            },
+            "vars": {
+                "NODE_ENV": "production",
+                "BASE_URL": "https://staging.parcener.app",
+            },
             "r2_buckets": [
                 {
-                    "bucket_name": "parcener-receipt-images",
+                    "bucket_name": "parcener-receipt-images-staging",
                     "binding": "parcener_receipt_images",
                 },
             ],
@@ -70,12 +78,12 @@
                 "producers": [
                     {
                         "binding": "RECEIPT_QUEUE",
-                        "queue": "parcener-receipt-queue",
+                        "queue": "parcener-receipt-queue-staging",
                     },
                 ],
                 "consumers": [
                     {
-                        "queue": "parcener-receipt-queue",
+                        "queue": "parcener-receipt-queue-staging",
                         "max_batch_size": 1,
                         "max_retries": 3,
                     },
@@ -88,15 +96,12 @@
                     "localConnectionString": "postgres://colin:secure_password@localhost:5432/split?sslmode=disable"
                 }
             ],
-
-            "observability": {
-                "logs": {
-                    "enabled": true,
-                    "head_sampling_rate": 1,
-                    "invocation_logs": true,
-                    "persist": true
-                }
-            }
+            "routes": [
+                {
+                    "pattern": "staging.parcener.app",
+                    "custom_domain": true
+                }            
+            ],    
         },
     },
 }
