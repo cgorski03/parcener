@@ -39,7 +39,7 @@ export function CollaborativeRoomHeader({
 }: CollaborativeRoomHeaderProps) {
     // TODO ENV VAR 
     const location = useLocation();
-    const shareUrl = `${location.url}${location.pathname}`;
+    const shareUrl = location.url;
 
     return (
         <AppHeader
