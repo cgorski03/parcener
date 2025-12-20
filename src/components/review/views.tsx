@@ -226,17 +226,27 @@ export function ReceiptEditorView({ receipt }: ReceiptEditorProps) {
                 Add Custom Item
             </Button>
 
-            <PriceBreakdown
-                subtotal={parseFloat(subtotal)}
-                tax={receipt.tax ?? 0}
-                tip={receipt.tip ?? 0}
-                grandTotal={receipt.grandTotal ?? 0}
-                label="Receipt Totals"
-                onClick={() => setShowSummarySheet(true)}
-                className="mt-6"
-                errorMessage={totalHasError ? "Fix total mismatch before continuing" : undefined}
-                actionButton={<ActionButton />}
-            />
+            <div className="relative group mt-6">
+                <PriceBreakdown
+                    subtotal={parseFloat(subtotal)}
+                    tax={receipt.tax ?? 0}
+                    tip={receipt.tip ?? 0}
+                    grandTotal={receipt.grandTotal ?? 0}
+                    label="Receipt Totals"
+                    onClick={() => setShowSummarySheet(true)}
+                    errorMessage={totalHasError ? "Fix total mismatch before continuing" : undefined}
+                    actionButton={<ActionButton />}
+                    className="pr-10 border-primary/20 active:bg-accent/50 transition-colors"
+                />
+
+                {/* Floating Edit Icon Overlay */}
+                {/* Goal here is to make it clear that this is not view-only*/}
+                <div className="absolute top-4 right-4 pointer-events-none">
+                    <div className="bg-primary/10 p-2 rounded-full text-primary">
+                        <Pencil className="w-4 h-4" />
+                    </div>
+                </div>
+            </div>
 
             <div className="h-4 md:hidden" />
 
