@@ -100,7 +100,7 @@ export function ReceiptSummarySheet(props: {
                     e.preventDefault()
                 }}
                 side="bottom"
-                className="rounded-t-2xl px-4 py-4 !duration-250"
+                className="rounded-t-2xl px-4 py-4"
             >
                 <SheetHeader className="pl-0">
                     <SheetTitle className="text-xl">Edit Totals</SheetTitle>

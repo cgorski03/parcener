@@ -182,3 +182,7 @@
 body {
   letter-spacing: var(--tracking-normal);
 }
+
+html, body {
+  overscroll-behavior-y: none;
+}

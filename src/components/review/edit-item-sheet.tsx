@@ -80,7 +80,7 @@ function ReceiptItemSheet(props: {
         >
             <SheetContent
                 side="bottom"
-                className="rounded-t-2xl px-4 py-4 !duration-250"
+                className="rounded-t-2xl px-4 py-4"
                 onOpenAutoFocus={(e) => {
                     e.preventDefault() // Prevent auto-focus behavior
                 }}
