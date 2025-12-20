@@ -11,6 +11,7 @@ const roomSearchSchema = z.object({
 })
 
 export const Route = createFileRoute('/receipt/parce/$roomId')({
+
     loader: async ({ params }) => {
         const response = await getRoomAndMembership({ data: params.roomId })
         if (!response) {
@@ -28,6 +29,13 @@ export const Route = createFileRoute('/receipt/parce/$roomId')({
         }
         return { room, membership, user }
     },
+    head: () => ({
+        meta: [
+            { title: 'Room | Parcener' },
+            { property: 'og:title', content: `Join Room | Parcener` },
+            { property: 'og:description', content: 'Join room to share on expenses with your friends in real-time' },
+        ],
+    }),
     validateSearch: (search) => roomSearchSchema.parse(search),
     component: RouteComponent,
     pendingComponent: RoomLoading,

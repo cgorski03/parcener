@@ -9,6 +9,12 @@ import { createFileRoute, useNavigate, useRouter } from '@tanstack/react-router'
 import { LogOut } from "lucide-react";
 
 export const Route = createFileRoute('/_authed/account')({
+    head: () => ({
+        meta: [
+            { title: 'Account | Parcener' },
+            { property: 'og:title', content: `Account | Parcener` },
+        ],
+    }),
     component: RouteComponent,
 })
 

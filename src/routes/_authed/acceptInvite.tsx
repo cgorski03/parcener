@@ -15,6 +15,13 @@ import { InviteStatus } from '@/server/account/invitation-service'
 
 export const Route = createFileRoute('/_authed/acceptInvite')({
     validateSearch: inviteIdSearchParamsSchema,
+    head: () => ({
+        meta: [
+            { title: 'Accept Invitation | Parcener' },
+            { property: 'og:title', content: 'Accept Invitation | Parcener' },
+            { property: 'og:description', content: 'Accept invitation to begin uploading receipts!' },
+        ],
+    }),
     loaderDeps: ({ search }) => ({
         token: search.token,
     }),

@@ -14,6 +14,12 @@ export const loginSearchSchema = z.object({
 
 export const Route = createFileRoute('/login')({
     validateSearch: loginSearchSchema,
+    head: () => ({
+        meta: [
+            { title: 'Login | Parcener' },
+            { property: 'og:title', content: `Login | Parcener` },
+        ],
+    }),
 
     pendingComponent: () => (
         <BrandedPageShell>

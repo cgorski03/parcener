@@ -5,6 +5,12 @@ import { createFileRoute } from '@tanstack/react-router'
 
 
 export const Route = createFileRoute('/_authed/upload')({
+    head: () => ({
+        meta: [
+            { title: 'Review Receipt | Parcener' },
+            { property: 'og:title', content: `Review Receipt | Parcener` },
+        ],
+    }),
     component: UploadPageComponent,
 })
 

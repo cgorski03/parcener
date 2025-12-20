@@ -7,15 +7,16 @@ import { Separator } from "../ui/separator";
 import { Skeleton } from "../ui/skeleton";
 import { useState } from "react";
 import { QrShareSheet } from "../common/qr-code-shareable-sheet";
+import { authClient } from "@/lib/auth-client";
 
 export function AccountUploadsSection() {
     const { data: uploadData, isLoading: isUploadLoading } = useUploadRateLimit();
+    const { data: session, isPending: sessionLoading } = authClient.useSession();
 
-    if (isUploadLoading) {
+    if (isUploadLoading || sessionLoading) {
         return <AccountUploadsSkeleton />
     }
-
-    const hasAccess = uploadData?.canUpload;
+    const hasAccess = session?.user.canUpload;
 
     return (
         <div className="space-y-2">

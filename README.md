@@ -10,7 +10,7 @@ The application is designed to be used on-the-spot and as such UI design is heav
 - **Backend**: Cloudflare Workers, Drizzle ORM, PostgreSQL
 - **AI**: Google Gemini 2.5 Flash for receipt processing
 - **Auth**: Better Auth with guest support
-- **Deployment**: Cloudflare Pages/Workers
+- **Deployment**: Cloudflare Workers
 
 ## Architecture Overview
 
@@ -64,10 +64,6 @@ The application is designed to be used on-the-spot and as such UI design is heav
 - **Guest Support**: Anonymous users can join and participate
 - **Manual Editing**: Fix AI mistakes with intuitive UI
 - **Flexible Claims**: Split items by quantity (e.g., "I had 2 of 4 tacos")
-
-### Doing right now
-
-- **Deployment**: Deploy to cloudflare, then pay off tech debt in Review Receipt Page need to have ab etter separation of client and server state
 
 ## Getting Started
 

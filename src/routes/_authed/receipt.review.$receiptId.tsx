@@ -10,6 +10,12 @@ import { useGetReceiptReview } from '@/hooks/use-get-receipt'
 import { AppHeader } from '@/components/layout/app-header'
 
 export const Route = createFileRoute('/_authed/receipt/review/$receiptId')({
+    head: () => ({
+        meta: [
+            { title: 'Review Receipt | Parcener' },
+            { property: 'og:title', content: `Review Receipt | Parcener` },
+        ],
+    }),
     component: RouteComponent,
     notFoundComponent: ReviewNotFound,
 })
