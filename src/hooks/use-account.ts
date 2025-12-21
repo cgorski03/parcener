@@ -14,11 +14,7 @@ export const useUploadRateLimit = () => {
     return useQuery({
         queryKey: RateLimitQueryKeys.upload,
         queryFn: async () => {
-            const result = await getUserUploadRateLimitRpc();
-            if (!result.success) {
-                throw new Error(result.message || 'Failed to fetch rate limit');
-            }
-            return result.data;
+            return await getUserUploadRateLimitRpc();
         },
         staleTime: 1000 * 60 * 5,
         refetchOnWindowFocus: false,
@@ -32,11 +28,7 @@ export const useInviteRateLimit = () => {
     return useQuery({
         queryKey: RateLimitQueryKeys.invite,
         queryFn: async () => {
-            const result = await getUserInviteRateLimitRpc();
-            if (!result.success) {
-                throw new Error(result.message || 'Failed to fetch rate limit');
-            }
-            return result.data;
+            return await getUserInviteRateLimitRpc();
         },
         staleTime: 1000 * 60 * 5,
         refetchOnWindowFocus: false,
@@ -51,17 +43,7 @@ export const useCreateInvitation = () => {
 
     return useMutation({
         mutationFn: async () => {
-            const result = await createInviteRpc();
-            if (!result.success) {
-                throw new Error(result.message || 'Failed to create invitation');
-            }
-            if (result.data.status !== "SUCCESS") {
-                if (result.data.status === "RATE_LIMIT") {
-                    throw new Error("You've reached your daily invitation limit");
-                }
-                throw new Error("Failed to create invitation");
-            }
-            return result.data;
+            return await createInviteRpc();
         },
 
         onMutate: async () => {

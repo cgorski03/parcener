@@ -4,6 +4,7 @@ import {
     ReceiptEntityWithItems,
     ReceiptItem,
 } from './db/schema'
+import { validateReceiptCalculations } from './money-math';
 
 // ----- RECEIPT ITEM SCHEMA
 export const receiptItemIdSchema = z.uuid({ version: 'v4' });
@@ -48,8 +49,11 @@ export const roomIdSchema = z.uuid({ version: 'v4' });
 export const roomMemberIdSchema = z.uuid({ version: 'v4' });
 export const userIdSchema = z.string().length(32);
 
-export const roomSchema = z.object({
+export const roomObjSchema = z.object({
     roomId: roomIdSchema,
+})
+
+export const roomSchema = roomObjSchema.extend({
     receiptId: receiptIdSchema,
     title: z.union([z.string().max(255), z.null()]),
     createdBy: userIdSchema,
@@ -152,3 +156,24 @@ export const receiptItemEntityToDtoHelper = (item: ReceiptItem) => {
     }
 }
 
+export function mapDbRoomToDto(roomData: any): FullRoomInfoDto | null {
+    if (!roomData) return null;
+
+    const receipt = receiptWithItemsToDto(roomData.receipt);
+    if (!receipt) return null;
+
+    const receiptValidResponse = validateReceiptCalculations(receipt);
+
+    return {
+        roomId: roomData.id,
+        title: roomData.title,
+        receiptId: roomData.receiptId,
+        createdAt: roomData.createdAt,
+        updatedAt: roomData.updatedAt,
+        createdBy: roomData.createdBy,
+        members: roomData.members,
+        claims: roomData.claims,
+        receipt,
+        receiptIsValid: receiptValidResponse.isValid,
+    };
+}

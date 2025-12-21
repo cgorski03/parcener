@@ -1,9 +1,8 @@
 import { and, eq } from "drizzle-orm";
-import { RoomIdentity } from "../auth/parse-room-identity";
 import { DbType, roomMember } from "../db";
 import { RoomMembership } from "../dtos";
 import { touchRoomId } from "./room-service";
-import { id } from "zod/v4/locales";
+import { RoomIdentity } from "../auth/room-identity";
 
 export async function resolveMembershipState(
     db: DbType,
@@ -83,7 +82,7 @@ export async function editRoomMemberDisplayName(
     roomId: string,
     displayName: string,
 ) {
-    return await db.transaction(async (tx) => {
+    const updatedRoomMember = await db.transaction(async (tx) => {
         const [updatedRoomMember] = await tx
             .update(roomMember)
             .set({ displayName })
@@ -100,6 +99,11 @@ export async function editRoomMemberDisplayName(
         await touchRoomId(tx, roomId);
         return updatedRoomMember
     })
+    const { id, ...rest } = updatedRoomMember;
+    return {
+        roomMemberId: id,
+        ...rest
+    };
 }
 
 export async function upgradeRoomMember(

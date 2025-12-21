@@ -1,7 +1,8 @@
 import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { QueryClientProvider } from '@tanstack/react-query'
 import { GeneralNotFound } from '@/components/layout/not-found'
 import appCss from '../styles.css?url'
+import { queryClient } from '@/lib/query-client'
 
 export const Route = createRootRoute({
     head: () => ({

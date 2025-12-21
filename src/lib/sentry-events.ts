@@ -29,6 +29,15 @@ export const SENTRY_EVENTS = {
         CREATE_ITEM: "receipt_edit.create_item",
         FINALIZE: "receipt_edit.finalize_totals",
     },
+    ROOM: {
+        CREATE: "room.create",
+        GET_DETAILS: "room.get_details",
+        GET_PULSE: "room.get_pulse",
+        JOIN: "room.join",
+        UPGRADE_MEMBER: "room.upgrade_member",
+        UPDATE_NAME: "room.update_name",
+        CLAIM_ITEM: "room.claim_item",
+    },
     ACCOUNT: {
         // Error in the action of checking the rate limits
         CHECK_UPLOAD_LIMITS: "account.check_upload_limits",
