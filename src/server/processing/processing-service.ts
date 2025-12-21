@@ -23,17 +23,41 @@ import { SENTRY_EVENTS } from '@/lib/sentry-events'
 
 const RECEIPT_PROCESSING_MODEL = 'gemini-3-flash-preview'
 
-export async function createReceiptStub(
-    db: DbType,
-    receiptId: string,
-    userId: string,
-) {
-    await db.insert(receipt).values({
-        id: receiptId,
-        userId,
-    })
-}
 
+export async function processUploadAndEnqueue(
+    db: DbType,
+    env: Env,
+    file: File,
+    userId: string
+) {
+    const receiptId = crypto.randomUUID();
+
+    await env.parcener_receipt_images.put(receiptId, file.stream(), {
+        httpMetadata: { contentType: file.type }
+    });
+
+    await createReceiptStub(db, receiptId, userId);
+
+    const activeSpan = Sentry.getActiveSpan();
+
+    if (activeSpan) {
+        activeSpan.setAttribute("receiptId", receiptId);
+        activeSpan.setAttribute("fileSize", file.size);
+    }
+
+    const traceHeader = activeSpan ? Sentry.spanToTraceHeader(activeSpan) : undefined;
+    const baggageHeader = activeSpan ? Sentry.spanToBaggageHeader(activeSpan) : undefined;
+
+    const job: ReceiptJob = {
+        receiptId,
+        __sentry_baggage: baggageHeader,
+        __sentry_trace: traceHeader,
+    };
+
+    await env.RECEIPT_QUEUE.send(job);
+
+    return { receiptId };
+}
 
 export async function processReceipt(
     db: DbType,
@@ -156,4 +180,15 @@ export async function processingQueueMessageHandler(
         env.parcener_receipt_images,
     )
     message.ack()
+}
+
+async function createReceiptStub(
+    db: DbType,
+    receiptId: string,
+    userId: string,
+) {
+    await db.insert(receipt).values({
+        id: receiptId,
+        userId,
+    })
 }

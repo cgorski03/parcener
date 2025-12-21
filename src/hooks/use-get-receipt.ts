@@ -1,5 +1,5 @@
 import { isProcessing } from '@/lib/receipt-utils'
-import { getUserRecentReceipts } from '@/server/account/account-rpc'
+import { getUserRecentReceiptsRpc } from '@/server/account/account-rpc'
 import {
     getReceiptRpc,
     getReceiptIsValidRpc,
@@ -46,7 +46,7 @@ export function useRecentReceipts() {
     return useQuery({
         queryKey: ReceiptQueryKeys.recents(),
         queryFn: async () => {
-            const receipts = await getUserRecentReceipts();
+            const receipts = await getUserRecentReceiptsRpc();
             if (!receipts) {
                 return [];
             }

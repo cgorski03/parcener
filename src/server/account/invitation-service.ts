@@ -1,5 +1,5 @@
-import { eq, and, gte } from "drizzle-orm";
-import { AppUser, DbType, invite, receipt } from "../db";
+import { eq, and, gte, isNull } from "drizzle-orm";
+import { AppUser, DbType, invite, receipt, user } from "../db";
 
 const DAILY_UPLOAD_LIMIT = 3;
 const DAILY_INVITE_LIMIT = 3;
@@ -10,6 +10,15 @@ export class RateLimitError extends Error {
         this.name = "RateLimitError";
     }
 }
+
+export class InviteError extends Error {
+    constructor(message: string, public code: 'NOT_FOUND' | 'ALREADY_USED') {
+        super(message);
+        this.name = "InviteError";
+    }
+}
+
+export type InviteStatus = 'SUCCESS' | 'NOT_FOUND' | 'USER_ALREADY_AUTHORIZED' | 'ERROR';
 
 export async function getUserUploadRateLimit(db: DbType, user: AppUser) {
     if (!user.canUpload) {
@@ -62,6 +71,54 @@ export async function createUploadInvitation(db: DbType, user: AppUser) {
     return { inviteId: newInvitation.id };
 }
 
+
+export async function acceptInvitationToUpload(
+    db: DbType,
+    userId: string,
+    inviteId: string
+) {
+    const userEntity = await db.query.user.findFirst({
+        where: eq(user.id, userId),
+        columns: { canUpload: true },
+    });
+
+    if (!userEntity) {
+        throw new Error("User context missing during invite acceptance");
+    }
+
+    if (userEntity.canUpload) {
+        return { status: "USER_ALREADY_AUTHORIZED" as const };
+    }
+
+    // 2. Atomic Transaction
+    // We update the invite AND the user together.
+    return await db.transaction(async (tx) => {
+        const [claimedInvite] = await tx
+            .update(invite)
+            .set({
+                usedAt: new Date(),
+                usedBy: userId
+            })
+            .where(
+                and(
+                    eq(invite.id, inviteId),
+                    isNull(invite.usedAt)
+                )
+            )
+            .returning();
+
+        if (!claimedInvite) {
+            throw new InviteError("Invite not found or already used", 'NOT_FOUND');
+        }
+
+        await tx
+            .update(user)
+            .set({ canUpload: true })
+            .where(eq(user.id, userId));
+
+        return { status: "SUCCESS" as const };
+    });
+}
 
 async function _getUploadsToday(db: DbType, userId: string) {
     const startOfDay = _getStartOfDayUTC();
