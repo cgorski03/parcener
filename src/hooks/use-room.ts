@@ -6,6 +6,8 @@ import { useRouter } from '@tanstack/react-router'
 
 export const RoomQueryKeys = {
     all: ['room'] as const,
+    joinRoom: ['joinRoom'] as const,
+    createRoom: ['createRoom'] as const,
     detail: (id: string) => [...RoomQueryKeys.all, id] as const,
     recents: () => [...RoomQueryKeys.all, 'recents'] as const,
 }
@@ -53,11 +55,9 @@ export function useRecentRooms() {
 
 export function useCreateReceiptRoom() {
     return useMutation({
+        mutationKey: RoomQueryKeys.createRoom,
         mutationFn: async (receiptId: string) => {
             return await createRoomRpc({ data: receiptId })
-        },
-        onError: (error) => {
-            console.error('Failed to create receipt room', error)
         },
     })
 }
@@ -67,6 +67,7 @@ export function useJoinRoom() {
     const router = useRouter()
 
     const mutation = useMutation({
+        mutationKey: RoomQueryKeys.joinRoom,
         mutationFn: async (request: JoinRoomRequest) => {
             return await joinRoomRpc({ data: request })
         },
@@ -76,10 +77,7 @@ export function useJoinRoom() {
             document.cookie = `${cookieName}=${response.generatedUuid}; path=/; max-age=${maxAge}; SameSite=Lax`
             router.invalidate()
             queryClient.invalidateQueries({ queryKey: RoomQueryKeys.recents() })
-        },
-        onError: (error) => {
-            console.error('Failed to create receipt room', error)
-        },
+        }
     })
     return {
         ...mutation,

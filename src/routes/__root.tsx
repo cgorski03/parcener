@@ -3,14 +3,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { GeneralNotFound } from '@/components/layout/not-found'
 import appCss from '../styles.css?url'
 
-const queryClient = new QueryClient({
-    defaultOptions: {
-        queries: {
-            staleTime: 60 * 1000,
-        },
-    },
-})
-
 export const Route = createRootRoute({
     head: () => ({
         meta: [

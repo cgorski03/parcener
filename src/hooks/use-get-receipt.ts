@@ -9,6 +9,11 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 export const ReceiptQueryKeys = {
     all: ['receipts'] as const,
     validation: ['validations'] as const,
+    upload: ['uploadReceipt'] as const,
+    deleteItem: ['deleteItem'] as const,
+    createItem: ['createItem'] as const,
+    updateItem: ['updateItem'] as const,
+    finalize: ['finalizeReceipt'] as const,
     recents: () => [...ReceiptQueryKeys.all, 'recents'] as const,
     detail: (id: string) => [...ReceiptQueryKeys.all, id] as const,
     valid: (id: string) => [...ReceiptQueryKeys.validation, id] as const,

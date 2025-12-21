@@ -1,6 +1,7 @@
 import { GoogleGenerativeAIProvider } from '@ai-sdk/google'
 import { generateText } from 'ai'
 import { RECEIPT_PARSE_PROMPT } from './utils/prompts'
+import * as Sentry from '@sentry/cloudflare';
 import {
     ParseError,
     parseProviderMetadata,
@@ -17,6 +18,8 @@ import {
 } from './repository'
 import { DbType, receipt } from '../db'
 import { google } from './llm'
+import { logger } from '@/lib/logger'
+import { SENTRY_EVENTS } from '@/lib/sentry-events'
 
 const RECEIPT_PROCESSING_MODEL = 'gemini-3-flash-preview'
 
@@ -31,95 +34,90 @@ export async function createReceiptStub(
     })
 }
 
+
 export async function processReceipt(
     db: DbType,
     receiptId: string,
     imageSource: R2Bucket,
 ) {
     const ai = google()
-    // Insert the stub records to the database
     const runId = await createProcessingStub(db, receiptId)
+
+    // Shared state for error handling block
     let metadata: UsageMetadata | null = null
     let rawResponse: string | null = null
 
     try {
-        // Get the image from R2
+        // 1. Image Retrieval
         const image = await imageSource.get(receiptId)
+
         if (!image) {
-            const error = 'Image not found at source'
-            console.error(error)
-            createProcessingError(
-                db,
-                {
-                    runId,
-                },
-                error,
-            )
-            return
+            const msg = 'Image not found at source';
+            await createProcessingError(db, { runId }, msg);
+
+            logger.error(new Error(msg), SENTRY_EVENTS.RECEIPT.PROCESS_JOB.IMAGE_MISSING, { receiptId });
+            return;
         }
+
         const imageObj = await image.arrayBuffer()
-        const { text, providerMetadata } = await requestAiProcessingHelper(
-            ai,
-            imageObj,
-        )
+
+        const { text, providerMetadata } = await Sentry.startSpan(
+            { name: "ai.generate_text", op: "ai.inference" },
+            () => requestAiProcessingHelper(ai, imageObj)
+        );
+
         rawResponse = text
         if (providerMetadata) {
             metadata = parseProviderMetadata(providerMetadata)
+            const span = Sentry.getActiveSpan();
+            span?.setAttribute("ai.tokens", metadata?.totalTokenCount);
+            span?.setAttribute("ai.model", RECEIPT_PROCESSING_MODEL);
         }
+
+        // 3. Parsing & Validation
         const parsedReceipt = parseStructuredReceiptResponse(text, ParsedReceiptSchema)
+
+        // 4. Persistence
         await saveReceiptInformation(db, { id: receiptId, parsedReceipt })
         await finishReceiptProcessingRunSuccess(db, runId, {
             model: RECEIPT_PROCESSING_MODEL,
             tokens: metadata?.totalTokenCount ?? null,
             rawModelResponse: rawResponse,
         })
+
+        logger.info("Receipt processed successfully", SENTRY_EVENTS.RECEIPT.PROCESS_JOB.SUCCESS, {
+            receiptId,
+            tokens: metadata?.totalTokenCount
+        });
+
         return { receiptId }
+
     } catch (error) {
+        const errorContext = {
+            runId,
+            model: RECEIPT_PROCESSING_MODEL,
+            processingTokens: metadata?.totalTokenCount,
+            rawModelResponse: rawResponse ?? undefined,
+        };
+        await createProcessingError(db, errorContext, error);
+
+        // 2. Log to Sentry & Re-throw
         if (error instanceof ParseError) {
-            console.error('Failed to parse receipt JSON:', {
-                message: error.message,
-                rawText: error.rawText.slice(0, 500),
-            })
-            await createProcessingError(
-                db,
-                {
-                    runId,
-                    model: RECEIPT_PROCESSING_MODEL,
-                    processingTokens: metadata?.totalTokenCount,
-                    rawModelResponse: rawResponse ?? undefined,
-                },
-                error,
-            )
-            throw new Error(
-                'Failed to parse receipt. The image may be unclear or not a receipt.',
-            )
+            logger.error(error, SENTRY_EVENTS.RECEIPT.PROCESS_JOB.PARSE_AI_JSON, { receiptId });
+            throw new Error('Failed to parse receipt structure.');
         }
+
         if (error instanceof z.ZodError) {
-            console.error('Receipt validation failed:', error.issues)
-            await createProcessingError(
-                db,
-                {
-                    runId,
-                    model: RECEIPT_PROCESSING_MODEL,
-                    processingTokens: metadata?.totalTokenCount,
-                    rawModelResponse: rawResponse ?? undefined,
-                },
-                error,
-            )
-            throw new Error('Receipt data is invalid or incomplete.')
+            // Log WHICH fields failed, but not the values
+            const failedFields = error.issues.map(i => i.path.join('.'));
+            logger.error(error, SENTRY_EVENTS.RECEIPT.PROCESS_JOB.ZOD_VALIDATION_FAIL, {
+                receiptId,
+                failedFields
+            });
+            throw new Error('Receipt data incomplete.');
         }
-        await createProcessingError(
-            db,
-            {
-                runId,
-                model: RECEIPT_PROCESSING_MODEL,
-                processingTokens: metadata?.totalTokenCount,
-                rawModelResponse: rawResponse ?? undefined,
-            },
-            error,
-        )
-        console.error('Unexpected error parsing receipt:', error)
-        throw new Error('Failed to process receipt image.')
+        logger.error(error, SENTRY_EVENTS.RECEIPT.PROCESS_JOB.OTHER_ERROR, { receiptId });
+        throw error;
     }
 }
 
@@ -152,15 +150,10 @@ export async function processingQueueMessageHandler(
     env: Env,
     _: ExecutionContext,
 ) {
-    try {
-        await processReceipt(
-            db,
-            message.body.receiptId,
-            env.parcener_receipt_images,
-        )
-        message.ack()
-    } catch (error) {
-        console.error('Queue job failed:', error)
-        message.retry()
-    }
+    await processReceipt(
+        db,
+        message.body.receiptId,
+        env.parcener_receipt_images,
+    )
+    message.ack()
 }

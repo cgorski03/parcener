@@ -15,6 +15,8 @@ import { Upload, Trash2, AlertCircle, FileText } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useObjectURL } from '@/lib/use-object-url'
 import { useRouter } from '@tanstack/react-router'
+import { logger } from '@/lib/logger'
+import { SENTRY_EVENTS } from '@/lib/sentry-events'
 const MAX_FILE_SIZE = 5 * 1024 * 1024
 const ACCEPTED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/heic']
 
@@ -91,7 +93,7 @@ export function UploadComponent() {
                 router.navigate({ to: `/receipt/review/${result.receiptId}` })
             }
         } catch (err) {
-            console.error(err)
+            logger.error(err, SENTRY_EVENTS.RECEIPT.UPLOAD)
         }
     }
 

@@ -18,7 +18,6 @@ function UploadPageComponent() {
     const { user } = Route.useRouteContext();
     const { data: uploadData } = useUploadRateLimit();
 
-    console.log(uploadData);
     if (!user.canUpload || !uploadData?.canUpload) {
         return <RestrictedUploadView hasNoAccess={!user.canUpload} />
     }
