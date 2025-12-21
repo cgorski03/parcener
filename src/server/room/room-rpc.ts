@@ -21,8 +21,10 @@ import {
 import { claimItem } from './room-claims-service'
 import { validateReceiptCalculations } from '../money-math'
 import { editRoomMemberDisplayName, getRoomMembership, resolveMembershipState, upgradeRoomMember } from './room-member-service'
+import { nameTransaction } from '../observability/sentry-middleware'
 
 export const createRoomRpc = createServerFn({ method: 'POST' })
+    .middleware([nameTransaction('createRoomRpc')])
     .inputValidator(receiptIdSchema)
     .handler(async ({ data: receiptId, context }) => {
         const request = getRequest()
@@ -35,6 +37,7 @@ export const createRoomRpc = createServerFn({ method: 'POST' })
     })
 
 export const getRoomAndMembership = createServerFn({ method: 'GET' })
+    .middleware([nameTransaction('getRoomAndMembership')])
     .inputValidator(roomIdSchema)
     .handler(async ({ data: roomId, context }) => {
         const request = getRequest()
@@ -72,6 +75,7 @@ export const getRoomAndMembership = createServerFn({ method: 'GET' })
     })
 
 export const upgradeGuestToUser = createServerFn({ method: 'POST' })
+    .middleware([nameTransaction('upgradeGuestToUser')])
     .inputValidator(roomIdSchema)
     .handler(async ({ data: roomId, context }) => {
         const request = getRequest()
@@ -86,6 +90,7 @@ export const upgradeGuestToUser = createServerFn({ method: 'POST' })
     })
 
 export const getRoomPulseRpc = createServerFn({ method: 'GET' })
+    .middleware([nameTransaction('getRoomPulseRpc')])
     .inputValidator(getRoomPulseSchema)
     .handler(async ({ data, context }) => {
         const { roomId, since } = data
@@ -133,6 +138,7 @@ export const getRoomPulseRpc = createServerFn({ method: 'GET' })
     })
 
 export const updateRoomDisplayNameRpc = createServerFn({ method: 'POST' })
+    .middleware([nameTransaction('updateRoomDisplayNameRpc')])
     .inputValidator(updateDisplayNameRoomRequestSchema)
     .handler(async ({ data, context }) => {
         const { roomId, displayName } = data
@@ -157,6 +163,7 @@ export const updateRoomDisplayNameRpc = createServerFn({ method: 'POST' })
     })
 
 export const claimItemRpc = createServerFn({ method: 'POST' })
+    .middleware([nameTransaction('claimItemRpc')])
     .inputValidator(claimItemRequestSchema)
     .handler(async ({ data, context }) => {
         const { roomId, receiptItemId, quantity } = data
@@ -168,7 +175,6 @@ export const claimItemRpc = createServerFn({ method: 'POST' })
         }
         const member = await getRoomMembership(context.db, identity, roomId)
         if (!member) {
-            console.error('user is not a member of this room')
             return null
         }
         return await claimItem(context.db, {
@@ -181,6 +187,7 @@ export const claimItemRpc = createServerFn({ method: 'POST' })
     })
 
 export const joinRoomRpc = createServerFn({ method: 'POST' })
+    .middleware([nameTransaction('joinRoomRpc')])
     .inputValidator(joinRoomRequestSchema)
     .handler(async ({ data, context }) => {
         const { roomId, displayName } = data

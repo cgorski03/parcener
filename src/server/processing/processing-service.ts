@@ -146,23 +146,21 @@ const requestAiProcessingHelper = async (
     return { text, providerMetadata }
 }
 
-export async function processingQueueHandler(
+export async function processingQueueMessageHandler(
     db: DbType,
-    batch: MessageBatch<ReceiptJob>,
+    message: Message<ReceiptJob>,
     env: Env,
     _: ExecutionContext,
 ) {
-    for (const message of batch.messages) {
-        try {
-            await processReceipt(
-                db,
-                message.body.receiptId,
-                env.parcener_receipt_images,
-            )
-            message.ack()
-        } catch (error) {
-            console.error('Queue job failed:', error)
-            message.retry()
-        }
+    try {
+        await processReceipt(
+            db,
+            message.body.receiptId,
+            env.parcener_receipt_images,
+        )
+        message.ack()
+    } catch (error) {
+        console.error('Queue job failed:', error)
+        message.retry()
     }
 }

@@ -29,4 +29,6 @@ export type ReceiptItem = z.infer<typeof ReceiptItemSchema>
 
 export type ReceiptJob = {
     receiptId: string
+    __sentry_trace?: string;
+    __sentry_baggage?: string;
 }
