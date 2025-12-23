@@ -34,12 +34,12 @@ export const getRoomAndMembership = createServerFn({ method: 'GET' })
             const roomInfo = mapDbRoomToDto(roomData);
 
             if (!roomInfo) return null;
-            const { identity, membership, canMergeGuestToMember } = context.room;
+            const { membership, canMergeGuestToMember } = context.room;
 
             return {
                 room: roomInfo,
                 membership,
-                user: { id: identity.userId, name: identity.name },
+                user: context.user,
                 canMergeGuestToMember
             };
         } catch (error) {

@@ -1,14 +1,14 @@
 import { and, desc, eq } from 'drizzle-orm'
-import { RoomIdentity } from '../auth/parse-room-identity'
-import { claim, DbTxType, DbType, room, receiptItem } from '../db'
+import { claim, DbTxType, DbType, room } from '../db'
 import { touchRoomId } from './room-service'
+import { RoomIdentity } from '../auth/room-identity'
 
 type ItemClaimRequest = {
-    roomId: string
-    roomMemberId: string
-    receiptItemId: string
-    identity: RoomIdentity
-    newQuantity: number
+    roomId: string;
+    roomMemberId: string;
+    receiptItemId: string;
+    identity: RoomIdentity;
+    newQuantity: number;
 }
 
 export async function claimItem(db: DbType, request: ItemClaimRequest) {

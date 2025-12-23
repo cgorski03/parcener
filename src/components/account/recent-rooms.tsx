@@ -21,6 +21,7 @@ export function RecentRooms() {
                 <Link
                     key={room.roomId}
                     to='/receipt/parce/$roomId'
+                    search={{ view: 'items' }}
                     params={{ roomId: room.roomId }}
                     className="flex items-center p-3 hover:bg-muted/50 transition-colors group"
                 >

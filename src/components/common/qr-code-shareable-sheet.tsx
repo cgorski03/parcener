@@ -11,7 +11,7 @@ import { ShareButton } from "./share-button";
 
 interface QrShareSheetProps {
     title?: string;
-    description?: string;
+    description?: React.ReactNode;
     value: string;
     shareText?: string;
     trigger?: React.ReactNode;
@@ -56,7 +56,6 @@ export function QrShareSheet({
                     <ShareButton
                         value={value}
                         title={title}
-                        description={description}
                         shareText={shareText}
                         className="w-full"
                     />

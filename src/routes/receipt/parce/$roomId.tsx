@@ -13,7 +13,7 @@ const roomSearchSchema = z.object({
 export const Route = createFileRoute('/receipt/parce/$roomId')({
 
     loader: async ({ params }) => {
-        const response = await getRoomAndMembership({ data: params.roomId })
+        const response = await getRoomAndMembership({ data: { roomId: params.roomId } })
         if (!response) {
             throw notFound()
         }
@@ -24,7 +24,7 @@ export const Route = createFileRoute('/receipt/parce/$roomId')({
         // but at the same time, having a client component repsonsible for it also seems wrong
         // and i don't want to build it into a GET RPC
         if (canMergeGuestToMember) {
-            const newMembership = await upgradeGuestToUser({ data: params.roomId });
+            const newMembership = await upgradeGuestToUser({ data: { roomId: params.roomId } });
             return { membership: newMembership, room, user }
         }
         return { room, membership, user }

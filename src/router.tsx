@@ -10,6 +10,13 @@ export const getRouter = () => {
         notFoundMode: 'fuzzy',
     });
 
+    if (!import.meta.env.VITE_SENTRY_DSN) {
+        throw new Error("Missing SENTRY DSN");
+    }
+
+    if (!import.meta.env.VITE_NODE_ENV) {
+        throw new Error("Missing SENTRY DSN");
+    }
 
     if (!router.isServer) {
         Sentry.init({

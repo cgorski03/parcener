@@ -7,17 +7,14 @@ import { SENTRY_EVENTS } from "@/lib/sentry-events";
 interface ShareButtonProps extends React.ComponentProps<typeof Button> {
     value: string;
     title: string;
-    description?: string;
     shareText?: string;
 }
 
 export function ShareButton({
     value,
     title,
-    description,
     shareText = "Share Link",
     className,
-    // Extract variants/sizes so they pass through to the button
     variant,
     size = "lg",
     ...props
@@ -32,7 +29,6 @@ export function ShareButton({
             try {
                 await navigator.share({
                     title: title,
-                    text: description,
                     url: value,
                 });
                 setStatus('success');

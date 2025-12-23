@@ -2,9 +2,9 @@ import { eq } from 'drizzle-orm'
 import { DbTxType, DbType, room, roomMember } from '../db'
 import { getReceiptIsValid } from '../get-receipt/get-receipt-service'
 import { ROOM_EXISTS_ERROR } from '../response-types'
-import { RoomIdentity } from '../auth/parse-room-identity'
 import { RoomMemberDto } from '../dtos'
 import { getRoomMembership } from './room-member-service'
+import { RoomIdentity } from '../auth/room-identity'
 
 export type CreateRoomRequest = {
     title: string

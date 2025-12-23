@@ -1,10 +1,9 @@
 import { createMiddleware } from '@tanstack/react-start'
 import { User } from 'better-auth'
-import { z } from "zod";
 import { getRequest } from "@tanstack/react-start/server";
 import { getServerSession } from "../auth/get-server-session";
 import { resolveMembershipState } from '../room/room-member-service';
-import { roomIdSchema, roomObjSchema } from '../dtos';
+import { roomObjSchema } from '../dtos';
 
 export type RoomIdentity = {
     userId?: string
@@ -52,7 +51,8 @@ export const roomContextMiddleware = createMiddleware({ type: 'function' })
                     identity,
                     membership,
                     canMergeGuestToMember: canMerge
-                }
+                },
+                user: session?.user,
             }
         });
     });
