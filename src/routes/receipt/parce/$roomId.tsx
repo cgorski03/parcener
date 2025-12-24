@@ -4,16 +4,17 @@ import { RoomLoading } from '@/components/room/loading-view'
 import { LobbyScreen } from '@/components/room/lobby-screen'
 import { getRoomAndMembership, upgradeGuestToUser } from '@/server/room/room-rpc'
 import { createFileRoute, notFound } from '@tanstack/react-router'
-import z from 'zod'
 
-const roomSearchSchema = z.object({
-    view: z.enum(['items', 'settlement']).default('items'),
-})
+type RoomView = 'items' | 'settlement'
+
+type RoomSearch = {
+    view: RoomView
+}
 
 export const Route = createFileRoute('/receipt/parce/$roomId')({
 
     loader: async ({ params }) => {
-        const response = await getRoomAndMembership({ data: params.roomId })
+        const response = await getRoomAndMembership({ data: { roomId: params.roomId } })
         if (!response) {
             throw notFound()
         }
@@ -24,7 +25,7 @@ export const Route = createFileRoute('/receipt/parce/$roomId')({
         // but at the same time, having a client component repsonsible for it also seems wrong
         // and i don't want to build it into a GET RPC
         if (canMergeGuestToMember) {
-            const newMembership = await upgradeGuestToUser({ data: params.roomId });
+            const newMembership = await upgradeGuestToUser({ data: { roomId: params.roomId } });
             return { membership: newMembership, room, user }
         }
         return { room, membership, user }
@@ -36,7 +37,12 @@ export const Route = createFileRoute('/receipt/parce/$roomId')({
             { property: 'og:description', content: 'Join room to share on expenses with your friends in real-time' },
         ],
     }),
-    validateSearch: (search) => roomSearchSchema.parse(search),
+    validateSearch: (search: Record<string, unknown>): RoomSearch => {
+        // Fallback logic: If it's not 'settlement', force it to 'items'
+        return {
+            view: search.view === 'settlement' ? 'settlement' : 'items'
+        }
+    },
     component: RouteComponent,
     pendingComponent: RoomLoading,
     notFoundComponent: RoomNotFound,

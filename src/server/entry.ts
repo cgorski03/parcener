@@ -1,8 +1,8 @@
 import {
-    createStartHandler,
-    defaultStreamHandler,
+    createStartHandler, defaultStreamHandler,
 } from '@tanstack/react-start/server'
-import { processingQueueHandler } from './processing/processing-service'
+import * as Sentry from '@sentry/cloudflare'
+import { processingQueueMessageHandler } from './processing/processing-service'
 import { ReceiptJob } from './processing/types'
 import { DbType, getDb } from './db'
 import { ApplicationAuthClient, createAuth } from './auth'
@@ -30,8 +30,7 @@ declare module '@tanstack/react-start' {
 const baseFetch = createStartHandler(defaultStreamHandler)
 
 // 3. Export the Cloudflare Worker object
-export default {
-    // Base HTTP Handler (Website)
+const handler = {
     async fetch(request: Request, env: any, ctx: any) {
         // We call the base handler, but we pass the 2nd argument (RequestOptions)
         // to inject the Cloudflare environment into the context
@@ -46,15 +45,48 @@ export default {
         })
     },
 
-    // Queue Handler
-    // Not implemented yet, but this will be the queue endpoint
-    // The queue will handle the processing of receipts
     async queue(
-        batch: MessageBatch<ReceiptJob>,
+        batch: MessageBatch<any>,
         env: Env,
         ctx: ExecutionContext,
     ) {
-        const db = getDb(env)
-        await processingQueueHandler(db, batch, env, ctx)
+        // We set up the tracing like this in order to pass the trace from the RPC to the queue handler in the distributed system, and have a better outline of the whole flow of a request
+        const db = getDb(env);
+        for (const message of batch.messages) {
+            const body = message.body as ReceiptJob;
+            console.log("Picked up from Queue", { receiptId: body.receiptId, parentTraceId: body.__sentry_trace });
+            await Sentry.continueTrace({
+                sentryTrace: body.__sentry_trace,
+                baggage: body.__sentry_baggage,
+            }, async () => {
+                await Sentry.startSpan({
+                    name: "queue.process_receipt",
+                    op: "queue.process",
+                    attributes: {
+                        receiptId: body.receiptId,
+                    }
+                }, async () => {
+                    try {
+                        await processingQueueMessageHandler(db, message, env, ctx);
+                    } catch (error) {
+                        Sentry.captureException(error, {
+                            tags: { source: "queue_processor" },
+                            extra: { receiptId: body.receiptId }
+                        });
+                        message.retry();
+                    }
+                });
+            });
+        }
     },
 }
+
+export default Sentry.withSentry(
+    // Configuration Callback: This gets access to 'env' so we can read the DSN dynamically
+    (env: Env) => ({
+        dsn: env.SENTRY_DSN,
+        environment: env.NODE_ENV || 'development',
+        tracesSampleRate: 1.0,
+    }),
+    handler
+);

@@ -1,15 +1,36 @@
 import { createRouter } from '@tanstack/react-router'
-// Import the generated route tree
+import { setupRouterSsrQueryIntegration } from '@tanstack/react-router-ssr-query'
 import { routeTree } from './routeTree.gen'
+import { queryClient as browserQueryClient } from './lib/query-client';
+import { QueryClient } from '@tanstack/react-query';
 
-// Create a new router instance
 export const getRouter = () => {
-  const router = createRouter({
-    routeTree,
-    scrollRestoration: true,
-    defaultPreloadStaleTime: 0,
-    notFoundMode: 'fuzzy',
-  })
+    const queryClient = typeof window === 'undefined'
+        ? new QueryClient()
+        : browserQueryClient;
 
-  return router
+    const router = createRouter({
+        routeTree,
+        scrollRestoration: true,
+        defaultPreloadStaleTime: 0,
+        notFoundMode: 'fuzzy',
+        context: {
+            queryClient: queryClient,
+        },
+    });
+
+    setupRouterSsrQueryIntegration({
+        router,
+        queryClient,
+    });
+
+    // Handle Sentry Tracing
+    if (!router.isServer) {
+        import('./lib/sentry-client').then((m) => {
+            m.initSentry(router);
+        }).catch(err => console.error("Sentry failed to load", err));
+    }
+
+    return router;
 }
+

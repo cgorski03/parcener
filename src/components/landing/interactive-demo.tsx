@@ -4,7 +4,7 @@ import { BaseReceiptItemCard } from '@/components/item-card/base-receipt-item-ca
 import { PriceBreakdown } from '@/components/price-breakdown'
 import { RoomMemberAvatar } from '@/components/room/room-member-avatar'
 import { QuantityControl } from '@/components/item-card/quantity-control'
-import { ReceiptItemDto } from '@/server/dtos'
+import type { ReceiptItemDto } from '@/server/dtos'
 
 // --- Mock Data Types ---
 type MockClaim = {

@@ -1,9 +1,10 @@
 import { desc, eq } from "drizzle-orm";
 import { AppUser, DbType, room, roomMember } from "../db";
-import { receiptWithItemsToDto, RecentRoomInfoDto, roomSchema } from "../dtos";
+import { RecentRoomInfoDto, roomSchema } from "../dtos";
 import { getUserRecentReceiptsHelper } from "../get-receipt/get-receipt-service";
+import { receiptWithItemsToDto } from "../dto-mappers";
 
-export async function GetRecentReceipts(
+export async function getRecentReceipts(
     db: DbType,
     user: AppUser
 ) {
@@ -16,7 +17,7 @@ export async function GetRecentReceipts(
     return receiptDtos;
 }
 
-export async function GetRecentRooms(
+export async function getRecentRooms(
     db: DbType,
     user: AppUser
 ): Promise<RecentRoomInfoDto[]> {

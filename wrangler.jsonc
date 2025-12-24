@@ -65,7 +65,7 @@
                 "binding": "ASSETS"
             },
             "vars": {
-                "NODE_ENV": "production",
+                "NODE_ENV": "staging",
                 "BASE_URL": "https://staging.parcener.app",
             },
             "r2_buckets": [

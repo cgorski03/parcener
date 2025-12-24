@@ -1,4 +1,4 @@
-import { receiptWithItemsToDto, ReceiptDto } from '../dtos'
+import { ReceiptDto } from '../dtos'
 import {
     NOT_FOUND,
     RECEIPT_PROCESSING,
@@ -13,6 +13,7 @@ import { isFailed, isProcessing, receiptNotFound } from '@/lib/receipt-utils'
 import { validateReceiptCalculations } from '../money-math'
 import { DbType, receipt } from '../db'
 import { and, desc, eq } from 'drizzle-orm'
+import { receiptWithItemsToDto } from '../dto-mappers'
 
 export type ReceiptWithRoom = ReceiptDto & { roomId?: string }
 

@@ -1,10 +1,10 @@
 import { eq } from 'drizzle-orm'
 import { DbTxType, DbType, room, roomMember } from '../db'
 import { getReceiptIsValid } from '../get-receipt/get-receipt-service'
-import { ROOM_CREATE_ERROR, ROOM_EXISTS_ERROR } from '../response-types'
-import { RoomIdentity } from '../auth/parse-room-identity'
+import { ROOM_EXISTS_ERROR } from '../response-types'
 import { RoomMemberDto } from '../dtos'
 import { getRoomMembership } from './room-member-service'
+import { RoomIdentity } from '../auth/room-identity'
 
 export type CreateRoomRequest = {
     title: string
@@ -27,24 +27,16 @@ export async function CreateRoom(
     if (existingRoom) {
         return ROOM_EXISTS_ERROR;
     }
+    const [newRoom] = await db
+        .insert(room)
+        .values({
+            receiptId,
+            title: validResponse.receipt?.title ?? 'Untitled Room',
+            createdBy: userId,
+        })
+        .returning();
 
-    // We know the receipt is in a valid state
-    // We can create the room
-    try {
-        const [newRoom] = await db
-            .insert(room)
-            .values({
-                receiptId,
-                title: validResponse.receipt?.title ?? 'Untitled Room',
-                createdBy: userId,
-            })
-            .returning();
-
-        return { success: true, room: newRoom }
-    } catch (error: any) {
-        console.error(error)
-        return ROOM_CREATE_ERROR
-    }
+    return { success: true, room: newRoom }
 }
 
 export async function GetFullRoomInfo(db: DbType, roomId: string) {

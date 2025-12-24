@@ -6,6 +6,7 @@ import { RateLimitQueryKeys } from "./use-account"
 export function useUploadReceipt() {
     const queryClient = useQueryClient()
     return useMutation({
+        mutationKey: ReceiptQueryKeys.upload,
         mutationFn: async (data: FormData) => {
             return await uploadReceipt({ data })
         },
@@ -16,9 +17,6 @@ export function useUploadReceipt() {
             queryClient.invalidateQueries({
                 queryKey: RateLimitQueryKeys.upload,
             })
-        },
-        onError: (error) => {
-            console.error('Failed to save item:', error)
         },
     })
 }

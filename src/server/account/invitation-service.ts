@@ -1,81 +1,142 @@
-import { and, eq, isNull } from "drizzle-orm";
-import { AppUser, DbType, invite, user } from "../db";
-import { AccountResponse, authorizeUserCreateInvite, failure, success } from "./rate-limit-service";
+import { eq, and, gte, isNull } from "drizzle-orm";
+import { AppUser, DbType, invite, receipt, user } from "../db";
+
+const DAILY_UPLOAD_LIMIT = 3;
+const DAILY_INVITE_LIMIT = 3;
+
+export class RateLimitError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = "RateLimitError";
+    }
+}
+
+export class InviteError extends Error {
+    constructor(message: string, public code: 'NOT_FOUND' | 'ALREADY_USED') {
+        super(message);
+        this.name = "InviteError";
+    }
+}
 
 export type InviteStatus = 'SUCCESS' | 'NOT_FOUND' | 'USER_ALREADY_AUTHORIZED' | 'ERROR';
 
-export async function AcceptInvitationToUpload(
+export async function getUserUploadRateLimit(db: DbType, user: AppUser) {
+    if (!user.canUpload) {
+        return {
+            canUpload: false,
+            used: 0,
+            limit: DAILY_UPLOAD_LIMIT
+        };
+    }
+
+    const uploads = await _getUploadsToday(db, user.id);
+
+    return {
+        canUpload: uploads.length < DAILY_UPLOAD_LIMIT,
+        used: uploads.length,
+        limit: DAILY_UPLOAD_LIMIT,
+    };
+}
+
+export async function getUserInviteRateLimit(db: DbType, user: AppUser) {
+    if (!user.canUpload) {
+        return {
+            canInvite: false, used: 0, limit: 0
+        };
+    }
+
+    const invitations = await _getInvitationsToday(db, user.id);
+
+    return {
+        canInvite: invitations.length < DAILY_INVITE_LIMIT,
+        used: invitations.length,
+        limit: DAILY_INVITE_LIMIT,
+    };
+}
+
+export async function createUploadInvitation(db: DbType, user: AppUser) {
+    // 1. Check Logic (Bubbles errors automatically)
+    const { canInvite } = await getUserInviteRateLimit(db, user);
+
+    // 2. Enforce Business Rule
+    if (!canInvite) {
+        throw new RateLimitError("You have exceeded your daily invitation limit.");
+    }
+
+    // 3. Execute
+    const [newInvitation] = await db.insert(invite).values({
+        createdBy: user.id,
+    }).returning();
+
+    return { inviteId: newInvitation.id };
+}
+
+
+export async function acceptInvitationToUpload(
     db: DbType,
     userId: string,
     inviteId: string
-): Promise<AccountResponse<{ status: InviteStatus }>> {
-    try {
-        const userEntity = await db.query.user.findFirst({
-            where: eq(user.id, userId),
-            columns: { canUpload: true },
-        });
+) {
+    const userEntity = await db.query.user.findFirst({
+        where: eq(user.id, userId),
+        columns: { canUpload: true },
+    });
 
-        if (!userEntity) {
-            return failure("User not found", { status: "ERROR" });
-        }
+    if (!userEntity) {
+        throw new Error("User context missing during invite acceptance");
+    }
 
-        // I don't think it should consume the invite if the user is authorized already
-        if (userEntity.canUpload) {
-            return success({ status: "USER_ALREADY_AUTHORIZED" });
-        }
+    if (userEntity.canUpload) {
+        return { status: "USER_ALREADY_AUTHORIZED" as const };
+    }
 
-        // Step 2: Atomic invite claim
-        const claimedInvite = await db.transaction(async (tx) => {
-            const result = await tx
-                .update(invite)
-                .set({ usedAt: new Date(), usedBy: userId })
-                .where(
-                    and(
-                        eq(invite.id, inviteId),
-                        isNull(invite.usedAt) // Race condition guard
-                    )
+    // 2. Atomic Transaction
+    // We update the invite AND the user together.
+    return await db.transaction(async (tx) => {
+        const [claimedInvite] = await tx
+            .update(invite)
+            .set({
+                usedAt: new Date(),
+                usedBy: userId
+            })
+            .where(
+                and(
+                    eq(invite.id, inviteId),
+                    isNull(invite.usedAt)
                 )
-                .returning();
-            return result[0];
-        });
+            )
+            .returning();
 
         if (!claimedInvite) {
-            return failure("Invite not found or already used", { status: "NOT_FOUND" });
+            throw new InviteError("Invite not found or already used", 'NOT_FOUND');
         }
 
-        await db
+        await tx
             .update(user)
             .set({ canUpload: true })
             .where(eq(user.id, userId));
 
-        return success({ status: "SUCCESS" });
-    } catch (error) {
-        console.error("Failed to accept invitation:", error);
-        return failure("Failed to accept invitation", { status: "ERROR" });
-    }
+        return { status: "SUCCESS" as const };
+    });
 }
 
-export async function CreateUploadInvitation(
-    db: DbType,
-    user: AppUser
-): Promise<AccountResponse<{ status: "RATE_LIMIT" | "SUCCESS" | "ERROR"; inviteId?: string }>> {
-    try {
-        const authResult = await authorizeUserCreateInvite(db, user);
+async function _getUploadsToday(db: DbType, userId: string) {
+    const startOfDay = _getStartOfDayUTC();
+    return await db
+        .select()
+        .from(receipt)
+        .where(and(eq(receipt.userId, userId), gte(receipt.createdAt, startOfDay)));
+}
 
-        if (!authResult.success || !authResult.data) {
-            return failure("Rate limit exceeded", { status: "RATE_LIMIT" });
-        }
+async function _getInvitationsToday(db: DbType, userId: string) {
+    const startOfDay = _getStartOfDayUTC();
+    return await db
+        .select()
+        .from(invite)
+        .where(and(eq(invite.createdBy, userId), gte(invite.createdAt, startOfDay)));
+}
 
-        const [newInvitation] = await db.insert(invite).values({
-            createdBy: user.id,
-        }).returning();
-
-        return success({
-            status: "SUCCESS",
-            inviteId: newInvitation.id,
-        });
-    } catch (error) {
-        console.error("Failed to create invitation:", error);
-        return failure("Failed to create invitation", { status: "ERROR" });
-    }
+function _getStartOfDayUTC() {
+    const now = new Date();
+    return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
 }

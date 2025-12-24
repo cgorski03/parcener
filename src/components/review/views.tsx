@@ -1,5 +1,5 @@
 import { Loader2, Pencil, Plus, Share2, Users } from 'lucide-react'
-import { ReceiptItemDto } from '@/server/dtos'
+import type { ReceiptItemDto } from '@/server/dtos'
 import { Link, notFound, useNavigate } from '@tanstack/react-router'
 import { useReceiptIsValid } from '@/hooks/use-get-receipt'
 import { useMemo, useState } from 'react'

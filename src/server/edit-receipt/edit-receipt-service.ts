@@ -2,7 +2,6 @@ import { and, eq, exists } from 'drizzle-orm'
 import { receipt, receiptItem } from '../db/schema'
 import {
     ReceiptItemDto,
-    receiptItemEntityToDtoHelper,
     ReceiptTotalsDto,
 } from '../dtos'
 import { getReceiptWithItems } from '../get-receipt/get-receipt-service'
@@ -21,6 +20,7 @@ import { calculateItemTotal, moneyValuesEqual } from '../money-math'
 import { DbTxType, DbType } from '../db'
 import { touchRoomFromReceipt } from '../room/room-service'
 import { pruneExcessClaimsHelper } from '../room/room-claims-service'
+import { receiptItemEntityToDtoHelper } from '../dto-mappers'
 
 export function receiptItemOwnershipCheck(
     db: DbTxType | DbType,

@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/sheet'
 import { Trash2 } from 'lucide-react'
 import React, { useState } from 'react'
-import { ReceiptItemDto } from '@/server/dtos'
+import type { ReceiptItemDto } from '@/server/dtos'
 import { Button } from '../ui/button'
 
 function ReceiptItemSheet(props: {

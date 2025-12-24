@@ -1,5 +1,5 @@
 import { useRecentRooms } from '@/hooks/use-room';
-import { RecentRoomInfoDto } from '@/server/dtos';
+import type { RecentRoomInfoDto } from '@/server/dtos';
 import { Users, ChevronRight } from 'lucide-react';
 import { RecentList } from './recent-list';
 import { Link } from '@tanstack/react-router';
@@ -21,6 +21,7 @@ export function RecentRooms() {
                 <Link
                     key={room.roomId}
                     to='/receipt/parce/$roomId'
+                    search={{ view: 'items' }}
                     params={{ roomId: room.roomId }}
                     className="flex items-center p-3 hover:bg-muted/50 transition-colors group"
                 >

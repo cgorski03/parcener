@@ -1,5 +1,4 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { inviteIdSearchParamsSchema } from '@/server/dtos'
 import { Button } from '@/components/ui/button'
 import {
     Card,
@@ -11,10 +10,11 @@ import {
 } from '@/components/ui/card'
 import { CheckCircle2, XCircle, ShieldCheck, AlertCircle, ArrowRight, Home } from 'lucide-react'
 import { acceptInviteRpc } from '@/server/account/account-rpc'
-import { InviteStatus } from '@/server/account/invitation-service'
+import { validateInviteSearch } from '@/lib/validation'
+import type { InviteStatus } from '@/server/account/invitation-service'
 
 export const Route = createFileRoute('/_authed/acceptInvite')({
-    validateSearch: inviteIdSearchParamsSchema,
+    validateSearch: validateInviteSearch,
     head: () => ({
         meta: [
             { title: 'Accept Invitation | Parcener' },
@@ -33,16 +33,23 @@ export const Route = createFileRoute('/_authed/acceptInvite')({
                 message: "You are already verified to upload receipts."
             }
         }
-        return await acceptInviteRpc({ data: { token: deps.token } })
+        try {
+            return await acceptInviteRpc({ data: { token: deps.token } })
+        } catch (error: any) {
+            if (error?.code === 'NOT_FOUND' || error?.message?.includes('found')) {
+                return { status: 'NOT_FOUND' as const }
+            }
+
+            // 4. Fallback for unexpected system errors
+            return { status: 'ERROR' as const }
+        }
     },
     component: RouteComponent,
 })
 
 function RouteComponent() {
-    const { data, message } = Route.useLoaderData()
-    const status = (data?.status as InviteStatus) || 'ERROR'
-
-    const config = getStatusConfig(status)
+    const { status } = Route.useLoaderData();
+    const config = getStatusConfig(status as InviteStatus)
     const Icon = config.icon
 
     return (
@@ -54,8 +61,7 @@ function RouteComponent() {
                     </div>
                     <CardTitle className="text-2xl font-bold">{config.title}</CardTitle>
                     <CardDescription className="text-base mt-2">
-                        {/* 3. Use the server message if present, otherwise fallback to static config */}
-                        {message || config.description}
+                        {config.description}
                     </CardDescription>
                 </CardHeader>
                 <CardContent>

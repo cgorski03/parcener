@@ -1,5 +1,7 @@
 import { eq, and, gte } from "drizzle-orm";
 import { AppUser, DbType, invite, receipt } from "../db";
+import { logger } from "@/lib/logger";
+import { SENTRY_EVENTS } from "@/lib/sentry-events";
 
 const DAILY_UPLOAD_LIMIT = 3;
 const DAILY_INVITE_LIMIT = 3;
@@ -34,7 +36,7 @@ export async function GetUserUploadRateLimit(
             limit: DAILY_UPLOAD_LIMIT,
         });
     } catch (error) {
-        console.error("Failed to get user rate limit:", error);
+        logger.error(error, SENTRY_EVENTS.ACCOUNT.CHECK_UPLOAD_LIMITS);
         return failure(
             "Failed to retrieve upload rate limit",
             { canUpload: false, used: 0, limit: DAILY_UPLOAD_LIMIT }
@@ -70,31 +72,11 @@ export async function GetUserInviteRateLimit(
             limit: DAILY_INVITE_LIMIT,
         });
     } catch (error) {
-        console.error("Failed to get user invite rate limit:", error);
+        logger.error(error, SENTRY_EVENTS.ACCOUNT.CHECK_INVITE_LIMITS);
         return failure(
             "Failed to retrieve invite rate limit",
             { canInvite: false, used: 0, limit: DAILY_INVITE_LIMIT }
         );
-    }
-}
-
-// Authorization functions
-export async function authorizeUserUpload(
-    db: DbType,
-    user: AppUser
-): Promise<AccountResponse<boolean>> {
-    try {
-        const rateLimitResult = await GetUserUploadRateLimit(db, user);
-
-        if (!rateLimitResult.success) {
-            return success(false, rateLimitResult.message);
-        }
-
-        const { canUpload, used, limit } = rateLimitResult.data;
-        return success(canUpload && used < limit);
-    } catch (error) {
-        console.error("Failed to authorize user upload:", error);
-        return failure("Authorization check failed", false);
     }
 }
 

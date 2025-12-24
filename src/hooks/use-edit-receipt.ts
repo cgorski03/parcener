@@ -1,4 +1,4 @@
-import { ReceiptItemDto, ReceiptTotalsDto } from '@/server/dtos'
+import type { ReceiptItemDto, ReceiptTotalsDto } from '@/server/dtos'
 import {
     editReceiptItemRpc,
     deleteReceiptItemRpc,
@@ -13,6 +13,7 @@ export function useDeleteReceiptItem(roomId: string | null) {
     const queryClient = useQueryClient()
     const _linkedRoom = roomId;
     return useMutation({
+        mutationKey: ReceiptQueryKeys.deleteItem,
         mutationFn: async (args: { receiptId: string; item: ReceiptItemDto }) => {
             return await deleteReceiptItemRpc({ data: args.item })
         },
@@ -29,10 +30,7 @@ export function useDeleteReceiptItem(roomId: string | null) {
                     queryKey: RoomQueryKeys.detail(_linkedRoom),
                 })
             }
-        },
-        onError: (error) => {
-            console.error('Failed to delete item:', error)
-        },
+        }
     })
 }
 
@@ -40,6 +38,7 @@ export function useCreateReceiptItem(roomId: string | null) {
     const queryClient = useQueryClient()
     const _linkedRoom = roomId;
     return useMutation({
+        mutationKey: ReceiptQueryKeys.createItem,
         mutationFn: async (args: { receiptId: string; item: ReceiptItemDto }) => {
             return await createReceiptItemRpc({
                 data: { receiptId: args.receiptId, receiptItem: args.item },
@@ -58,10 +57,7 @@ export function useCreateReceiptItem(roomId: string | null) {
                     queryKey: RoomQueryKeys.detail(_linkedRoom),
                 })
             }
-        },
-        onError: (error) => {
-            console.error('Failed to save item:', error)
-        },
+        }
     })
 }
 
@@ -70,6 +66,7 @@ export function useEditReceiptItem(receiptId: string, roomId: string | null) {
     const _receiptId = receiptId;
     const _linkedRoom = roomId;
     return useMutation({
+        mutationKey: ReceiptQueryKeys.updateItem,
         mutationFn: async (item: ReceiptItemDto) => {
             return await editReceiptItemRpc({ data: item })
         },
@@ -85,10 +82,7 @@ export function useEditReceiptItem(receiptId: string, roomId: string | null) {
                     queryKey: RoomQueryKeys.detail(_linkedRoom),
                 });
             }
-        },
-        onError: (error) => {
-            console.error('Failed to save item:', error)
-        },
+        }
     })
 }
 
@@ -97,6 +91,7 @@ export function useFinalizeReceipt(roomId: string | null) {
     const _linkedRoom = roomId;
 
     return useMutation({
+        mutationKey: ReceiptQueryKeys.finalize,
         mutationFn: async (item: ReceiptTotalsDto) => {
             return await finalizeReceiptTotalsRpc({ data: item })
         },
@@ -113,9 +108,6 @@ export function useFinalizeReceipt(roomId: string | null) {
                     queryKey: RoomQueryKeys.detail(_linkedRoom),
                 });
             }
-        },
-        onError: (error) => {
-            console.error('Failed to save item:', error)
-        },
+        }
     })
 }

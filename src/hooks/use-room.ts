@@ -1,11 +1,13 @@
-import { getUserRecentRooms } from '@/server/account/account-rpc'
-import { FullRoomInfoDto, JoinRoomRequest } from '@/server/dtos'
+import { getUserRecentRoomsRpc } from '@/server/account/account-rpc'
+import type { FullRoomInfoDto, JoinRoomRequest } from '@/server/dtos'
 import { createRoomRpc, getRoomPulseRpc, joinRoomRpc } from '@/server/room/room-rpc'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 
 export const RoomQueryKeys = {
     all: ['room'] as const,
+    joinRoom: ['joinRoom'] as const,
+    createRoom: ['createRoom'] as const,
     detail: (id: string) => [...RoomQueryKeys.all, id] as const,
     recents: () => [...RoomQueryKeys.all, 'recents'] as const,
 }
@@ -45,7 +47,7 @@ export const useGetRoomPulse = (initialData: FullRoomInfoDto) => {
 export function useRecentRooms() {
     return useQuery({
         queryKey: [...RoomQueryKeys.all, 'recent'],
-        queryFn: async () => await getUserRecentRooms(),
+        queryFn: async () => await getUserRecentRoomsRpc(),
         staleTime: 1000 * 60 * 5,
     });
 }
@@ -53,11 +55,9 @@ export function useRecentRooms() {
 
 export function useCreateReceiptRoom() {
     return useMutation({
+        mutationKey: RoomQueryKeys.createRoom,
         mutationFn: async (receiptId: string) => {
             return await createRoomRpc({ data: receiptId })
-        },
-        onError: (error) => {
-            console.error('Failed to create receipt room', error)
         },
     })
 }
@@ -67,6 +67,7 @@ export function useJoinRoom() {
     const router = useRouter()
 
     const mutation = useMutation({
+        mutationKey: RoomQueryKeys.joinRoom,
         mutationFn: async (request: JoinRoomRequest) => {
             return await joinRoomRpc({ data: request })
         },
@@ -76,10 +77,7 @@ export function useJoinRoom() {
             document.cookie = `${cookieName}=${response.generatedUuid}; path=/; max-age=${maxAge}; SameSite=Lax`
             router.invalidate()
             queryClient.invalidateQueries({ queryKey: RoomQueryKeys.recents() })
-        },
-        onError: (error) => {
-            console.error('Failed to create receipt room', error)
-        },
+        }
     })
     return {
         ...mutation,
