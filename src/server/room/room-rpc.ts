@@ -13,7 +13,6 @@ import {
     joinRoomRequestSchema,
     receiptIdSchema,
     updateDisplayNameRoomRequestSchema,
-    mapDbRoomToDto,
     roomObjSchema,
 } from '../dtos'
 import { claimItem } from './room-claims-service'
@@ -23,6 +22,7 @@ import { protectedFunctionMiddleware } from '../auth/protected-function'
 import { parseRoomIdentity, roomContextMiddleware } from '../auth/room-identity'
 import { logger } from '@/lib/logger'
 import { SENTRY_EVENTS } from '@/lib/sentry-events'
+import { mapDbRoomToDto } from '../dto-mappers'
 
 
 export const getRoomAndMembership = createServerFn({ method: 'GET' })

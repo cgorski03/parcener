@@ -1,4 +1,4 @@
-import { ReceiptItemDto, ReceiptTotalsDto } from '@/server/dtos'
+import type { ReceiptItemDto, ReceiptTotalsDto } from '@/server/dtos'
 import {
     editReceiptItemRpc,
     deleteReceiptItemRpc,

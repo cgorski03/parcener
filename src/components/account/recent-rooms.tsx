@@ -1,5 +1,5 @@
 import { useRecentRooms } from '@/hooks/use-room';
-import { RecentRoomInfoDto } from '@/server/dtos';
+import type { RecentRoomInfoDto } from '@/server/dtos';
 import { Users, ChevronRight } from 'lucide-react';
 import { RecentList } from './recent-list';
 import { Link } from '@tanstack/react-router';

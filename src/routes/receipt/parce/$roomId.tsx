@@ -4,11 +4,12 @@ import { RoomLoading } from '@/components/room/loading-view'
 import { LobbyScreen } from '@/components/room/lobby-screen'
 import { getRoomAndMembership, upgradeGuestToUser } from '@/server/room/room-rpc'
 import { createFileRoute, notFound } from '@tanstack/react-router'
-import { enum as enum_, object } from 'zod'
 
-const roomSearchSchema = object({
-    view: enum_(['items', 'settlement']).default('items'),
-})
+type RoomView = 'items' | 'settlement'
+
+type RoomSearch = {
+    view: RoomView
+}
 
 export const Route = createFileRoute('/receipt/parce/$roomId')({
 
@@ -36,7 +37,12 @@ export const Route = createFileRoute('/receipt/parce/$roomId')({
             { property: 'og:description', content: 'Join room to share on expenses with your friends in real-time' },
         ],
     }),
-    validateSearch: (search) => roomSearchSchema.parse(search),
+    validateSearch: (search: Record<string, unknown>): RoomSearch => {
+        // Fallback logic: If it's not 'settlement', force it to 'items'
+        return {
+            view: search.view === 'settlement' ? 'settlement' : 'items'
+        }
+    },
     component: RouteComponent,
     pendingComponent: RoomLoading,
     notFoundComponent: RoomNotFound,

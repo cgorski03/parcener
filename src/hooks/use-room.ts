@@ -1,5 +1,5 @@
 import { getUserRecentRoomsRpc } from '@/server/account/account-rpc'
-import { FullRoomInfoDto, JoinRoomRequest } from '@/server/dtos'
+import type { FullRoomInfoDto, JoinRoomRequest } from '@/server/dtos'
 import { createRoomRpc, getRoomPulseRpc, joinRoomRpc } from '@/server/room/room-rpc'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'

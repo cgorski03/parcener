@@ -1,10 +1,5 @@
-import z from 'zod'
-import {
-    Claim,
-    ReceiptEntityWithItems,
-    ReceiptItem,
-} from './db/schema'
-import { validateReceiptCalculations } from './money-math';
+import { z } from 'zod';
+import type { Claim } from '@/server/db/schema';
 
 // ----- RECEIPT ITEM SCHEMA
 export const receiptItemIdSchema = z.uuid({ version: 'v4' });
@@ -85,11 +80,11 @@ export const updateDisplayNameRoomRequestSchema = z.object({
     roomId: roomIdSchema,
     displayName: z.string().max(63),
 });
+
 export const getRoomPulseSchema = z.object({
     roomId: z.uuid({ version: 'v4' }),
     since: z.date().optional().nullable(),
 })
-
 
 // Invites
 export const inviteIdSearchParamsSchema = z.object({
@@ -103,7 +98,7 @@ export const claimItemRequestSchema = z.object({
     quantity: z.number().min(0),
 });
 
-
+// ------------- TYPES (Inferred)
 export type ReceiptItemDto = z.infer<typeof receiptItemDtoSchema>
 export type SaveReceiptItemDto = z.infer<typeof receiptItemWithReceiptIdSchema>
 export type ReceiptDto = z.infer<typeof receiptDtoSchema>
@@ -115,7 +110,7 @@ export type JoinRoomRequest = z.infer<typeof joinRoomRequestSchema>
 export type NullableReceiptDto = ReceiptDto | null
 export type NullableReceiptTotalsDto = ReceiptTotalsDto | null
 
-// For FullRoomInfoDto, extend the DB type pragmatically
+// Combined Types
 export type FullRoomInfoDto = RoomDto & {
     receipt: ReceiptDto;
     claims: Claim[];
@@ -125,55 +120,4 @@ export type FullRoomInfoDto = RoomDto & {
 export type RecentRoomInfoDto = {
     joinedAt: string;
     room: RoomDto;
-}
-
-export const receiptWithItemsToDto = (
-    entity: ReceiptEntityWithItems,
-): ReceiptDto => {
-    const transformed = {
-        receiptId: entity.id,
-        title: entity.title,
-        subtotal: parseNullable(entity.subtotal) ?? 0,
-        tax: parseNullable(entity.tax) ?? 0,
-        tip: parseNullable(entity.tip) ?? 0,
-        grandTotal: parseNullable(entity.grandTotal) ?? 0,
-        createdAt: entity.createdAt,
-        items: entity.items.map(receiptItemEntityToDtoHelper),
-    }
-    return receiptDtoSchema.parse(transformed)
-}
-
-export const parseNullable = (v: string | null): number | null =>
-    v === null ? null : parseFloat(v)
-
-export const receiptItemEntityToDtoHelper = (item: ReceiptItem) => {
-    return {
-        receiptItemId: item.id,
-        rawText: item.rawText,
-        interpretedText: item.interpretedText,
-        price: parseFloat(item.price),
-        quantity: parseFloat(item.quantity),
-    }
-}
-
-export function mapDbRoomToDto(roomData: any): FullRoomInfoDto | null {
-    if (!roomData) return null;
-
-    const receipt = receiptWithItemsToDto(roomData.receipt);
-    if (!receipt) return null;
-
-    const receiptValidResponse = validateReceiptCalculations(receipt);
-
-    return {
-        roomId: roomData.id,
-        title: roomData.title,
-        receiptId: roomData.receiptId,
-        createdAt: roomData.createdAt,
-        updatedAt: roomData.updatedAt,
-        createdBy: roomData.createdBy,
-        members: roomData.members,
-        claims: roomData.claims,
-        receipt,
-        receiptIsValid: receiptValidResponse.isValid,
-    };
 }

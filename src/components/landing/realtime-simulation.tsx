@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { CollaborativeRoomHeader } from '@/components/layout/collaborative-room-header'
 import { BaseReceiptItemCard } from '@/components/item-card/base-receipt-item-card'
 import { RoomMemberAvatar } from '@/components/room/room-member-avatar'
-import { ReceiptItemDto } from '@/server/dtos'
+import type { ReceiptItemDto } from '@/server/dtos'
 
 // --- Mock Data Types ---
 type MockClaim = {

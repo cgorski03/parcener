@@ -5,15 +5,18 @@ import { useState } from 'react'
 import { BrandedPageShell } from '@/components/layout/branded-page-shell';
 import { ExternalLink, ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { string, object } from 'zod';
 
 
-export const loginSearchSchema = object({
-    redirect: string().optional(),
-})
+type LoginSearch = {
+    redirect?: string
+}
 
 export const Route = createFileRoute('/login')({
-    validateSearch: loginSearchSchema,
+    validateSearch: (search: Record<string, unknown>): LoginSearch => {
+        return {
+            redirect: typeof search.redirect === 'string' ? search.redirect : undefined,
+        }
+    },
     head: () => ({
         meta: [
             { title: 'Login | Parcener' },

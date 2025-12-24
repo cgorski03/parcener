@@ -7,7 +7,7 @@ import { Loader2, ArrowRight, User } from 'lucide-react'
 import type { User as UserType } from 'better-auth'
 import { authClient } from '@/lib/auth-client'
 import { RoomMemberAvatar } from './room-member-avatar'
-import { FullRoomInfoDto } from '@/server/dtos'
+import type { FullRoomInfoDto } from '@/server/dtos'
 import { BrandedPageShell } from '../layout/branded-page-shell'
 import { useJoinRoom } from '@/hooks/use-room'
 

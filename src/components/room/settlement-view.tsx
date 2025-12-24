@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { FullRoomInfoDto, RoomMembership } from '@/server/dtos'
+import type { FullRoomInfoDto, RoomMembership } from '@/server/dtos'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'

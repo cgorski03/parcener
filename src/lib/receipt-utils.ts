@@ -1,29 +1,29 @@
-import { ReceiptDto } from '@/server/dtos'
+import type { ReceiptDto } from '@/server/dtos'
 import { GetReceiptResponse } from '@/server/get-receipt/get-receipt-service'
-import {
-  NotFoundResponse,
-  ReceiptProcessingFailedResponse,
-  ReceiptProcessingResponse,
+import type {
+    NotFoundResponse,
+    ReceiptProcessingFailedResponse,
+    ReceiptProcessingResponse,
 } from '@/server/response-types'
 
 export function receiptNotFound(
-  receipt: GetReceiptResponse,
+    receipt: GetReceiptResponse,
 ): receipt is NotFoundResponse {
-  return receipt !== null && 'code' in receipt && receipt.code === 'NOT_FOUND'
+    return receipt !== null && 'code' in receipt && receipt.code === 'NOT_FOUND'
 }
 
 export function isProcessing(
-  receipt: GetReceiptResponse,
+    receipt: GetReceiptResponse,
 ): receipt is ReceiptProcessingResponse {
-  return receipt !== null && 'code' in receipt && receipt.code === 'PROCESSING'
+    return receipt !== null && 'code' in receipt && receipt.code === 'PROCESSING'
 }
 
 export function isFailed(
-  receipt: GetReceiptResponse,
+    receipt: GetReceiptResponse,
 ): receipt is ReceiptProcessingFailedResponse {
-  return receipt !== null && 'attempts' in receipt
+    return receipt !== null && 'attempts' in receipt
 }
 
 export function isComplete(receipt: GetReceiptResponse): receipt is ReceiptDto {
-  return receipt !== null && 'id' in receipt
+    return receipt !== null && 'id' in receipt
 }

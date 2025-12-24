@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
 import { Link, useLocation } from '@tanstack/react-router'
-import { RoomMemberDto } from '@/server/dtos'
+import type { RoomMemberDto } from '@/server/dtos'
 import { RoomMemberAvatar } from '../room/room-member-avatar'
 import { QrShareSheet } from '../common/qr-code-shareable-sheet'
 import { AppHeader } from './app-header'

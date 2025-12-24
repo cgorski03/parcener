@@ -1,10 +1,8 @@
-import { claimItemRpc } from '@/server/room/room-rpc'
-import type { FullRoomInfoDto, RoomMembership } from '@/server/dtos'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { RoomQueryKeys } from './use-room'
-import { useMemo } from 'react'
-import { ReceiptItemDto } from '@/server/dtos'
-import { generateId } from 'ai'
+import { claimItemRpc } from '@/server/room/room-rpc';
+import type { FullRoomInfoDto, RoomMembership, ReceiptItemDto } from '@/server/dtos';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { RoomQueryKeys } from './use-room';
+import { useMemo } from 'react';
 
 type EnrichedClaim = {
     quantity: number
@@ -61,7 +59,7 @@ export function useClaimItem(myMembershipId: string) {
                                 : [
                                     ...filteredClaims,
                                     {
-                                        id: generateId(),
+                                        id: crypto.randomUUID(),
                                         roomId,
                                         receiptItemId,
                                         memberId: _memId,
