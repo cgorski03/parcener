@@ -4,10 +4,10 @@ import { RoomLoading } from '@/components/room/loading-view'
 import { LobbyScreen } from '@/components/room/lobby-screen'
 import { getRoomAndMembership, upgradeGuestToUser } from '@/server/room/room-rpc'
 import { createFileRoute, notFound } from '@tanstack/react-router'
-import z from 'zod'
+import { enum as enum_, object } from 'zod'
 
-const roomSearchSchema = z.object({
-    view: z.enum(['items', 'settlement']).default('items'),
+const roomSearchSchema = object({
+    view: enum_(['items', 'settlement']).default('items'),
 })
 
 export const Route = createFileRoute('/receipt/parce/$roomId')({

@@ -1,33 +1,36 @@
 import { createRouter } from '@tanstack/react-router'
-import * as Sentry from "@sentry/tanstackstart-react";
+import { setupRouterSsrQueryIntegration } from '@tanstack/react-router-ssr-query'
 import { routeTree } from './routeTree.gen'
+import { queryClient as browserQueryClient } from './lib/query-client';
+import { QueryClient } from '@tanstack/react-query';
 
 export const getRouter = () => {
+    const queryClient = typeof window === 'undefined'
+        ? new QueryClient()
+        : browserQueryClient;
+
     const router = createRouter({
         routeTree,
         scrollRestoration: true,
         defaultPreloadStaleTime: 0,
         notFoundMode: 'fuzzy',
+        context: {
+            queryClient: queryClient,
+        },
     });
 
-    if (!import.meta.env.VITE_SENTRY_DSN) {
-        throw new Error("Missing SENTRY DSN");
-    }
+    setupRouterSsrQueryIntegration({
+        router,
+        queryClient,
+    });
 
-    if (!import.meta.env.VITE_NODE_ENV) {
-        throw new Error("Missing SENTRY DSN");
-    }
-
+    // Handle Sentry Tracing
     if (!router.isServer) {
-        Sentry.init({
-            dsn: import.meta.env.VITE_SENTRY_DSN,
-            integrations: [
-                Sentry.tanstackRouterBrowserTracingIntegration(router),
-            ],
-            tracesSampleRate: 1.0,
-            environment: import.meta.env.VITE_NODE_ENV,
-        });
+        import('./lib/sentry-client').then((m) => {
+            m.initSentry(router);
+        }).catch(err => console.error("Sentry failed to load", err));
     }
 
     return router;
 }
+

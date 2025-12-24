@@ -5,11 +5,11 @@ import { useState } from 'react'
 import { BrandedPageShell } from '@/components/layout/branded-page-shell';
 import { ExternalLink, ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import z from 'zod';
+import { string, object } from 'zod';
 
 
-export const loginSearchSchema = z.object({
-    redirect: z.string().optional(),
+export const loginSearchSchema = object({
+    redirect: string().optional(),
 })
 
 export const Route = createFileRoute('/login')({

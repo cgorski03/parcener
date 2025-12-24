@@ -1,10 +1,13 @@
-import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
-import { QueryClientProvider } from '@tanstack/react-query'
+import { HeadContent, Scripts, createRootRouteWithContext } from '@tanstack/react-router'
 import { GeneralNotFound } from '@/components/layout/not-found'
 import appCss from '../styles.css?url'
-import { queryClient } from '@/lib/query-client'
+import { QueryClient } from '@tanstack/react-query'
 
-export const Route = createRootRoute({
+interface RouterContext {
+    queryClient: QueryClient;
+}
+
+export const Route = createRootRouteWithContext<RouterContext>()({
     head: () => ({
         meta: [
             {
@@ -37,9 +40,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
                 <HeadContent />
             </head>
             <body>
-                <QueryClientProvider client={queryClient}>
-                    {children}
-                </QueryClientProvider>
+                {children}
                 <Scripts />
             </body>
         </html>
