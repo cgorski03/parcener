@@ -60,11 +60,11 @@ function LandingPage() {
                         <span className="font-mono text-xs">cgorski03/parcener</span>
                     </a>
                     {session ? (
-                        <Link to="/account">
+                        <Link to="/account" preload='render'>
                             <Button size="sm" className="rounded-full px-5 font-semibold h-9">Dashboard</Button>
                         </Link>
                     ) : (
-                        <Link to="/login">
+                        <Link to="/login" preload='intent'>
                             <Button size="sm" variant="outline" className="rounded-full px-5 h-9 bg-background/50 backdrop-blur-sm hover:bg-muted font-medium">Sign In</Button>
                         </Link>
                     )}
@@ -92,7 +92,7 @@ function LandingPage() {
                         </p>
 
                         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-6">
-                            <Link to={session ? "/account" : "/login"}>
+                            <Link to={session ? "/account" : "/login"} preload='render'>
                                 <Button size="lg" className="h-12 px-8 text-base rounded-full shadow-sm hover:bg-primary/90 transition-all">
                                     {session ? "Go to Dashboard" : "Start Splitting"} <ArrowRight className="ml-2 h-4 w-4" />
                                 </Button>
