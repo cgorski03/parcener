@@ -1,10 +1,11 @@
-import { and, eq } from 'drizzle-orm'
-import { DbTxType, DbType, paymentMethod, room, roomMember } from '../db'
+import { eq } from 'drizzle-orm'
+import { DbTxType, DbType, room, roomMember } from '../db'
 import { getReceiptIsValid } from '../get-receipt/get-receipt-service'
 import { ROOM_EXISTS_ERROR } from '../response-types'
 import { RoomMemberDto } from '../dtos'
 import { getRoomMembership } from './room-member-service'
 import { RoomIdentity } from '../auth/room-identity'
+import { getPaymentMethodSecure } from '../account/payment-method-service'
 
 export type CreateRoomRequest = {
     title: string
@@ -12,31 +13,50 @@ export type CreateRoomRequest = {
     userId: string
 }
 
-export async function CreateRoom(
+
+export async function createRoom(
     db: DbType,
     receiptId: string,
+    paymentMethodId: string | null,
     userId: string,
 ) {
-    const validResponse = await getReceiptIsValid(db, receiptId, userId)
+    const validResponse = await getReceiptIsValid(db, receiptId, userId);
     if (!('success' in validResponse)) {
-        return validResponse
+        return validResponse;
     }
 
-    // DB would prevent an existing room, but checking anyway 
-    const existingRoom = await GetRoomByReceiptId(db, receiptId);
-    if (existingRoom) {
-        return ROOM_EXISTS_ERROR;
+    let verifiedPaymentInfo = null;
+    if (paymentMethodId) {
+        const method = await getPaymentMethodSecure(db, userId, paymentMethodId);
+        if (!method) {
+            return { success: false, error: "Invalid payment method" };
+        }
+        verifiedPaymentInfo = method;
     }
-    const [newRoom] = await db
-        .insert(room)
-        .values({
-            receiptId,
-            title: validResponse.receipt?.title ?? 'Untitled Room',
-            createdBy: userId,
-        })
-        .returning();
 
-    return { success: true, room: newRoom }
+    return await db.transaction(async (tx) => {
+        // look before you jump check, wouldn't work anyway  
+        const existingRoom = await tx.query.room.findFirst({
+            where: eq(room.receiptId, receiptId)
+        });
+
+        if (existingRoom) {
+            return ROOM_EXISTS_ERROR;
+        }
+
+        // B. Create the Room
+        const [newRoom] = await tx
+            .insert(room)
+            .values({
+                receiptId,
+                title: validResponse.receipt?.title ?? 'Untitled Room',
+                createdBy: userId,
+                hostPaymentMethodId: verifiedPaymentInfo ? verifiedPaymentInfo.id : null,
+            })
+            .returning();
+
+        return { success: true, room: newRoom };
+    });
 }
 
 export async function updateRoomPaymentInformation(
@@ -47,9 +67,7 @@ export async function updateRoomPaymentInformation(
 ) {
     // Check the user owns this payment method id, if they provided one
     if (paymentMethodId) {
-        const method = await db.query.paymentMethod.findFirst({
-            where: and(eq(paymentMethod.id, paymentMethodId), eq(paymentMethod.userId, userId))
-        })
+        const method = await getPaymentMethodSecure(db, userId, paymentMethodId);
         if (!method) {
             return null;
         }
@@ -61,7 +79,7 @@ export async function updateRoomPaymentInformation(
             .set({
                 hostPaymentMethodId: paymentMethodId,
             })
-            .where(eq(room.id, room.id))
+            .where(eq(room.id, roomId))
             .returning()
 
         await touchRoomId(tx, roomId);
@@ -104,13 +122,6 @@ export async function GetRoomHeader(db: DbType, roomId: string) {
         .from(room)
         .where(eq(room.id, roomId));
     return header
-}
-
-async function GetRoomByReceiptId(db: DbType, receiptId: string) {
-    const roomEntity = await db.query.room.findFirst({
-        where: eq(room.receiptId, receiptId)
-    });
-    return roomEntity
 }
 
 export async function joinRoomAction(

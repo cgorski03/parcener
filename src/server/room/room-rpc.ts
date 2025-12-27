@@ -1,6 +1,6 @@
 import { createServerFn } from '@tanstack/react-start'
 import {
-    CreateRoom,
+    createRoom,
     GetFullRoomInfo,
     GetRoomHeader,
     joinRoomAction,
@@ -16,6 +16,7 @@ import {
     updateDisplayNameRoomRequestSchema,
     roomObjSchema,
     addRoomPaymentMethod,
+    createRoomRequestSchema,
 } from '../dtos'
 import { claimItem } from './room-claims-service'
 import { editRoomMemberDisplayName, upgradeRoomMember } from './room-member-service'
@@ -85,10 +86,11 @@ export const getRoomPulseRpc = createServerFn({ method: 'GET' })
 
 export const createRoomRpc = createServerFn({ method: 'POST' })
     .middleware([nameTransaction('createRoomRpc'), protectedFunctionMiddleware])
-    .inputValidator(receiptIdSchema)
-    .handler(async ({ data: receiptId, context }) => {
+    .inputValidator(createRoomRequestSchema)
+    .handler(async ({ data: request, context }) => {
+        console.log(request);
         try {
-            return await CreateRoom(context.db, receiptId, context.user.id)
+            return await createRoom(context.db, request.receiptId, request.paymentMethodId, context.user.id);
         } catch (error) {
             logger.error(error, SENTRY_EVENTS.ROOM.CREATE, { userId: context.user.id });
             throw error;

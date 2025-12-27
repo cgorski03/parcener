@@ -68,6 +68,11 @@ export const addRoomPaymentMethod = roomObjSchema.extend({
     paymentMethodId: z.uuidv4().nullable()
 });
 
+export const createRoomRequestSchema = z.object({
+    receiptId: receiptIdSchema,
+    paymentMethodId: z.uuidv4().nullable()
+});
+
 export const roomSchema = roomObjSchema.extend({
     receiptId: receiptIdSchema,
     title: z.union([z.string().max(255), z.null()]),

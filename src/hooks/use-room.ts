@@ -5,6 +5,7 @@ import type { FullRoomInfoDto, JoinRoomRequest, PaymentMethodDto } from '@/serve
 import { createRoomRpc, getRoomPulseRpc, joinRoomRpc, updateRoomHostPaymentMethod } from '@/server/room/room-rpc'
 import { DefinedUseQueryResult, useMutation, useQuery, useQueryClient, UseQueryResult } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
+import { usePaymentMethods } from './use-payment-methods'
 
 export const RoomQueryKeys = {
     all: ['room'] as const,
@@ -58,12 +59,28 @@ export function useRecentRooms() {
 
 
 export function useCreateReceiptRoom() {
+    const { data: myPaymentMethods } = usePaymentMethods();
+
     return useMutation({
-        mutationKey: RoomQueryKeys.createRoom,
-        mutationFn: async (receiptId: string) => {
-            return await createRoomRpc({ data: receiptId })
+        mutationFn: async ({
+            receiptId,
+            sharePayment
+        }: {
+            receiptId: string,
+            sharePayment: boolean
+        }) => {
+            const defaultMethod = sharePayment
+                ? (myPaymentMethods?.find(pm => pm.isDefault) || myPaymentMethods?.[0])
+                : null;
+
+            return await createRoomRpc({
+                data: {
+                    receiptId,
+                    paymentMethodId: defaultMethod?.paymentMethodId ?? null
+                }
+            });
         },
-    })
+    });
 }
 
 export function useJoinRoom() {

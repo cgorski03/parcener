@@ -59,3 +59,13 @@ export async function deleteUserPaymentMethod(
             )
         );
 }
+
+export async function getPaymentMethodSecure(
+    db: DbType,
+    userId: string,
+    paymentMethodId: string
+) {
+    return await db.query.paymentMethod.findFirst({
+        where: and(eq(paymentMethod.id, paymentMethodId), eq(paymentMethod.userId, userId))
+    })
+}
