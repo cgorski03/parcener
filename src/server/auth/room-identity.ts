@@ -33,7 +33,7 @@ export async function parseRoomIdentity(
 
 
 export const roomContextMiddleware = createMiddleware({ type: 'function' })
-    .inputValidator(roomObjSchema)
+    .inputValidator(roomObjSchema.loose())
     .server(async ({ next, data, context }) => {
         const { roomId } = data;
         const request = getRequest();
