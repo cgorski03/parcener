@@ -1,5 +1,6 @@
 import { relations } from 'drizzle-orm'
 import {
+    boolean,
     integer,
     jsonb,
     numeric,
@@ -17,6 +18,10 @@ export const receiptProcessingEnum = pgEnum('processing_status', [
     'processing',
     'failed',
     'success',
+])
+
+export const paymentMethodTypeEnum = pgEnum('payment_method_type', [
+    'venmo'
 ])
 
 export const receipt = pgTable('receipt', {
@@ -63,6 +68,7 @@ export const receiptItem = pgTable('receipt_item', {
     price: numeric('price', { precision: 10, scale: 2 }).notNull(),
     rawText: varchar('raw_text', { length: 255 }),
     interpretedText: varchar('interpreted_text', { length: 1027 }).notNull(),
+    orderIndex: integer('order_index').notNull().default(0),
     quantity: numeric('quantity', { precision: 5, scale: 2 })
         .default('1')
         .notNull(),
@@ -80,6 +86,8 @@ export const room = pgTable('room', {
         .references(() => user.id, { onDelete: 'cascade' }),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
+    hostPaymentMethodId: uuid('host_payment_method_id')
+        .references(() => paymentMethod.id, { onDelete: 'set null' }),
 })
 
 
@@ -136,6 +144,16 @@ export const invite = pgTable(
         usedAt: timestamp('used_at'),
     })
 
+export const paymentMethod = pgTable('payment_method', {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: text('user_id')
+        .notNull()
+        .references(() => user.id, { onDelete: 'cascade' }),
+    type: paymentMethodTypeEnum('type').notNull(),
+    handle: text('handle').notNull(),
+    isDefault: boolean('is_default').default(false).notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+})
 
 // ---------- Relations
 export const receiptRelations = relations(receipt, ({ one, many }) => ({
@@ -157,7 +175,12 @@ export const roomRelations = relations(room, ({ one, many }) => ({
     receipt: one(receipt, { fields: [room.receiptId], references: [receipt.id] }),
     members: many(roomMember),
     claims: many(claim),
+    hostPaymentMethod: one(paymentMethod, {
+        fields: [room.hostPaymentMethodId],
+        references: [paymentMethod.id],
+    }),
 }))
+
 export const receiptItemRelations = relations(receiptItem, ({ one, many }) => ({
     receipt: one(receipt, {
         fields: [receiptItem.receiptId],
@@ -173,6 +196,17 @@ export const receiptProcessingRelations = relations(
             fields: [receiptProcessingInformation.receiptId],
             references: [receipt.id],
         }),
+    }),
+)
+
+export const paymentMethodRelations = relations(
+    paymentMethod,
+    ({ one, many }) => ({
+        user: one(user, {
+            fields: [paymentMethod.userId],
+            references: [user.id],
+        }),
+        linkedRooms: many(room),
     }),
 )
 
@@ -207,6 +241,7 @@ export const inviteRelations = relations(invite, ({ one }) => ({
 export type Receipt = typeof receipt.$inferSelect
 export type NewReceipt = typeof receipt.$inferInsert
 
+
 export type Claim = typeof claim.$inferSelect
 export type RoomMember = typeof roomMember.$inferSelect
 export type Room = typeof room.$inferSelect
@@ -215,6 +250,9 @@ export type ReceiptItem = typeof receiptItem.$inferSelect
 export type NewReceiptItem = typeof receiptItem.$inferInsert
 
 export type AppUser = typeof user.$inferInsert
+
+export type PaymentMethod = typeof paymentMethod.$inferSelect;
+export type NewPaymentMethod = typeof paymentMethod.$inferInsert;
 
 export type Invite = typeof receiptItem.$inferSelect
 export type ReceiptEntityWithItems = Receipt & {

@@ -1,6 +1,7 @@
 import { and, eq, exists } from 'drizzle-orm'
 import { receipt, receiptItem } from '../db/schema'
 import {
+    CreateReceiptItemDto,
     ReceiptItemDto,
     ReceiptTotalsDto,
 } from '../dtos'
@@ -72,7 +73,7 @@ export async function editReceiptItem(db: DbType, item: ReceiptItemDto, userId: 
 
 export async function createReceiptItem(
     db: DbType,
-    item: ReceiptItemDto,
+    item: CreateReceiptItemDto,
     receiptId: string,
     userId: string,
 ) {
@@ -94,7 +95,6 @@ export async function createReceiptItem(
         const [insertedItem] = await tx
             .insert(receiptItem)
             .values({
-                id: item.receiptItemId,
                 receiptId: receiptId,
                 interpretedText: item.interpretedText,
                 price: item.price.toString(),

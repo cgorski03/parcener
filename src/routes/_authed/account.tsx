@@ -1,3 +1,4 @@
+import { PaymentMethodsSection } from "@/components/account/payment-method-section";
 import { RecentRooms } from "@/components/account/recent-rooms";
 import { RecentUploads } from "@/components/account/recent-uploads";
 import { AccountUploadsSection } from "@/components/account/upload-section";
@@ -73,6 +74,7 @@ function RouteComponent() {
                 </div>
 
                 <AccountUploadsSection />
+                <PaymentMethodsSection />
                 {user.canUpload && <RecentUploads />}
                 <RecentRooms />
             </div>

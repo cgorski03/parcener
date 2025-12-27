@@ -5,7 +5,7 @@ import {
     editReceiptItem,
     finalizeReceiptTotals,
 } from './edit-receipt-service'
-import { receiptItemDtoSchema, receiptItemWithReceiptIdSchema, receiptTotalsSchema } from '../dtos'
+import { createReceiptItemRequestSchema, receiptItemDtoSchema, receiptTotalsSchema } from '../dtos'
 import { protectedFunctionMiddleware } from '../auth/protected-function'
 import { nameTransaction } from '../observability/sentry-middleware'
 import { logger } from '@/lib/logger'
@@ -43,14 +43,13 @@ export const deleteReceiptItemRpc = createServerFn({ method: 'POST' })
 
 export const createReceiptItemRpc = createServerFn({ method: 'POST' })
     .middleware([nameTransaction('createReceiptItemRpc'), protectedFunctionMiddleware])
-    .inputValidator(receiptItemWithReceiptIdSchema)
+    .inputValidator(createReceiptItemRequestSchema)
     .handler(async ({ data, context }) => {
         try {
             const { receiptItem, receiptId } = data
             return await createReceiptItem(context.db, receiptItem, receiptId, context.user.id);
         } catch (error) {
             logger.error(error, SENTRY_EVENTS.RECEIPT_EDIT.CREATE_ITEM, {
-                itemId: data.receiptItem.receiptItemId,
                 receiptId: data.receiptId,
                 userId: context.user.id
             });

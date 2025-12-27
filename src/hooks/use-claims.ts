@@ -3,6 +3,7 @@ import type { FullRoomInfoDto, RoomMembership, ReceiptItemDto } from '@/server/d
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { RoomQueryKeys } from './use-room';
 import { useMemo } from 'react';
+import { generateIdNotCryptographicallySecure } from '@/lib/utils';
 
 type EnrichedClaim = {
     quantity: number
@@ -59,7 +60,7 @@ export function useClaimItem(myMembershipId: string) {
                                 : [
                                     ...filteredClaims,
                                     {
-                                        id: crypto.randomUUID(),
+                                        id: generateIdNotCryptographicallySecure(),
                                         roomId,
                                         receiptItemId,
                                         memberId: _memId,

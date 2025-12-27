@@ -9,13 +9,13 @@ import {
 } from '@/components/ui/sheet'
 import { Trash2 } from 'lucide-react'
 import React, { useState } from 'react'
-import type { ReceiptItemDto } from '@/server/dtos'
+import type { CreateReceiptItemDto, ReceiptItemDto } from '@/server/dtos'
 import { Button } from '../ui/button'
 
 function ReceiptItemSheet(props: {
     showSheet: boolean
     item: ReceiptItemDto | null
-    handleSaveItem: (item: ReceiptItemDto, isCreate: boolean) => void
+    handleSaveItem: (item: ReceiptItemDto | CreateReceiptItemDto) => void
     handleDeleteItem: (item: ReceiptItemDto) => void
     closeSheet: () => void
 }) {
@@ -38,14 +38,19 @@ function ReceiptItemSheet(props: {
     const [itemText, setItemText] = useState(item?.interpretedText ?? '')
 
     const saveItem = () => {
-        const newItem: ReceiptItemDto = {
-            receiptItemId: item?.receiptItemId ?? crypto.randomUUID(),
+        const newItem = {
             quantity: quantity,
             rawText: item?.rawText ?? '',
             interpretedText: itemText,
             price: totalPrice,
         }
-        handleSaveItem(newItem, isCreate)
+        if (isCreate || !item?.receiptItemId) {
+            handleSaveItem(newItem);
+        } else {
+
+            handleSaveItem({ receiptItemId: item.receiptItemId, ...newItem });
+        }
+
     }
 
     const handlePriceModeChange = (mode: 'unit' | 'total') => {
