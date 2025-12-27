@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { Claim } from '@/server/db/schema';
+import { paymentMethodTypeEnum, type Claim } from '@/server/db/schema';
 
 // ----- RECEIPT ITEM SCHEMA
 export const receiptItemIdSchema = z.uuid({ version: 'v4' });
@@ -38,6 +38,22 @@ export const receiptDtoSchema = z.object({
     createdAt: z.date().nullable(),
     items: z.array(receiptItemDtoSchema),
 })
+
+export const paymentMethodTypeSchema = z.enum(
+    paymentMethodTypeEnum.enumValues
+);
+
+export const paymentMethodIdSchema = z.object({
+    paymentMethodId: z.uuid({ version: 'v4' })
+});
+
+export const createPaymentMethodRequest = z.object({
+    type: paymentMethodTypeSchema,
+    handle: z.string().min(1).max(100),
+    isDefault: z.boolean(),
+})
+
+export const paymentMethodDto = createPaymentMethodRequest.extend(paymentMethodIdSchema.shape)
 
 // ---------- ROOM SCHEMA
 export const roomIdSchema = z.uuid({ version: 'v4' });
@@ -109,6 +125,11 @@ export type RoomDto = z.infer<typeof roomSchema>
 export type JoinRoomRequest = z.infer<typeof joinRoomRequestSchema>
 export type NullableReceiptDto = ReceiptDto | null
 export type NullableReceiptTotalsDto = ReceiptTotalsDto | null
+
+
+// PaymentMethodType
+export type CreatePaymentMethodRequest = z.infer<typeof createPaymentMethodRequest>
+export type PaymentMethodDto = z.infer<typeof paymentMethodDto>
 
 // Combined Types
 export type FullRoomInfoDto = RoomDto & {

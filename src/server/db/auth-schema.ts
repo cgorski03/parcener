@@ -1,5 +1,5 @@
 import { pgTable, text, timestamp, boolean } from 'drizzle-orm/pg-core'
-import { receipt, room, roomMember } from './schema'
+import { paymentMethod, receipt, room, roomMember } from './schema'
 import { relations } from 'drizzle-orm'
 
 export const user = pgTable("user", {
@@ -20,6 +20,7 @@ export const userRelations = relations(user, ({ many }) => ({
     receipts: many(receipt),
     rooms: many(room),
     roomMembers: many(roomMember),
+    paymentMethods: many(paymentMethod),
 }))
 
 export const session = pgTable('session', {

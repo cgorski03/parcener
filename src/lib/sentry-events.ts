@@ -51,6 +51,11 @@ export const SENTRY_EVENTS = {
         GET_PROFILE: "account.get_profile",
         GET_RECENT_RECEIPTS: "account.get_recent_receipts",
         GET_RECENT_ROOMS: "account.get_recent_rooms",
+        PAYMENT_METHOD: {
+            CREATE: "account.payment_method.create",
+            GET: "account.payment_method.get",
+            DELETE: "account.payment_method.delete",
+        }
     },
     SOCIAL: {
         SHARE_LINK: "social.share_link",

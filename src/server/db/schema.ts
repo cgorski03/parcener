@@ -1,5 +1,6 @@
 import { relations } from 'drizzle-orm'
 import {
+    boolean,
     integer,
     jsonb,
     numeric,
@@ -17,6 +18,10 @@ export const receiptProcessingEnum = pgEnum('processing_status', [
     'processing',
     'failed',
     'success',
+])
+
+export const paymentMethodTypeEnum = pgEnum('payment_method_type', [
+    'venmo'
 ])
 
 export const receipt = pgTable('receipt', {
@@ -136,6 +141,16 @@ export const invite = pgTable(
         usedAt: timestamp('used_at'),
     })
 
+export const paymentMethod = pgTable('payment_method', {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: text('user_id')
+        .notNull()
+        .references(() => user.id, { onDelete: 'cascade' }),
+    type: paymentMethodTypeEnum('type').notNull(),
+    handle: text('handle').notNull(),
+    isDefault: boolean('is_default').default(false).notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+})
 
 // ---------- Relations
 export const receiptRelations = relations(receipt, ({ one, many }) => ({
@@ -172,6 +187,16 @@ export const receiptProcessingRelations = relations(
         receipt: one(receipt, {
             fields: [receiptProcessingInformation.receiptId],
             references: [receipt.id],
+        }),
+    }),
+)
+
+export const paymentMethodRelations = relations(
+    paymentMethod,
+    ({ one }) => ({
+        user: one(user, {
+            fields: [paymentMethod.userId],
+            references: [user.id],
         }),
     }),
 )
@@ -215,6 +240,9 @@ export type ReceiptItem = typeof receiptItem.$inferSelect
 export type NewReceiptItem = typeof receiptItem.$inferInsert
 
 export type AppUser = typeof user.$inferInsert
+
+export type PaymentMethod = typeof paymentMethod.$inferSelect;
+export type NewPaymentMethod = typeof paymentMethod.$inferInsert;
 
 export type Invite = typeof receiptItem.$inferSelect
 export type ReceiptEntityWithItems = Receipt & {

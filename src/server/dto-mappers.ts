@@ -2,9 +2,11 @@ import {
     type ReceiptDto,
     receiptDtoSchema,
     type FullRoomInfoDto,
-    type ReceiptItemDto
+    type ReceiptItemDto,
+    PaymentMethodDto
 } from './dtos';
 import {
+    PaymentMethod,
     type ReceiptEntityWithItems,
     type ReceiptItem
 } from './db/schema';
@@ -63,4 +65,12 @@ export function mapDbRoomToDto(roomData: any): FullRoomInfoDto | null {
         receipt,
         receiptIsValid: receiptValidResponse.isValid,
     };
+}
+
+export function mapPaymentMethodToDto(paymentMethod: PaymentMethod): PaymentMethodDto {
+    const { id, ...rest } = paymentMethod;
+    return {
+        paymentMethodId: id,
+        ...rest
+    }
 }
