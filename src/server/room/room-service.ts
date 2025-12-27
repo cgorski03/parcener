@@ -35,7 +35,7 @@ export async function createRoom(
     }
 
     return await db.transaction(async (tx) => {
-        // look before you jump check, wouldn't work anyway  
+        // look before you leap check, wouldn't work anyway due to db constraints
         const existingRoom = await tx.query.room.findFirst({
             where: eq(room.receiptId, receiptId)
         });

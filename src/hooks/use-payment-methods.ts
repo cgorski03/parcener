@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CreatePaymentMethodRequest } from "@/server/dtos";
+import { CreatePaymentMethodRequest, PaymentMethodDto } from "@/server/dtos";
 import { logger } from "@/lib/logger";
 import { SENTRY_EVENTS } from "@/lib/sentry-events";
 import { createPaymentMethod, deletePaymentMethod, getPaymentMethods } from "@/server/account/payment-methods-rpc";
@@ -67,11 +67,11 @@ export const useDeletePaymentMethod = () => {
         onMutate: async (deletedId) => {
             // Optimistic Update: Remove the item from UI immediately
             await queryClient.cancelQueries({ queryKey: PaymentQueryKeys.all });
-            const previousMethods = queryClient.getQueryData(PaymentQueryKeys.all);
+            const previousMethods = queryClient.getQueryData<PaymentMethodDto[]>(PaymentQueryKeys.all);
 
-            queryClient.setQueryData(PaymentQueryKeys.all, (old: any) => {
+            queryClient.setQueryData(PaymentQueryKeys.all, (old: PaymentMethodDto[]) => {
                 if (!old) return [];
-                return old.filter((method: any) => method.id !== deletedId);
+                return old.filter((method) => method.paymentMethodId !== deletedId);
             });
 
             return { previousMethods };

@@ -7,8 +7,8 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /*
- * This should be used only for generating ids, accross platforms
-    * in somewehre like an optimistic updatee
+ * This should be used only for generating ids, across platforms
+    * in somewhere like an optimistic updatee
     */
 export const generateIdNotCryptographicallySecure = createClientOnlyFn(() => {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
