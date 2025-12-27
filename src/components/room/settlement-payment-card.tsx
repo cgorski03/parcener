@@ -14,7 +14,8 @@ interface SettlementPaymentCardProps {
 
 export function SettlementPaymentCard({ roomId, isHost, myTotalOwed }: SettlementPaymentCardProps) {
     const { data: room } = useGetRoomPulse(roomId);
-    const { data: myPaymentMethods } = usePaymentMethods();
+    // We pass the isHost to  prevent unauthed users from calling a protected function
+    const { data: myPaymentMethods } = usePaymentMethods(isHost);
     const { mutate: updateRoomPayment, variables, isPending } = useUpdateRoomPaymentMethod(roomId);
 
     if (!room) return null;

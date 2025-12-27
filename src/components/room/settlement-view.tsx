@@ -19,6 +19,7 @@ interface SettlementViewProps {
 
 export function SettlementView({ roomId, currentMember, onBack }: SettlementViewProps) {
     const { data: room, isLoading } = useGetRoomPulse(roomId);
+
     if (isLoading) {
         return <SettlementLoadingSkeleton />;
     }

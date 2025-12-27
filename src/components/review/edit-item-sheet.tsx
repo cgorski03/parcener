@@ -11,7 +11,7 @@ import { Trash2 } from 'lucide-react'
 import React, { useState } from 'react'
 import type { ReceiptItemDto } from '@/server/dtos'
 import { Button } from '../ui/button'
-import { generateId } from '@/lib/utils'
+import { generateIdNotCryptographicallySecure } from '@/lib/utils'
 
 function ReceiptItemSheet(props: {
     showSheet: boolean
@@ -40,7 +40,7 @@ function ReceiptItemSheet(props: {
 
     const saveItem = () => {
         const newItem: ReceiptItemDto = {
-            receiptItemId: item?.receiptItemId ?? generateId(),
+            receiptItemId: item?.receiptItemId ?? generateIdNotCryptographicallySecure(),
             quantity: quantity,
             rawText: item?.rawText ?? '',
             interpretedText: itemText,

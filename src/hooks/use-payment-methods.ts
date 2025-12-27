@@ -11,7 +11,7 @@ export const PaymentQueryKeys = {
 /**
  * Hook to fetch all payment methods for the current user
  */
-export const usePaymentMethods = () => {
+export const usePaymentMethods = (enabled = true) => {
     return useQuery({
         queryKey: PaymentQueryKeys.all,
         queryFn: async () => {
@@ -24,6 +24,7 @@ export const usePaymentMethods = () => {
         },
         staleTime: 1000 * 60 * 10,
         refetchOnWindowFocus: false,
+        enabled: enabled,
     });
 };
 
