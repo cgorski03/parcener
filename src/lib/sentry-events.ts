@@ -36,6 +36,7 @@ export const SENTRY_EVENTS = {
         JOIN: "room.join",
         UPGRADE_MEMBER: "room.upgrade_member",
         UPDATE_NAME: "room.update_name",
+        UPDATE_PAYMENT_METHOD_ID: "room.update_payment_method_id",
         CLAIM_ITEM: "room.claim_item",
     },
     ACCOUNT: {

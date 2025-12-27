@@ -1,5 +1,5 @@
-import { eq } from 'drizzle-orm'
-import { DbTxType, DbType, room, roomMember } from '../db'
+import { and, eq } from 'drizzle-orm'
+import { DbTxType, DbType, paymentMethod, room, roomMember } from '../db'
 import { getReceiptIsValid } from '../get-receipt/get-receipt-service'
 import { ROOM_EXISTS_ERROR } from '../response-types'
 import { RoomMemberDto } from '../dtos'
@@ -39,6 +39,36 @@ export async function CreateRoom(
     return { success: true, room: newRoom }
 }
 
+export async function updateRoomPaymentInformation(
+    db: DbType,
+    roomId: string,
+    paymentMethodId: string | null,
+    userId: string,
+) {
+    // Check the user owns this payment method id, if they provided one
+    if (paymentMethodId) {
+        const method = await db.query.paymentMethod.findFirst({
+            where: and(eq(paymentMethod.id, paymentMethodId), eq(paymentMethod.userId, userId))
+        })
+        if (!method) {
+            return null;
+        }
+    }
+
+    return await db.transaction(async (tx) => {
+        const [newRoom] = await tx
+            .update(room)
+            .set({
+                hostPaymentMethodId: paymentMethodId,
+            })
+            .where(eq(room.id, room.id))
+            .returning()
+
+        await touchRoomId(tx, roomId);
+        return newRoom;
+    })
+}
+
 export async function GetFullRoomInfo(db: DbType, roomId: string) {
     const result = await db.query.room.findFirst({
         where: eq(room.id, roomId),
@@ -54,6 +84,7 @@ export async function GetFullRoomInfo(db: DbType, roomId: string) {
                 },
             },
             claims: true,
+            hostPaymentMethod: true
         },
     });
     if (result == null) return;

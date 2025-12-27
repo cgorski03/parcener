@@ -3,7 +3,8 @@ import {
     receiptDtoSchema,
     type FullRoomInfoDto,
     type ReceiptItemDto,
-    PaymentMethodDto
+    PaymentMethodDto,
+    PaymentMethodPayToDto
 } from './dtos';
 import {
     PaymentMethod,
@@ -64,6 +65,7 @@ export function mapDbRoomToDto(roomData: any): FullRoomInfoDto | null {
         claims: roomData.claims,
         receipt,
         receiptIsValid: receiptValidResponse.isValid,
+        hostPaymentInformation: roomData.hostPaymentMethod ? mapPaymentMethodToPayToDto(roomData.hostPaymentMethod) : null,
     };
 }
 
@@ -72,5 +74,13 @@ export function mapPaymentMethodToDto(paymentMethod: PaymentMethod): PaymentMeth
     return {
         paymentMethodId: id,
         ...rest
+    }
+}
+
+function mapPaymentMethodToPayToDto(paymentMethod: PaymentMethod): PaymentMethodPayToDto | null {
+    if (!paymentMethod) return null;
+    return {
+        type: paymentMethod.type,
+        handle: paymentMethod.handle
     }
 }

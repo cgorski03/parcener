@@ -4,6 +4,7 @@ import {
     GetFullRoomInfo,
     GetRoomHeader,
     joinRoomAction,
+    updateRoomPaymentInformation,
 } from './room-service'
 import { getRequest } from '@tanstack/react-start/server'
 import { getServerSession } from '../auth/get-server-session'
@@ -14,6 +15,7 @@ import {
     receiptIdSchema,
     updateDisplayNameRoomRequestSchema,
     roomObjSchema,
+    addRoomPaymentMethod,
 } from '../dtos'
 import { claimItem } from './room-claims-service'
 import { editRoomMemberDisplayName, upgradeRoomMember } from './room-member-service'
@@ -31,6 +33,7 @@ export const getRoomAndMembership = createServerFn({ method: 'GET' })
     .handler(async ({ data: { roomId }, context }) => {
         try {
             const roomData = await GetFullRoomInfo(context.db, roomId);
+            roomData?.hostPaymentMethod?.type
             const roomInfo = mapDbRoomToDto(roomData);
 
             if (!roomInfo) return null;
@@ -91,6 +94,19 @@ export const createRoomRpc = createServerFn({ method: 'POST' })
             throw error;
         }
     })
+
+export const updateRoomHostPaymentMethod = createServerFn({ method: 'POST' })
+    .middleware([nameTransaction('updateRoomHostPaymentMethod'), protectedFunctionMiddleware])
+    .inputValidator(addRoomPaymentMethod)
+    .handler(async ({ data: request, context }) => {
+        try {
+            return await updateRoomPaymentInformation(context.db, request.roomId, request.paymentMethodId, context.user.id);
+        } catch (error) {
+            logger.error(error, SENTRY_EVENTS.ROOM.UPDATE_PAYMENT_METHOD_ID, { userId: context.user.id, roomId: request.roomId, paymentMethodId: request.paymentMethodId });
+            throw error;
+        }
+    })
+
 
 export const upgradeGuestToUser = createServerFn({ method: 'POST' })
     .middleware([nameTransaction('upgradeGuestToUser'), roomContextMiddleware])

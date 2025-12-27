@@ -47,12 +47,12 @@ export const paymentMethodIdSchema = z.object({
     paymentMethodId: z.uuid({ version: 'v4' })
 });
 
-export const createPaymentMethodRequest = z.object({
+export const paymentMethodPayToDto = z.object({
     type: paymentMethodTypeSchema,
     handle: z.string().min(1).max(100),
-    isDefault: z.boolean(),
 })
 
+export const createPaymentMethodRequest = paymentMethodPayToDto.extend({ isDefault: z.boolean() });
 export const paymentMethodDto = createPaymentMethodRequest.extend(paymentMethodIdSchema.shape)
 
 // ---------- ROOM SCHEMA
@@ -63,6 +63,10 @@ export const userIdSchema = z.string().length(32);
 export const roomObjSchema = z.object({
     roomId: roomIdSchema,
 })
+
+export const addRoomPaymentMethod = roomObjSchema.extend({
+    paymentMethodId: z.uuidv4().nullable()
+});
 
 export const roomSchema = roomObjSchema.extend({
     receiptId: receiptIdSchema,
@@ -131,6 +135,7 @@ export type NullableReceiptTotalsDto = ReceiptTotalsDto | null
 export type CreatePaymentMethodRequest = z.infer<typeof createPaymentMethodRequest>
 export type PaymentMethodDto = z.infer<typeof paymentMethodDto>
 export type PaymentMethodType = z.infer<typeof paymentMethodTypeSchema>
+export type PaymentMethodPayToDto = z.infer<typeof paymentMethodPayToDto>
 
 // Combined Types
 export type FullRoomInfoDto = RoomDto & {
@@ -138,6 +143,7 @@ export type FullRoomInfoDto = RoomDto & {
     claims: Claim[];
     members: RoomMemberDto[];
     receiptIsValid: boolean;
+    hostPaymentInformation: PaymentMethodPayToDto | null;
 }
 export type RecentRoomInfoDto = {
     joinedAt: string;

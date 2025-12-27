@@ -1,7 +1,9 @@
+import { logger } from '@/lib/logger'
+import { SENTRY_EVENTS } from '@/lib/sentry-events'
 import { getUserRecentRoomsRpc } from '@/server/account/account-rpc'
-import type { FullRoomInfoDto, JoinRoomRequest } from '@/server/dtos'
-import { createRoomRpc, getRoomPulseRpc, joinRoomRpc } from '@/server/room/room-rpc'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import type { FullRoomInfoDto, JoinRoomRequest, PaymentMethodDto } from '@/server/dtos'
+import { createRoomRpc, getRoomPulseRpc, joinRoomRpc, updateRoomHostPaymentMethod } from '@/server/room/room-rpc'
+import { DefinedUseQueryResult, useMutation, useQuery, useQueryClient, UseQueryResult } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 
 export const RoomQueryKeys = {
@@ -12,36 +14,38 @@ export const RoomQueryKeys = {
     recents: () => [...RoomQueryKeys.all, 'recents'] as const,
 }
 
-// To optimize performance, this returns only a subset of ALL The room information - it will get the members, room object and claims
-export const useGetRoomPulse = (initialData: FullRoomInfoDto) => {
-    const _id = initialData.roomId
-    const queryClient = useQueryClient()
+export function useGetRoomPulse(roomId: string): UseQueryResult<FullRoomInfoDto, Error>;
+
+// 2. Overload for when initialData IS provided (guaranteed to be defined)
+export function useGetRoomPulse(roomId: string, initialData: FullRoomInfoDto): DefinedUseQueryResult<FullRoomInfoDto, Error>;
+
+// 3. The Implementation
+export function useGetRoomPulse(roomId: string, initialData?: FullRoomInfoDto) {
+    const queryClient = useQueryClient();
 
     return useQuery({
-        queryKey: RoomQueryKeys.detail(_id),
-        initialData,
+        queryKey: RoomQueryKeys.detail(roomId),
+        initialData: initialData,
         refetchInterval: 3000,
-
-        queryFn: async ({ queryKey }) => {
-            const currentCache = queryClient.getQueryData<FullRoomInfoDto>(queryKey)
-
-            // 3. Calculate Since
-            const lastSync = currentCache?.updatedAt ?? null
+        queryFn: async () => {
+            const currentCache = queryClient.getQueryData<FullRoomInfoDto>(RoomQueryKeys.detail(roomId));
+            const lastSync = currentCache?.updatedAt ?? null;
 
             const response = await getRoomPulseRpc({
-                data: { roomId: _id, since: lastSync },
-            })
+                data: { roomId, since: lastSync },
+            });
 
-            if (!response) throw new Error('Room not found')
+            if (!response) throw new Error('Room not found');
 
+            // If nothing changed, return the cache
             if (response.changed === false) {
-                return currentCache!
+                if (!currentCache) throw new Error("Cache lost and no update provided");
+                return currentCache;
             }
 
-            return response.data
+            return response.data;
         },
-
-    })
+    });
 }
 
 export function useRecentRooms() {
@@ -84,3 +88,59 @@ export function useJoinRoom() {
         joinRoom: mutation.mutate,
     }
 }
+
+/**
+ * Hook to update the payment method used for a specific room.
+ * This links a user's payment method (Venmo, etc) to the room host.
+ */
+export const useUpdateRoomPaymentMethod = (roomId: string) => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (paymentMethod: PaymentMethodDto | null) => {
+            return await updateRoomHostPaymentMethod({
+                data: {
+                    roomId,
+                    paymentMethodId: paymentMethod?.paymentMethodId ?? null,
+                },
+            });
+        },
+
+        onMutate: async (newPaymentMethod) => {
+            const queryKey = RoomQueryKeys.detail(roomId);
+            await queryClient.cancelQueries({ queryKey });
+            const previousRoom = queryClient.getQueryData<FullRoomInfoDto>(queryKey);
+
+            if (previousRoom) {
+                queryClient.setQueryData<FullRoomInfoDto>(queryKey, {
+                    ...previousRoom,
+                    hostPaymentInformation: newPaymentMethod === null
+                        ? null
+                        : { type: newPaymentMethod.type, handle: newPaymentMethod.handle }
+                });
+            }
+
+            // Return a context object with the snapshotted value
+            return { previousRoom };
+        },
+
+        onError: (error, _, context) => {
+            // 4. Rollback to the previous state if the mutation fails
+            if (context?.previousRoom) {
+                queryClient.setQueryData(
+                    RoomQueryKeys.detail(roomId),
+                    context.previousRoom
+                );
+            }
+
+            logger.error(error, SENTRY_EVENTS.ROOM.UPDATE_PAYMENT_METHOD_ID, {
+                roomId,
+            });
+        },
+
+        onSettled: () => {
+            // 5. Always refetch after error or success to ensure we are in sync with the server
+            queryClient.invalidateQueries({ queryKey: RoomQueryKeys.detail(roomId) });
+        },
+    });
+};

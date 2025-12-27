@@ -1,33 +1,48 @@
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
-import { Smartphone, Laptop } from "lucide-react";
+import { ExternalLink, Smartphone } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-export const VenmoButton = ({ username = "connorpinzon", amount = "1.00", note = "Sent from parcener" }) => {
+interface VenmoButtonProps {
+    handle: string;
+    amount: number;
+    note?: string;
+    className?: string;
+}
+
+export const VenmoButton = ({
+    handle,
+    amount,
+    note = "Parcener Receipt Split",
+    className
+}: VenmoButtonProps) => {
     const isMobile = useIsMobile();
+    const formattedAmount = amount.toFixed(2);
 
     const handlePayment = () => {
-        const encdoedNote = encodeURIComponent(note);
+        const encodedNote = encodeURIComponent(note);
 
         if (isMobile) {
-            // Mobile: Open App
-            window.location.href = `venmo://paycharge?txn=pay&recipients=${username}&amount=${amount}&note=${encdoedNote}`;
+            // Mobile: Try deep link
+            window.location.href = `venmo://paycharge?txn=pay&recipients=${handle}&amount=${formattedAmount}&note=${encodedNote}`;
         } else {
             // Desktop: Open Web Profile
-            window.open(`https://venmo.com/${username}`, "_blank");
+            window.open(`https://venmo.com/${handle}`, "_blank");
         }
     };
 
     return (
         <Button
             onClick={handlePayment}
-            className="bg-[#3d95ce] hover:bg-[#3d95ce]/90 text-white"
+            className={cn("w-full bg-[#3d95ce] hover:bg-[#3d95ce]/90 text-white font-semibold shadow-sm", className)}
+            size="lg"
         >
             {isMobile ? (
                 <Smartphone className="mr-2 h-4 w-4" />
             ) : (
-                <Laptop className="mr-2 h-4 w-4" />
+                <ExternalLink className="mr-2 h-4 w-4" />
             )}
-            Pay ${amount} on Venmo
+            Pay ${formattedAmount} on Venmo
         </Button>
     );
 };

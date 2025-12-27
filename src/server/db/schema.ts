@@ -85,6 +85,8 @@ export const room = pgTable('room', {
         .references(() => user.id, { onDelete: 'cascade' }),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
+    hostPaymentMethodId: uuid('host_payment_method_id')
+        .references(() => paymentMethod.id, { onDelete: 'set null' }),
 })
 
 
@@ -172,7 +174,12 @@ export const roomRelations = relations(room, ({ one, many }) => ({
     receipt: one(receipt, { fields: [room.receiptId], references: [receipt.id] }),
     members: many(roomMember),
     claims: many(claim),
+    hostPaymentMethod: one(paymentMethod, {
+        fields: [room.hostPaymentMethodId],
+        references: [paymentMethod.id],
+    }),
 }))
+
 export const receiptItemRelations = relations(receiptItem, ({ one, many }) => ({
     receipt: one(receipt, {
         fields: [receiptItem.receiptId],
@@ -193,11 +200,12 @@ export const receiptProcessingRelations = relations(
 
 export const paymentMethodRelations = relations(
     paymentMethod,
-    ({ one }) => ({
+    ({ one, many }) => ({
         user: one(user, {
             fields: [paymentMethod.userId],
             references: [user.id],
         }),
+        linkedRooms: many(room),
     }),
 )
 

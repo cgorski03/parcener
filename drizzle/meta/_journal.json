@@ -78,6 +78,13 @@
       "when": 1766855495626,
       "tag": "0010_opposite_dark_phoenix",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1766858258298,
+      "tag": "0011_eager_shooting_star",
+      "breakpoints": true
     }
   ]
 }

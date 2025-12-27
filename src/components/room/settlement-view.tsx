@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import type { FullRoomInfoDto, RoomMembership } from '@/server/dtos'
+import type { RoomMembership } from '@/server/dtos'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
@@ -8,36 +8,45 @@ import { AppHeader } from '../layout/app-header'
 import { ReceiptLayoutShell } from '../layout/receipt-layout-shell'
 import { PriceBreakdown, BreakdownItem } from '../price-breakdown'
 import { SettlementWarning } from './settlement-warning'
-import { VenmoButton } from './venmo-button'
+import { SettlementPaymentCard } from './settlement-payment-card'
+import { useGetRoomPulse } from '@/hooks/use-room'
 
 interface SettlementViewProps {
-    room: FullRoomInfoDto
+    roomId: string;
     currentMember: RoomMembership
     onBack: () => void
 }
 
-export function SettlementView({ room, currentMember, onBack }: SettlementViewProps) {
-    const settlements = useSettlementCalculation(room)
-    const mySettlement = settlements.find(s => s.userId === currentMember.roomMemberId)
-    const others = settlements.filter(s => s.userId !== currentMember.roomMemberId)
+export function SettlementView({ roomId, currentMember, onBack }: SettlementViewProps) {
+    const { data: room, isLoading } = useGetRoomPulse(roomId);
+    if (isLoading) {
+        return <SettlementLoadingSkeleton />;
+    }
 
-    // Calculate discrepancy
-    const totalCalculated = settlements.reduce((acc, s) => acc + s.totalOwed, 0)
-    const discrepancy = room.receipt.grandTotal - totalCalculated
-    const hasDiscrepancy = Math.abs(discrepancy) > 0.05
+    if (!room) {
+        return <div>Room not found.</div>;
+    }
 
-    // Map to BreakdownItem format
+    // 2. These are now safe because 'room' is guaranteed to exist
+    const settlements = useSettlementCalculation(room);
+    const mySettlement = settlements.find(s => s.userId === currentMember.roomMemberId);
+    const others = settlements.filter(s => s.userId !== currentMember.roomMemberId);
+
+    const isHost = room.createdBy === currentMember.userId;
+
+    const totalCalculated = settlements.reduce((acc, s) => acc + s.totalOwed, 0);
+    const discrepancy = room.receipt.grandTotal - totalCalculated;
+    const hasDiscrepancy = Math.abs(discrepancy) > 0.05;
+
     const myBreakdownItems: BreakdownItem[] = useMemo(() => {
-        if (!mySettlement) return []
-
+        if (!mySettlement) return [];
         return mySettlement.claimedItems.map(({ claimId, item, quantityClaimed }) => ({
             id: claimId,
             name: item.interpretedText,
-            // Convert total price to unit price
             price: item.price / item.quantity,
             quantity: quantityClaimed,
-        }))
-    }, [mySettlement])
+        }));
+    }, [mySettlement]);
 
     return (
         <ReceiptLayoutShell
@@ -52,6 +61,18 @@ export function SettlementView({ room, currentMember, onBack }: SettlementViewPr
                 />
             }
         >
+            {/* 1. Payment Action Section */}
+            <div className="mb-6">
+                {mySettlement && (
+                    <SettlementPaymentCard
+                        roomId={roomId}
+                        isHost={isHost}
+                        myTotalOwed={mySettlement.totalOwed}
+                    />
+                )}
+            </div>
+
+            {/* 2. My Breakdown */}
             {mySettlement && (
                 <PriceBreakdown
                     label="Your Share"
@@ -70,8 +91,8 @@ export function SettlementView({ room, currentMember, onBack }: SettlementViewPr
                 />
             )}
 
-            {/* List of Everyone Else */}
-            <div className="space-y-3 pt-4">
+            {/* 3. List of Everyone Else */}
+            <div className="space-y-3 pt-4 pb-10">
                 <div className="flex items-center justify-between px-1">
                     <h3 className="text-sm font-medium text-muted-foreground">
                         Room Members
@@ -109,7 +130,16 @@ export function SettlementView({ room, currentMember, onBack }: SettlementViewPr
                     </div>
                 ))}
             </div>
-            <VenmoButton />
         </ReceiptLayoutShell>
     )
+}
+
+function SettlementLoadingSkeleton() {
+    return (
+        <div className="p-6 space-y-4 animate-pulse">
+            <div className="h-10 w-1/3 bg-muted rounded" />
+            <div className="h-32 w-full bg-muted rounded" />
+            <div className="h-64 w-full bg-muted rounded" />
+        </div>
+    );
 }
