@@ -17,7 +17,6 @@ import { PriceBreakdown } from '../price-breakdown'
 import { ReceiptSummarySheet } from './receipt-summary-sheet'
 import ReceiptItemSheet from './edit-item-sheet'
 import { ReceiptWithRoom } from '@/server/get-receipt/get-receipt-service'
-import { usePaymentMethods } from '@/hooks/use-payment-methods'
 import { CreateRoomSheet } from './create-room-sheet'
 import { useGetReceiptReview } from '@/hooks/use-get-receipt'
 
@@ -36,7 +35,6 @@ export function ReceiptEditorView({ initialReceipt }: ReceiptEditorProps) {
     // --- DATA HOOKS ---
     const { isError: receiptNotValid, isFetching: receiptValidFetching } =
         useReceiptIsValid(receipt.receiptId)
-    const { defaultPaymentMethod } = usePaymentMethods()
 
     // --- UI STATE ---
     const [showingItemSheet, setShowingItemSheet] = useState(false)
@@ -214,7 +212,6 @@ export function ReceiptEditorView({ initialReceipt }: ReceiptEditorProps) {
                 onConfirm={handleFinalizeRoomCreation}
                 receiptTip={receipt.tip ?? 0}
                 isCreating={isCreatingRoom}
-                defaultPaymentMethod={defaultPaymentMethod}
             />
         </ReceiptLayoutShell>
     )
