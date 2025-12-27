@@ -8,6 +8,7 @@ import { AppHeader } from '../layout/app-header'
 import { ReceiptLayoutShell } from '../layout/receipt-layout-shell'
 import { PriceBreakdown, BreakdownItem } from '../price-breakdown'
 import { SettlementWarning } from './settlement-warning'
+import { VenmoButton } from './venmo-button'
 
 interface SettlementViewProps {
     room: FullRoomInfoDto
@@ -108,6 +109,7 @@ export function SettlementView({ room, currentMember, onBack }: SettlementViewPr
                     </div>
                 ))}
             </div>
+            <VenmoButton />
         </ReceiptLayoutShell>
     )
 }
