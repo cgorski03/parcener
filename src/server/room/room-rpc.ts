@@ -33,7 +33,6 @@ export const getRoomAndMembership = createServerFn({ method: 'GET' })
     .handler(async ({ data: { roomId }, context }) => {
         try {
             const roomData = await GetFullRoomInfo(context.db, roomId);
-            roomData?.hostPaymentMethod?.type
             const roomInfo = mapDbRoomToDto(roomData);
 
             if (!roomInfo) return null;
@@ -87,7 +86,6 @@ export const createRoomRpc = createServerFn({ method: 'POST' })
     .middleware([nameTransaction('createRoomRpc'), protectedFunctionMiddleware])
     .inputValidator(createRoomRequestSchema)
     .handler(async ({ data: request, context }) => {
-        console.log(request);
         try {
             return await createRoom(context.db, request.receiptId, request.paymentMethodId, context.user.id);
         } catch (error) {

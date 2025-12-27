@@ -12,7 +12,7 @@ export const PaymentQueryKeys = {
  * Hook to fetch all payment methods for the current user
  */
 export const usePaymentMethods = (enabled = true) => {
-    return useQuery({
+    const query = useQuery({
         queryKey: PaymentQueryKeys.all,
         queryFn: async () => {
             try {
@@ -26,6 +26,13 @@ export const usePaymentMethods = (enabled = true) => {
         refetchOnWindowFocus: false,
         enabled: enabled,
     });
+
+    const defaultPaymentMethod = query.data?.find(pm => pm.isDefault) || query.data?.[0];
+
+    return {
+        ...query,
+        defaultPaymentMethod,
+    };
 };
 
 /**

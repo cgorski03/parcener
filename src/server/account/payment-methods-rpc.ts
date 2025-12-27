@@ -5,8 +5,6 @@ import { logger } from "@/lib/logger";
 import { SENTRY_EVENTS } from "@/lib/sentry-events";
 import { createPaymentMethodRequest, paymentMethodIdSchema } from "../dtos";
 import { createUserPaymentMethod, deleteUserPaymentMethod, getUserPaymentMethods } from "./payment-method-service";
-import { isRedirect } from "@tanstack/react-router";
-
 
 export const createPaymentMethod = createServerFn({ method: 'POST' })
     .middleware([nameTransaction('createPaymentMethod'), protectedFunctionMiddleware])
@@ -28,11 +26,6 @@ export const getPaymentMethods = createServerFn({ method: 'GET' })
         try {
             return await getUserPaymentMethods(context.db, context.user);
         } catch (error) {
-            if (isRedirect(error)) {
-                console.log("it is a redirect")
-                throw error;
-
-            }
             logger.error(error, SENTRY_EVENTS.ACCOUNT.PAYMENT_METHOD.GET, {
                 userId: context.user.id
             })

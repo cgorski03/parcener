@@ -36,7 +36,7 @@ export function ReceiptEditorView({ initialReceipt }: ReceiptEditorProps) {
     // --- DATA HOOKS ---
     const { isError: receiptNotValid, isFetching: receiptValidFetching } =
         useReceiptIsValid(receipt.receiptId)
-    const { data: myPaymentMethods } = usePaymentMethods()
+    const { defaultPaymentMethod } = usePaymentMethods()
 
     // --- UI STATE ---
     const [showingItemSheet, setShowingItemSheet] = useState(false)
@@ -50,7 +50,6 @@ export function ReceiptEditorView({ initialReceipt }: ReceiptEditorProps) {
     const { mutateAsync: createReceiptItem } = useCreateReceiptItem(receipt.roomId ?? null)
     const { mutateAsync: createReceiptRoom, isPending: isCreatingRoom } = useCreateReceiptRoom()
 
-    const defaultPaymentMethod = myPaymentMethods?.find(pm => pm.isDefault) || myPaymentMethods?.[0];
 
     // --- CALCULATIONS ---
     const subtotal = useMemo(() => {

@@ -129,7 +129,6 @@ async function getReceiptWithRelationsHelper(
         where: and(eq(receipt.id, receiptId), eq(receipt.userId, userId)),
         with: {
             items: {
-                // You can order by createdAt, interpretedText, or price
                 orderBy: (items, { asc }) => [asc(items.orderIndex)],
             },
             room: true,
