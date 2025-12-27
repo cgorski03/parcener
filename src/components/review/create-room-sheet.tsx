@@ -86,6 +86,7 @@ export function CreateRoomSheet({
                                 </p>
                             </div>
                             <Switch
+                                className="scale-150 data-[state=checked]:bg-[#3d95ce]"
                                 checked={sharePayment && hasMethod}
                                 onCheckedChange={setSharePayment}
                                 disabled={!hasMethod}
@@ -138,13 +139,6 @@ export function CreateRoomSheet({
                 </div>
 
                 <SheetFooter className="flex-row gap-3 mt-4">
-                    <Button
-                        variant="outline"
-                        onClick={() => onOpenChange(false)}
-                        className="h-12 flex-1"
-                    >
-                        Cancel
-                    </Button>
                     <Button
                         onClick={() => onConfirm(sharePayment && hasMethod)}
                         disabled={isCreating}
