@@ -1,13 +1,11 @@
 import { createFileRoute, notFound } from '@tanstack/react-router'
 import { isFailed, isProcessing, receiptNotFound } from '@/lib/receipt-utils'
-import {
-    ErrorReceiptView,
-    ProcessingReceiptView,
-    ReceiptEditorView,
-} from '@/components/review/views'
 import { ReviewNotFound } from '@/components/layout/not-found'
 import { useGetReceiptReview } from '@/hooks/use-get-receipt'
 import { AppHeader } from '@/components/layout/app-header'
+import { ProcessingReceiptView } from '@/components/review/processing-view'
+import { ErrorReceiptView } from '@/components/review/error-view'
+import { ReceiptEditorView } from '@/components/review/editor-view'
 
 export const Route = createFileRoute('/_authed/receipt/review/$receiptId')({
     head: () => ({
@@ -53,5 +51,5 @@ function RouteComponent() {
     }
 
     // 3. Render the Success View
-    return <ReceiptEditorView key={receipt.receiptId} receipt={receipt} />
+    return <ReceiptEditorView key={receipt.receiptId} initialReceipt={receipt} />
 }

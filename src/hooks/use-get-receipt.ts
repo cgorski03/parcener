@@ -1,5 +1,6 @@
 import { isProcessing } from '@/lib/receipt-utils'
 import { getUserRecentReceiptsRpc } from '@/server/account/account-rpc'
+import { ReceiptWithRoom } from '@/server/get-receipt/get-receipt-service'
 import {
     getReceiptRpc,
     getReceiptIsValidRpc,
@@ -21,7 +22,7 @@ export const ReceiptQueryKeys = {
 
 export function useGetReceiptReview(
     receiptId: string,
-    options: { enabled?: boolean } = {},
+    options: { enabled?: boolean, initialData?: ReceiptWithRoom } = {},
 ) {
     return useQuery({
         // Use your constants for consistency

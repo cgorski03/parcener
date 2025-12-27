@@ -18,8 +18,9 @@ export interface UserSettlement {
     }>
 }
 
-export function useSettlementCalculation(room: FullRoomInfoDto) {
+export function useSettlementCalculation(room: FullRoomInfoDto | undefined) {
     return useMemo(() => {
+        if (!room) return [];
         const { receipt, members, claims } = room
 
         // 1. Initialize maps

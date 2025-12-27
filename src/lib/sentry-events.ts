@@ -36,6 +36,7 @@ export const SENTRY_EVENTS = {
         JOIN: "room.join",
         UPGRADE_MEMBER: "room.upgrade_member",
         UPDATE_NAME: "room.update_name",
+        UPDATE_PAYMENT_METHOD_ID: "room.update_payment_method_id",
         CLAIM_ITEM: "room.claim_item",
     },
     ACCOUNT: {
@@ -51,6 +52,11 @@ export const SENTRY_EVENTS = {
         GET_PROFILE: "account.get_profile",
         GET_RECENT_RECEIPTS: "account.get_recent_receipts",
         GET_RECENT_ROOMS: "account.get_recent_rooms",
+        PAYMENT_METHOD: {
+            CREATE: "account.payment_method.create",
+            GET: "account.payment_method.get",
+            DELETE: "account.payment_method.delete",
+        }
     },
     SOCIAL: {
         SHARE_LINK: "social.share_link",

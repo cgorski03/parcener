@@ -1,14 +1,19 @@
 import { z } from 'zod';
-import type { Claim } from '@/server/db/schema';
+import { paymentMethodTypeEnum, type Claim } from '@/server/db/schema';
 
 // ----- RECEIPT ITEM SCHEMA
 export const receiptItemIdSchema = z.uuid({ version: 'v4' });
-export const receiptItemDtoSchema = z.object({
-    receiptItemId: receiptItemIdSchema,
+
+
+export const createReceiptItemDto = z.object({
     rawText: z.string().nullable(),
     interpretedText: z.string().min(1, 'Item name required'),
     price: z.number().nonnegative(),
     quantity: z.number().positive(),
+})
+
+export const receiptItemDtoSchema = createReceiptItemDto.extend({
+    receiptItemId: receiptItemIdSchema,
 })
 
 export const receiptIdSchema = z.uuid({ version: 'v4' });
@@ -17,6 +22,11 @@ export const receiptIdSchema = z.uuid({ version: 'v4' });
 export const receiptItemWithReceiptIdSchema = z.object({
     receiptId: receiptIdSchema,
     receiptItem: receiptItemDtoSchema
+})
+
+export const createReceiptItemRequestSchema = z.object({
+    receiptId: receiptIdSchema,
+    receiptItem: createReceiptItemDto,
 })
 
 // ----- RECEIPT SCHEMA
@@ -39,6 +49,22 @@ export const receiptDtoSchema = z.object({
     items: z.array(receiptItemDtoSchema),
 })
 
+export const paymentMethodTypeSchema = z.enum(
+    paymentMethodTypeEnum.enumValues
+);
+
+export const paymentMethodIdSchema = z.object({
+    paymentMethodId: z.uuid({ version: 'v4' })
+});
+
+export const paymentMethodPayToDto = z.object({
+    type: paymentMethodTypeSchema,
+    handle: z.string().min(1).max(100),
+})
+
+export const createPaymentMethodRequest = paymentMethodPayToDto.extend({ isDefault: z.boolean() });
+export const paymentMethodDto = createPaymentMethodRequest.extend(paymentMethodIdSchema.shape)
+
 // ---------- ROOM SCHEMA
 export const roomIdSchema = z.uuid({ version: 'v4' });
 export const roomMemberIdSchema = z.uuid({ version: 'v4' });
@@ -47,6 +73,15 @@ export const userIdSchema = z.string().length(32);
 export const roomObjSchema = z.object({
     roomId: roomIdSchema,
 })
+
+export const addRoomPaymentMethod = roomObjSchema.extend({
+    paymentMethodId: z.uuidv4().nullable()
+});
+
+export const createRoomRequestSchema = z.object({
+    receiptId: receiptIdSchema,
+    paymentMethodId: z.uuidv4().nullable()
+});
 
 export const roomSchema = roomObjSchema.extend({
     receiptId: receiptIdSchema,
@@ -100,6 +135,7 @@ export const claimItemRequestSchema = z.object({
 
 // ------------- TYPES (Inferred)
 export type ReceiptItemDto = z.infer<typeof receiptItemDtoSchema>
+export type CreateReceiptItemDto = z.infer<typeof createReceiptItemDto>
 export type SaveReceiptItemDto = z.infer<typeof receiptItemWithReceiptIdSchema>
 export type ReceiptDto = z.infer<typeof receiptDtoSchema>
 export type ReceiptTotalsDto = z.infer<typeof receiptTotalsSchema>
@@ -110,12 +146,20 @@ export type JoinRoomRequest = z.infer<typeof joinRoomRequestSchema>
 export type NullableReceiptDto = ReceiptDto | null
 export type NullableReceiptTotalsDto = ReceiptTotalsDto | null
 
+
+// PaymentMethodType
+export type CreatePaymentMethodRequest = z.infer<typeof createPaymentMethodRequest>
+export type PaymentMethodDto = z.infer<typeof paymentMethodDto>
+export type PaymentMethodType = z.infer<typeof paymentMethodTypeSchema>
+export type PaymentMethodPayToDto = z.infer<typeof paymentMethodPayToDto>
+
 // Combined Types
 export type FullRoomInfoDto = RoomDto & {
     receipt: ReceiptDto;
     claims: Claim[];
     members: RoomMemberDto[];
     receiptIsValid: boolean;
+    hostPaymentInformation: PaymentMethodPayToDto | null;
 }
 export type RecentRoomInfoDto = {
     joinedAt: string;

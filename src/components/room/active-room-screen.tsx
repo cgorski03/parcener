@@ -19,7 +19,7 @@ export function ActiveRoomScreen({
     initialRoom: FullRoomInfoDto
     member: RoomMembership
 }) {
-    const { data: room } = useGetRoomPulse(initialRoom)
+    const { data: room } = useGetRoomPulse(initialRoom.roomId, initialRoom)
     const { itemsWithClaims } = useEnrichedClaimItems(room, member)
     const { view } = Route.useSearch();
     const navigate = useNavigate();
@@ -53,7 +53,7 @@ export function ActiveRoomScreen({
     if (view === 'settlement') {
         return (
             <SettlementView
-                room={room}
+                roomId={room?.roomId}
                 currentMember={member}
                 onBack={() => setView('items')}
             />

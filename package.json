@@ -15,7 +15,7 @@
     "deploy:staging": "npm run build && wrangler deploy --env staging --config wrangler.jsonc",
     "preview": "npm run build && vite preview --port 3000",
     "cf-typegen": "wrangler types",
-    "db:generate": "drizzle-kit generate",
+    "db:generate": "pnpm dotenv -e .env.local drizzle-kit generate",
     "db:migrate": "pnpm dotenv -e .env.local -- drizzle-kit migrate",
     "db:migrate:prod": "pnpm dotenv -e .env.prod -- drizzle-kit migrate",
     "db:migrate:dev": "pnpm dotenv -e .env.dev -- drizzle-kit migrate"
@@ -31,6 +31,7 @@
     "@radix-ui/react-scroll-area": "^1.2.10",
     "@radix-ui/react-separator": "^1.1.8",
     "@radix-ui/react-slot": "^1.2.4",
+    "@radix-ui/react-switch": "^1.2.6",
     "@radix-ui/react-tooltip": "^1.2.8",
     "@sentry/cloudflare": "^10.32.1",
     "@sentry/tanstackstart-react": "^10.32.1",

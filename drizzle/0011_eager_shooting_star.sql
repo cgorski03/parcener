@@ -1,0 +1,2 @@
+ALTER TABLE "room" ADD COLUMN "host_payment_method_id" uuid;--> statement-breakpoint
+ALTER TABLE "room" ADD CONSTRAINT "room_host_payment_method_id_payment_method_id_fk" FOREIGN KEY ("host_payment_method_id") REFERENCES "public"."payment_method"("id") ON DELETE set null ON UPDATE no action;

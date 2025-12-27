@@ -1,9 +1,10 @@
 import { createServerFn } from '@tanstack/react-start'
 import {
-    CreateRoom,
+    createRoom,
     GetFullRoomInfo,
     GetRoomHeader,
     joinRoomAction,
+    updateRoomPaymentInformation,
 } from './room-service'
 import { getRequest } from '@tanstack/react-start/server'
 import { getServerSession } from '../auth/get-server-session'
@@ -11,9 +12,10 @@ import {
     claimItemRequestSchema,
     getRoomPulseSchema,
     joinRoomRequestSchema,
-    receiptIdSchema,
     updateDisplayNameRoomRequestSchema,
     roomObjSchema,
+    addRoomPaymentMethod,
+    createRoomRequestSchema,
 } from '../dtos'
 import { claimItem } from './room-claims-service'
 import { editRoomMemberDisplayName, upgradeRoomMember } from './room-member-service'
@@ -82,15 +84,28 @@ export const getRoomPulseRpc = createServerFn({ method: 'GET' })
 
 export const createRoomRpc = createServerFn({ method: 'POST' })
     .middleware([nameTransaction('createRoomRpc'), protectedFunctionMiddleware])
-    .inputValidator(receiptIdSchema)
-    .handler(async ({ data: receiptId, context }) => {
+    .inputValidator(createRoomRequestSchema)
+    .handler(async ({ data: request, context }) => {
         try {
-            return await CreateRoom(context.db, receiptId, context.user.id)
+            return await createRoom(context.db, request.receiptId, request.paymentMethodId, context.user.id);
         } catch (error) {
             logger.error(error, SENTRY_EVENTS.ROOM.CREATE, { userId: context.user.id });
             throw error;
         }
     })
+
+export const updateRoomHostPaymentMethod = createServerFn({ method: 'POST' })
+    .middleware([nameTransaction('updateRoomHostPaymentMethod'), protectedFunctionMiddleware])
+    .inputValidator(addRoomPaymentMethod)
+    .handler(async ({ data: request, context }) => {
+        try {
+            return await updateRoomPaymentInformation(context.db, request.roomId, request.paymentMethodId, context.user.id);
+        } catch (error) {
+            logger.error(error, SENTRY_EVENTS.ROOM.UPDATE_PAYMENT_METHOD_ID, { userId: context.user.id, roomId: request.roomId, paymentMethodId: request.paymentMethodId });
+            throw error;
+        }
+    })
+
 
 export const upgradeGuestToUser = createServerFn({ method: 'POST' })
     .middleware([nameTransaction('upgradeGuestToUser'), roomContextMiddleware])

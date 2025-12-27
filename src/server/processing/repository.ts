@@ -83,13 +83,14 @@ export async function saveReceiptInformation(
         })
         .where(eq(receipt.id, id))
 
-    const itemDbObject: NewReceiptItem[] = parsedReceipt.items.map((item) => ({
+    const itemDbObject: NewReceiptItem[] = parsedReceipt.items.map((item, index) => ({
         receiptId: id,
         price: item.price?.toString() ?? null,
         rawText: item.rawText,
         interpretedText: item.interpreted,
         modelInterpretedText: item.interpreted,
         quantity: item.quantity.toString(),
+        orderIndex: index,
     }))
     await db.insert(receiptItem).values(itemDbObject)
 }
