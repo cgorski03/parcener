@@ -3,12 +3,17 @@ import { paymentMethodTypeEnum, type Claim } from '@/server/db/schema';
 
 // ----- RECEIPT ITEM SCHEMA
 export const receiptItemIdSchema = z.uuid({ version: 'v4' });
-export const receiptItemDtoSchema = z.object({
-    receiptItemId: receiptItemIdSchema,
+
+
+export const createReceiptItemDto = z.object({
     rawText: z.string().nullable(),
     interpretedText: z.string().min(1, 'Item name required'),
     price: z.number().nonnegative(),
     quantity: z.number().positive(),
+})
+
+export const receiptItemDtoSchema = createReceiptItemDto.extend({
+    receiptItemId: receiptItemIdSchema,
 })
 
 export const receiptIdSchema = z.uuid({ version: 'v4' });
@@ -17,6 +22,11 @@ export const receiptIdSchema = z.uuid({ version: 'v4' });
 export const receiptItemWithReceiptIdSchema = z.object({
     receiptId: receiptIdSchema,
     receiptItem: receiptItemDtoSchema
+})
+
+export const createReceiptItemRequestSchema = z.object({
+    receiptId: receiptIdSchema,
+    receiptItem: createReceiptItemDto,
 })
 
 // ----- RECEIPT SCHEMA
@@ -125,6 +135,7 @@ export const claimItemRequestSchema = z.object({
 
 // ------------- TYPES (Inferred)
 export type ReceiptItemDto = z.infer<typeof receiptItemDtoSchema>
+export type CreateReceiptItemDto = z.infer<typeof createReceiptItemDto>
 export type SaveReceiptItemDto = z.infer<typeof receiptItemWithReceiptIdSchema>
 export type ReceiptDto = z.infer<typeof receiptDtoSchema>
 export type ReceiptTotalsDto = z.infer<typeof receiptTotalsSchema>

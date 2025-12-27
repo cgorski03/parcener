@@ -85,6 +85,20 @@
       "when": 1766858258298,
       "tag": "0011_eager_shooting_star",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1766872733386,
+      "tag": "0012_typical_talisman",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1766873202223,
+      "tag": "0013_round_phantom_reporter",
+      "breakpoints": true
     }
   ]
 }

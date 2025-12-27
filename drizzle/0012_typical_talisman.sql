@@ -1,0 +1,1 @@
+ALTER TABLE "receipt_item" ADD COLUMN "created_at" timestamp DEFAULT now() NOT NULL;

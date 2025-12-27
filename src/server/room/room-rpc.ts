@@ -12,7 +12,6 @@ import {
     claimItemRequestSchema,
     getRoomPulseSchema,
     joinRoomRequestSchema,
-    receiptIdSchema,
     updateDisplayNameRoomRequestSchema,
     roomObjSchema,
     addRoomPaymentMethod,

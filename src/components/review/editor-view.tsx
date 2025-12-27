@@ -1,6 +1,6 @@
-import { Loader2, Pencil, Plus, Share2, Users } from 'lucide-react'
-import type { ReceiptItemDto } from '@/server/dtos'
-import { Link, notFound, useNavigate } from '@tanstack/react-router'
+import { Pencil, Plus, Share2, Users } from 'lucide-react'
+import type { CreateReceiptItemDto, ReceiptItemDto } from '@/server/dtos'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { useReceiptIsValid } from '@/hooks/use-get-receipt'
 import { useMemo, useState } from 'react'
 import {
@@ -19,66 +19,26 @@ import ReceiptItemSheet from './edit-item-sheet'
 import { ReceiptWithRoom } from '@/server/get-receipt/get-receipt-service'
 import { usePaymentMethods } from '@/hooks/use-payment-methods'
 import { CreateRoomSheet } from './create-room-sheet'
-
-export function ErrorReceiptView(props: { attempts: number }) {
-    return (
-        <div className="flex flex-col items-center justify-center min-h-screen p-4 gap-4">
-            <div className="text-center">
-                <p className="text-lg font-semibold mb-2">Processing Failed</p>
-                <p className="text-sm text-muted-foreground">
-                    Failed after {props.attempts} attempts
-                </p>
-            </div>
-            <Button>Try Again</Button>
-        </div>
-    )
-}
-
-interface ProcessingReceiptViewProps {
-    isPolling: boolean;
-}
-
-export function ProcessingReceiptView({ isPolling }: ProcessingReceiptViewProps) {
-    return (
-        <div className="flex min-h-screen items-center justify-center bg-background p-4">
-            <div className="flex w-full max-w-sm flex-col items-center gap-6 rounded-xl border border-border bg-card p-8 shadow-sm">
-                <Loader2
-                    className={`h-10 w-10 animate-spin text-primary transition-opacity duration-500 ${isPolling ? 'opacity-90' : 'opacity-70'
-                        }`}
-                />
-
-                <div className="text-center space-y-1.5">
-                    <p className="text-base font-medium text-card-foreground">
-                        Processing your receipt...
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                        This may take a few moments
-                    </p>
-                    <p className="text-xs text-muted-foreground/70">
-                        It is safe to leave this page and come back
-                    </p>
-                </div>
-            </div>
-        </div>
-    );
-}
+import { useGetReceiptReview } from '@/hooks/use-get-receipt'
 
 
 interface ReceiptEditorProps {
-    receipt: ReceiptWithRoom
+    initialReceipt: ReceiptWithRoom
 }
 
-export function ReceiptEditorView({ receipt }: ReceiptEditorProps) {
-    if (!receipt) throw notFound()
+export function ReceiptEditorView({ initialReceipt }: ReceiptEditorProps) {
     const navigate = useNavigate()
-
+    const { data } = useGetReceiptReview(initialReceipt.receiptId, {
+        initialData: initialReceipt
+    });
+    const receipt = (data && 'items' in data) ? (data as ReceiptWithRoom) : initialReceipt;
+    const receiptItems = receipt.items || [];
     // --- DATA HOOKS ---
     const { isError: receiptNotValid, isFetching: receiptValidFetching } =
         useReceiptIsValid(receipt.receiptId)
     const { data: myPaymentMethods } = usePaymentMethods()
 
-    // --- STATE ---
-    const [receiptItems, setReceiptItems] = useState(receipt.items)
+    // --- UI STATE ---
     const [showingItemSheet, setShowingItemSheet] = useState(false)
     const [showSummarySheet, setShowSummarySheet] = useState(false)
     const [showCreateRoomSheet, setShowCreateRoomSheet] = useState(false)
@@ -91,6 +51,7 @@ export function ReceiptEditorView({ receipt }: ReceiptEditorProps) {
     const { mutateAsync: createReceiptRoom, isPending: isCreatingRoom } = useCreateReceiptRoom()
 
     const defaultPaymentMethod = myPaymentMethods?.find(pm => pm.isDefault) || myPaymentMethods?.[0];
+
     // --- CALCULATIONS ---
     const subtotal = useMemo(() => {
         return receiptItems.reduce((sum, item) => sum + item.price, 0).toFixed(2)
@@ -103,6 +64,8 @@ export function ReceiptEditorView({ receipt }: ReceiptEditorProps) {
     }, [subtotal, receipt])
 
     // --- HANDLERS ---
+    // (Notice: No more setReceiptItems logic. Just clean mutation calls)
+
     const handleCreateCustomItem = () => {
         setReceiptItemForSheet(null)
         setShowingItemSheet(true)
@@ -114,43 +77,20 @@ export function ReceiptEditorView({ receipt }: ReceiptEditorProps) {
     }
 
     const handleDeleteItem = async (updatedItem: ReceiptItemDto) => {
-        const originalItems = [...receiptItems]
-        setReceiptItems((prev) => prev.filter((i) => i.receiptItemId !== updatedItem.receiptItemId))
         setShowingItemSheet(false)
-        try {
-            await deleteReceiptItem({ receiptId: receipt.receiptId, item: updatedItem })
-        } catch {
-            setReceiptItems(originalItems)
-        }
+        await deleteReceiptItem({ receiptId: receipt.receiptId, item: updatedItem })
     }
 
-    const saveReceiptItem = async (updatedItem: ReceiptItemDto, isCreated: boolean) => {
-        const originalItems = [...receiptItems]
+    const saveReceiptItem = async (updatedItem: ReceiptItemDto | CreateReceiptItemDto) => {
         setShowingItemSheet(false)
-        if (isCreated) {
-            setReceiptItems((prev) => [...prev, updatedItem])
-            try {
-                await createReceiptItem({ receiptId: receipt.receiptId, item: updatedItem })
-            } catch {
-                setReceiptItems(originalItems)
-            }
+        if ('receiptItemId' in updatedItem) {
+            await editReceiptItem(updatedItem)
         } else {
-            setReceiptItems((prev) =>
-                prev.map((i) => (i.receiptItemId === updatedItem.receiptItemId ? updatedItem : i)),
-            )
-            try {
-                await editReceiptItem(updatedItem)
-            } catch {
-                setReceiptItems(originalItems)
-            }
+            await createReceiptItem({ receiptId: receipt.receiptId, item: updatedItem })
         }
     }
 
     const handleFinalizeRoomCreation = async (sharePayment: boolean) => {
-        // Here you would pass sharePayment to your RPC if the backend supports it
-        // If your backend doesn't support it yet, we just create the room
-
-
         const response = await createReceiptRoom({
             receiptId: receipt.receiptId,
             sharePayment
@@ -166,7 +106,7 @@ export function ReceiptEditorView({ receipt }: ReceiptEditorProps) {
         }
     }
 
-    // --- DYNAMIC COMPONENTS ---
+    // --- COMPONENTS ---
     const ActionButton = () => {
         if (totalHasError) {
             return (
@@ -273,7 +213,7 @@ export function ReceiptEditorView({ receipt }: ReceiptEditorProps) {
                 open={showCreateRoomSheet}
                 onOpenChange={setShowCreateRoomSheet}
                 onConfirm={handleFinalizeRoomCreation}
-                receiptTip={receipt.tip}
+                receiptTip={receipt.tip ?? 0}
                 isCreating={isCreatingRoom}
                 defaultPaymentMethod={defaultPaymentMethod}
             />

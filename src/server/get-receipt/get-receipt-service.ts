@@ -119,6 +119,7 @@ export async function getReceiptIsValid(
     return { success: true, receipt: receiptInformation };
 }
 
+
 async function getReceiptWithRelationsHelper(
     db: DbType,
     receiptId: string,
@@ -127,11 +128,14 @@ async function getReceiptWithRelationsHelper(
     return await db.query.receipt.findFirst({
         where: and(eq(receipt.id, receiptId), eq(receipt.userId, userId)),
         with: {
-            items: true,
+            items: {
+                // You can order by createdAt, interpretedText, or price
+                orderBy: (items, { asc }) => [asc(items.orderIndex)],
+            },
             room: true,
             processingInfo: true,
-        },
-    })
+        }
+    });
 }
 
 export async function getUserRecentReceiptsHelper(

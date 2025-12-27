@@ -68,6 +68,7 @@ export const receiptItem = pgTable('receipt_item', {
     price: numeric('price', { precision: 10, scale: 2 }).notNull(),
     rawText: varchar('raw_text', { length: 255 }),
     interpretedText: varchar('interpreted_text', { length: 1027 }).notNull(),
+    orderIndex: integer('order_index').notNull().default(0),
     quantity: numeric('quantity', { precision: 5, scale: 2 })
         .default('1')
         .notNull(),
@@ -239,6 +240,7 @@ export const inviteRelations = relations(invite, ({ one }) => ({
 // 
 export type Receipt = typeof receipt.$inferSelect
 export type NewReceipt = typeof receipt.$inferInsert
+
 
 export type Claim = typeof claim.$inferSelect
 export type RoomMember = typeof roomMember.$inferSelect

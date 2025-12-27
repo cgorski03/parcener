@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm'
+import { eq, and } from 'drizzle-orm'
 import { DbTxType, DbType, room, roomMember } from '../db'
 import { getReceiptIsValid } from '../get-receipt/get-receipt-service'
 import { ROOM_EXISTS_ERROR } from '../response-types'
@@ -79,10 +79,16 @@ export async function updateRoomPaymentInformation(
             .set({
                 hostPaymentMethodId: paymentMethodId,
             })
-            .where(eq(room.id, roomId))
+            .where(and(eq(room.id, roomId),
+                eq(room.createdBy, userId))
+            )
             .returning()
 
+        if (!newRoom) {
+            return null;
+        }
         await touchRoomId(tx, roomId);
+
         return newRoom;
     })
 }
