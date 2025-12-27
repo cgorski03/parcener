@@ -130,6 +130,7 @@ export type NullableReceiptTotalsDto = ReceiptTotalsDto | null
 // PaymentMethodType
 export type CreatePaymentMethodRequest = z.infer<typeof createPaymentMethodRequest>
 export type PaymentMethodDto = z.infer<typeof paymentMethodDto>
+export type PaymentMethodType = z.infer<typeof paymentMethodTypeSchema>
 
 // Combined Types
 export type FullRoomInfoDto = RoomDto & {
