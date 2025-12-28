@@ -19,6 +19,7 @@ import { VimConfigCard } from '@/components/landing/vim-config-card'
 import { InteractiveDemo } from '@/components/landing/interactive-demo'
 import { RealtimeSimulation } from '@/components/landing/realtime-simulation'
 import { AccessCTA } from '@/components/landing/acess-cta'
+import { Logo } from '@/components/layout/logo'
 
 export const Route = createFileRoute('/')({
     component: LandingPage,
@@ -44,9 +45,7 @@ function LandingPage() {
             {/* Navigation */}
             <nav className="relative z-50 flex items-center justify-between px-6 py-6 max-w-7xl mx-auto">
                 <div className="flex items-center gap-2.5">
-                    <div className="h-8 w-8 bg-primary/90 text-primary-foreground rounded-lg flex items-center justify-center shadow-sm">
-                        <Receipt className="h-4 w-4" />
-                    </div>
+                    <Logo />
                     <span className="font-bold text-lg tracking-tight">Parcener</span>
                 </div>
                 <div className="flex items-center gap-6">

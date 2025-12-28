@@ -1,7 +1,7 @@
 import { CardFooter } from '@/components/ui/card'
 import GitHubIcon from '@/components/icons/github'
-import { Receipt } from 'lucide-react'
 import { AppHeader } from './app-header'
+import { Logo } from './logo'
 
 interface PageShellProps {
     children: React.ReactNode
@@ -21,7 +21,7 @@ export function BrandedPageShell({ children, className = '' }: PageShellProps) {
                 centerTitle={true}
                 title={
                     <div className="flex items-center gap-2 text-foreground/80">
-                        <Receipt className="h-5 w-5 text-primary" />
+                        <Logo />
                         <span className="text-lg font-bold tracking-tight">Parcener</span>
                     </div>
                 }

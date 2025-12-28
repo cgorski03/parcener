@@ -12,7 +12,6 @@ import {
     Menu,
     PlusCircle,
     User,
-    Receipt,
     LogOut,
     ChevronRight,
 } from 'lucide-react'
@@ -20,6 +19,7 @@ import { Link, useLocation, useNavigate, useRouter } from '@tanstack/react-route
 import { authClient } from '@/lib/auth-client'
 import { useState } from 'react'
 import Github from '../icons/github'
+import { Logo } from './logo'
 
 export function AppNavigation() {
     const [open, setOpen] = useState(false)
@@ -62,9 +62,9 @@ export function AppNavigation() {
 
                 {/* Header */}
                 <SheetHeader className="p-6 pb-4 text-left">
-                    <SheetTitle className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-sm">
-                            <Receipt className="h-5 w-5" />
+                    <SheetTitle className="flex items-center ">
+                        <div className="h-16 w-16  flex items-center justify-center">
+                            <Logo />
                         </div>
                         <div className="flex flex-col">
                             <span className="font-bold text-lg tracking-tight text-foreground">Parcener</span>
