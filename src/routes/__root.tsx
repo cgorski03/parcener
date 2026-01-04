@@ -1,7 +1,7 @@
 import { HeadContent, Scripts, createRootRouteWithContext } from '@tanstack/react-router'
-import { GeneralNotFound } from '@/components/layout/not-found'
 import appCss from '../styles.css?url'
 import { QueryClient } from '@tanstack/react-query'
+import { GeneralNotFound } from '@/shared/components/layout/not-found';
 
 interface RouterContext {
     queryClient: QueryClient;

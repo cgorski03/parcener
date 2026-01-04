@@ -3,7 +3,7 @@
     "name": "parcener",
     "compatibility_date": "2025-09-02",
     "compatibility_flags": ["nodejs_compat"],
-    "main": "src/server/entry.ts",
+    "main": "src/shared/server/entry.ts",
     "workers_dev": false,
     "vars": {
         "NODE_ENV": "production",

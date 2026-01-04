@@ -1,7 +1,7 @@
 import { createRouter } from '@tanstack/react-router'
 import { setupRouterSsrQueryIntegration } from '@tanstack/react-router-ssr-query'
 import { routeTree } from './routeTree.gen'
-import { queryClient as browserQueryClient } from './lib/query-client';
+import { queryClient as browserQueryClient } from '@/shared/lib/query-client';
 import { QueryClient } from '@tanstack/react-query';
 
 export const getRouter = () => {
@@ -26,7 +26,7 @@ export const getRouter = () => {
 
     // Handle Sentry Tracing
     if (!router.isServer) {
-        import('./lib/sentry-client').then((m) => {
+        import('@/shared/observability/sentry-client').then((m) => {
             m.initSentry(router);
         }).catch(err => console.error("Sentry failed to load", err));
     }

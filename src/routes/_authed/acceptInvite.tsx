@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/shared/components/ui/button'
 import {
     Card,
     CardContent,
@@ -7,11 +7,11 @@ import {
     CardFooter,
     CardHeader,
     CardTitle,
-} from '@/components/ui/card'
+} from '@/shared/components/ui/card'
 import { CheckCircle2, XCircle, ShieldCheck, AlertCircle, ArrowRight, Home } from 'lucide-react'
-import { acceptInviteRpc } from '@/server/account/account-rpc'
-import { validateInviteSearch } from '@/lib/validation'
-import type { InviteStatus } from '@/server/account/invitation-service'
+import { validateInviteSearch } from '@/shared/lib/validation'
+import { InviteStatus } from '@/features/invitations/server/invitation-service'
+import { acceptInviteRpc } from '@/features/invitations/server/invitation-rpc'
 
 export const Route = createFileRoute('/_authed/acceptInvite')({
     validateSearch: validateInviteSearch,

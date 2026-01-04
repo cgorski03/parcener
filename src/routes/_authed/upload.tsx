@@ -1,6 +1,6 @@
-import { RestrictedUploadView } from '@/components/upload/restricted-upload-view';
-import { UploadComponent } from '@/components/upload/upload-component';
-import { useUploadRateLimit } from '@/hooks/use-account';
+import { RestrictedUploadView } from '@/features/upload-receipt/components/restricted-upload-view';
+import { UploadComponent } from '@/features/upload-receipt/components/upload-component';
+import { useUploadRateLimit } from '@/features/upload-receipt/hooks/use-upload-rate-limit';
 import { createFileRoute } from '@tanstack/react-router'
 
 

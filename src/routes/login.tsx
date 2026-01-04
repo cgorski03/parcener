@@ -1,10 +1,10 @@
-import { Button } from '@/components/ui/button'
 import { createFileRoute, useSearch, redirect } from '@tanstack/react-router'
-import { authClient } from '@/lib/auth-client'
 import { useState } from 'react'
-import { BrandedPageShell } from '@/components/layout/branded-page-shell';
 import { ExternalLink, ChevronDown, ChevronUp } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn } from '@/shared/lib/utils';
+import { authClient } from '@/shared/lib/auth-client';
+import { Button } from '@/shared/components/ui/button';
+import { BrandedPageShell } from '@/shared/components/layout/branded-page-shell';
 
 
 type LoginSearch = {

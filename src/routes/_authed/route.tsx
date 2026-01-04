@@ -1,6 +1,6 @@
+import { userQueryOptions } from '@/shared/hooks/use-user';
+import { AppUser } from '@/shared/server/db';
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
-import { AppUser } from '@/server/db';
-import { userQueryOptions } from '@/hooks/use-user';
 
 type AuthedContext = {
     user: AppUser;

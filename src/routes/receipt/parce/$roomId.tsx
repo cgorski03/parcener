@@ -1,8 +1,8 @@
-import { RoomNotFound } from '@/components/layout/not-found'
-import { ActiveRoomScreen } from '@/components/room/active-room-screen'
-import { RoomLoading } from '@/components/room/loading-view'
-import { LobbyScreen } from '@/components/room/lobby-screen'
-import { getRoomAndMembership, upgradeGuestToUser } from '@/server/room/room-rpc'
+import { ActiveRoomScreen } from '@/features/room/components/active-room-screen'
+import { RoomLoading } from '@/features/room/components/loading-view'
+import { LobbyScreen } from '@/features/room/components/lobby-screen'
+import { getRoomAndMembership, upgradeGuestToUser } from '@/features/room/server/room-rpc'
+import { RoomNotFound } from '@/shared/components/layout/not-found'
 import { createFileRoute, notFound } from '@tanstack/react-router'
 
 type RoomView = 'items' | 'settlement'

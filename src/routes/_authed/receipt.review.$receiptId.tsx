@@ -1,11 +1,11 @@
+import { ReceiptEditorView } from '@/features/receipt-review/components/editor-view';
+import { ErrorReceiptView } from '@/features/receipt-review/components/error-view';
+import { ProcessingReceiptView } from '@/features/receipt-review/components/processing-view';
+import { useGetReceiptReview } from '@/features/receipt-review/hooks/use-get-receipt';
+import { isFailed, isProcessing, receiptNotFound } from '@/features/receipt-review/lib/receipt-utils';
+import { AppHeader } from '@/shared/components/layout/app-header';
+import { ReviewNotFound } from '@/shared/components/layout/not-found';
 import { createFileRoute, notFound } from '@tanstack/react-router'
-import { isFailed, isProcessing, receiptNotFound } from '@/lib/receipt-utils'
-import { ReviewNotFound } from '@/components/layout/not-found'
-import { useGetReceiptReview } from '@/hooks/use-get-receipt'
-import { AppHeader } from '@/components/layout/app-header'
-import { ProcessingReceiptView } from '@/components/review/processing-view'
-import { ErrorReceiptView } from '@/components/review/error-view'
-import { ReceiptEditorView } from '@/components/review/editor-view'
 
 export const Route = createFileRoute('/_authed/receipt/review/$receiptId')({
     head: () => ({
