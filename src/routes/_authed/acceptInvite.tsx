@@ -68,7 +68,7 @@ function RouteComponent() {
                 </CardContent>
                 <CardFooter className="flex justify-center pb-8">
                     <Button asChild className="w-full sm:w-auto" variant={config.buttonVariant}>
-                        <Link to={config.linkTo}>
+                        <Link to={config.linkTo} reloadDocument={status === 'SUCCESS'}>
                             {config.buttonIcon && <config.buttonIcon className="mr-2 h-4 w-4" />}
                             {config.buttonText}
                         </Link>

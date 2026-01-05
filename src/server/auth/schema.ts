@@ -30,8 +30,7 @@ export const authConfig = {
         updateAge: 60 * 60 * 24,
         // Ensure the cookie is persistent 
         cookieCache: {
-            enabled: true,
-            maxAge: 60 * 60 * 24 * 90,
+            enabled: false,
         },
     },
 } satisfies BetterAuthOptions;
