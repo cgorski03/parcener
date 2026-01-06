@@ -17,8 +17,7 @@ import {
     ReceiptSubtotalMismatchResponse,
 } from '@/shared/server/response-types'
 import { DbTxType, DbType } from '@/shared/server/db'
-import { pruneExcessClaimsHelper } from '@/features/room/server/room-claims-service'
-import { touchRoomFromReceipt } from '@/features/room/server/room-service'
+import { pruneExcessClaimsHelper, touchRoomFromReceipt } from '@/features/room/server/internal'
 import { receiptItemEntityToDtoHelper } from '@/shared/dto/mappers'
 import { isFailed, isProcessing, receiptNotFound } from '../lib/receipt-utils'
 import { calculateItemTotal, moneyValuesEqual } from '@/shared/lib/money-math'

@@ -1,11 +1,11 @@
 import { eq, and } from 'drizzle-orm'
 import { DbTxType, DbType, room, roomMember } from '@/shared/server/db'
-import { getReceiptIsValid } from '@/features/receipt-review/server/get-receipt-service'
+import { getReceiptIsValid } from '@/features/receipt-review/server/internal'
 import { ROOM_EXISTS_ERROR } from '@/shared/server/response-types'
 import type { RoomMemberDto } from '@/shared/dto/types'
 import { getRoomMembership } from './room-member-service'
 import { RoomIdentity } from '@/shared/auth/server/room-identity'
-import { getPaymentMethodSecure } from '@/features/payment-methods/server/payment-method-service'
+import { getPaymentMethodSecure } from '@/features/payment-methods/server/internal'
 
 export type CreateRoomRequest = {
     title: string
