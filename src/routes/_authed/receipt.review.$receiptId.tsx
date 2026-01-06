@@ -1,10 +1,7 @@
-import { ReceiptEditorView } from '@/features/receipt-review/components/editor-view';
-import { ErrorReceiptView } from '@/features/receipt-review/components/error-view';
-import { ProcessingReceiptView } from '@/features/receipt-review/components/processing-view';
-import { useGetReceiptReview } from '@/features/receipt-review/hooks/use-get-receipt';
-import { isFailed, isProcessing, receiptNotFound } from '@/features/receipt-review/lib/receipt-utils';
-import { AppHeader } from '@/shared/components/layout/app-header';
-import { ReviewNotFound } from '@/shared/components/layout/not-found';
+import { useGetReceiptReview } from '@/features/receipt-review/hooks/use-get-receipt'
+import { receiptNotFound } from '@/features/receipt-review/lib/receipt-utils'
+import { ReceiptReviewPage, ReceiptReviewLoading } from '@/features/receipt-review/routes/review'
+import { ReviewNotFound } from '@/shared/components/layout/not-found'
 import { createFileRoute, notFound } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/_authed/receipt/review/$receiptId')({
@@ -20,36 +17,15 @@ export const Route = createFileRoute('/_authed/receipt/review/$receiptId')({
 
 function RouteComponent() {
     const { receiptId } = Route.useParams()
-    const { data: receipt, isFetching } = useGetReceiptReview(receiptId);
+    const { data: receipt, isFetching } = useGetReceiptReview(receiptId)
 
     if (isFetching && !receipt) {
-
-        return (<>
-            <AppHeader />
-            <ProcessingReceiptView isPolling={isFetching} />
-        </>)
+        return <ReceiptReviewLoading isFetching={isFetching} />
     }
 
     if (!receipt || receiptNotFound(receipt)) {
-        throw notFound();
+        throw notFound()
     }
 
-    if (isProcessing(receipt)) {
-        return (<>
-            <AppHeader />
-            <ProcessingReceiptView isPolling={isFetching} />
-        </>)
-    }
-
-    if (isFailed(receipt)) {
-        return (
-            <>
-                <AppHeader />
-                <ErrorReceiptView attempts={receipt.attempts} />
-            </>
-        )
-    }
-
-    // 3. Render the Success View
-    return <ReceiptEditorView key={receipt.receiptId} initialReceipt={receipt} />
+    return <ReceiptReviewPage receipt={receipt} isFetching={isFetching} />
 }

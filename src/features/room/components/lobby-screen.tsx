@@ -4,16 +4,16 @@ import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
 import { Card, CardContent, CardHeader } from '@/shared/components/ui/card'
 import { Loader2, ArrowRight, User } from 'lucide-react'
-import type { User as UserType } from 'better-auth'
 import { authClient } from '@/shared/lib/auth-client'
 import { RoomMemberAvatar } from './room-member-avatar'
 import type { FullRoomInfoDto } from '@/shared/dto/types'
 import { BrandedPageShell } from '@/shared/components/layout/branded-page-shell'
 import { useJoinRoom } from '@/features/room/hooks/use-room'
+import { AppUser } from '@/shared/server/db'
 
 interface LobbyScreenProps {
     room: FullRoomInfoDto
-    user: UserType | undefined
+    user: AppUser | undefined
 }
 
 export function LobbyScreen({ room, user }: LobbyScreenProps) {
@@ -111,7 +111,7 @@ export function LobbyScreen({ room, user }: LobbyScreenProps) {
 }
 
 interface IdentitySectionProps {
-    user: UserType | undefined
+    user: AppUser | undefined
     name: string
     setName: (name: string) => void
 }

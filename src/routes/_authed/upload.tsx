@@ -1,7 +1,10 @@
 import { RestrictedUploadView } from '@/features/upload-receipt/components/restricted-upload-view';
 import { UploadComponent } from '@/features/upload-receipt/components/upload-component';
-import { useUploadRateLimit } from '@/features/upload-receipt/hooks/use-upload-rate-limit';
+import { useUploadRateLimitSuspense } from '@/features/upload-receipt/hooks/use-upload-rate-limit';
+import { BrandedPageShell } from '@/shared/components/layout/branded-page-shell';
+import { Card, CardContent, CardHeader } from '@/shared/components/ui/card';
 import { createFileRoute } from '@tanstack/react-router'
+import { Suspense } from 'react';
 
 
 export const Route = createFileRoute('/_authed/upload')({
@@ -16,11 +19,43 @@ export const Route = createFileRoute('/_authed/upload')({
 
 function UploadPageComponent() {
     const { user } = Route.useRouteContext();
-    const { data: uploadData } = useUploadRateLimit();
 
-    if (!user.canUpload || !uploadData?.canUpload) {
-        return <RestrictedUploadView hasNoAccess={!user.canUpload} />
+    // Check user permission first (no suspense needed)
+    if (!user.canUpload) {
+        return <RestrictedUploadView hasNoAccess={true} />
     }
+
+    // User has access - check rate limit with suspense
+    return (
+        <Suspense fallback={<UploadSkeleton />}>
+            <UploadWithRateLimit />
+        </Suspense>
+    )
+}
+
+function UploadWithRateLimit() {
+    const { data: uploadData } = useUploadRateLimitSuspense();
+
+    if (!uploadData?.canUpload) {
+        return <RestrictedUploadView hasNoAccess={false} />
+    }
+
     return <UploadComponent />
+}
+
+function UploadSkeleton() {
+    return (
+        <BrandedPageShell>
+            <Card className="w-full max-w-md animate-pulse">
+                <CardHeader className="space-y-2">
+                    <div className="h-6 w-1/2 bg-muted rounded" />
+                    <div className="h-4 w-3/4 bg-muted rounded" />
+                </CardHeader>
+                <CardContent>
+                    <div className="h-80 bg-muted rounded-xl" />
+                </CardContent>
+            </Card>
+        </BrandedPageShell>
+    )
 }
 
