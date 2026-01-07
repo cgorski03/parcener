@@ -1,0 +1,24 @@
+{
+    "items": [
+        {
+            "rawText": "Coffee Latte",
+            "interpreted": "Coffee Latte",
+            "price": 4.5,
+            "quantity": 1
+        },
+        {
+            "rawText": "Sandwich BLT",
+            "interpreted": "BLT Sandwich",
+            "price": 12.0,
+            "quantity": 1
+        }
+    ],
+    "subtotal": 16.5,
+    "tax": 1.32,
+    "tip": 3.0,
+    "total": 20.82,
+    "metadata": {
+        "restaurant": "Test Cafe",
+        "date": "2024-01-15"
+    }
+}

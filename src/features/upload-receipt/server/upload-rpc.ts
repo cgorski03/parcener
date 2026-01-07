@@ -14,7 +14,6 @@ export const uploadReceipt = createServerFn({ method: 'POST' })
     .inputValidator((data: FormData) => data)
     .handler(async ({ data, context }) => {
         const file = data.get('file') as File;
-
         try {
             if (!file) {
                 throw new Error('No file provided');
