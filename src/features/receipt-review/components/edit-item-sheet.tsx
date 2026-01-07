@@ -155,7 +155,8 @@ function ReceiptItemSheet(props: {
                                     </span>
                                     <Input
                                         id="price"
-                                        type="number"
+                                        type="text"
+                                        inputMode="decimal"
                                         step="0.01"
                                         min="0"
                                         value={priceInput}
@@ -175,7 +176,8 @@ function ReceiptItemSheet(props: {
                                 </Label>
                                 <Input
                                     id="quantity"
-                                    type="number"
+                                    type="text"
+                                    inputMode="decimal"
                                     step="0.01"
                                     min="0.00"
                                     value={quantity}
