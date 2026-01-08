@@ -42,11 +42,11 @@ export const useReceiptIsValid = (receiptId: string) =>
         queryKey: ReceiptQueryKeys.valid(receiptId),
         queryFn: async () => {
             const response = await getReceiptIsValidRpc({ data: receiptId })
-            if ('success' in response) {
-                return response.success
+            if (response.status === 'valid') {
+                return response.receipt
             }
-            // This is TERRIBLE handling lol
-            throw new Error(response.code)
+            // TODO REFACTOR
+            throw new Error('Error')
         },
         retry: false,
     })

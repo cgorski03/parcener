@@ -1,5 +1,5 @@
 import { createServerFn } from '@tanstack/react-start'
-import { getReceiptIsValid, getReceiptWithItems } from './get-receipt-service'
+import { getReceiptState, getReceiptWithItems } from './get-receipt-service'
 import { nameTransaction } from '@/shared/observability/server/sentry-middleware'
 import { protectedFunctionMiddleware } from '@/shared/auth/server/middleware'
 import { receiptIdSchema } from '@/shared/dto/dtos'
@@ -26,7 +26,7 @@ export const getReceiptIsValidRpc = createServerFn({ method: 'GET' })
     .inputValidator(receiptIdSchema)
     .handler(async ({ data: receiptId, context }) => {
         try {
-            return await getReceiptIsValid(context.db, receiptId, context.user.id)
+            return await getReceiptState(context.db, receiptId, context.user.id)
         } catch (error) {
             logger.error(error, SENTRY_EVENTS.RECEIPT.CHECK_VALIDITY, {
                 receiptId,

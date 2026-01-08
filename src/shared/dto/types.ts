@@ -27,7 +27,6 @@ export type FullRoomInfoDto = RoomDto & {
     claims: Claim[];
     members: RoomMemberDto[];
     receiptIsValid: boolean;
-    hostPaymentInformation: PaymentMethodPayToDto | null;
 }
 export type RecentRoomInfoDto = {
     joinedAt: string;

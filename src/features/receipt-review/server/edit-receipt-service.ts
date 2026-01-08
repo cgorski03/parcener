@@ -5,21 +5,10 @@ import {
     ReceiptItemDto,
     ReceiptTotalsDto,
 } from '@/shared/dto/types'
-import { getReceiptWithItems } from './get-receipt-service'
-import {
-    RECEIPT_PROCESSING_FAILED,
-    NOT_FOUND,
-    RECEIPT_PROCESSING,
-    NotFoundResponse,
-    ReceiptProcessingFailedResponse,
-    ReceiptProcessingResponse,
-    ReceiptGrandTotalMismatchResponse,
-    ReceiptSubtotalMismatchResponse,
-} from '@/shared/server/response-types'
+import { getReceiptState } from './get-receipt-service'
 import { DbTxType, DbType } from '@/shared/server/db'
 import { pruneExcessClaimsHelper, touchRoomFromReceipt } from '@/features/room/server/internal'
 import { receiptItemEntityToDtoHelper } from '@/shared/dto/mappers'
-import { isFailed, isProcessing, receiptNotFound } from '../lib/receipt-utils'
 import { calculateItemTotal, moneyValuesEqual } from '@/shared/lib/money-math'
 
 export function receiptItemOwnershipCheck(
@@ -133,51 +122,32 @@ export async function deleteReceiptItem(
 
 type FinalizeReceiptResponse =
     | { success: true }
-    | ReceiptSubtotalMismatchResponse
-    | ReceiptGrandTotalMismatchResponse
-    | ReceiptProcessingResponse
-    | ReceiptProcessingFailedResponse
-    | NotFoundResponse
+    | { success: false, error: 'invalid_receipt' }
+    | { success: false, error: 'checksum_failed' }
 
 export async function finalizeReceiptTotals(
     db: DbType,
     receiptTotals: ReceiptTotalsDto,
     userId: string,
 ): Promise<FinalizeReceiptResponse> {
-    // Truthfully, I don't know how I really want this behavior to be enforced.
-    // But, I don't think you should be able to have a receipt and have people splitting where
-    // the total is not equal to the sum of the items in the receipt
-    // this will have to do for now, and I think that I will figure out the implementation now
-    //
     // We are not trusting the client's calculated subtotal
-    if (!receiptTotals) return { error: true, code: 'NOT_FOUND' }
     const { receiptId, subtotal, tax, tip, grandTotal } = receiptTotals
+
     // Get the current reciept information
+    const receiptState = await getReceiptState(db, receiptId, userId)
 
-    const receiptInformation = await getReceiptWithItems(db, receiptId, userId)
-
-    if (receiptNotFound(receiptInformation) || !receiptInformation) {
-        // Not found
-        return NOT_FOUND
+    if (receiptState.status === 'processing' || receiptState.status === 'failed' || receiptState.status == 'not_found') {
+        return { success: false, error: 'invalid_receipt' }
     }
 
-    if (isFailed(receiptInformation)) {
-        return RECEIPT_PROCESSING_FAILED(receiptInformation.attempts)
-    }
-
-    if (isProcessing(receiptInformation)) {
-        return RECEIPT_PROCESSING
-    }
-
+    const receiptEntity = receiptState.receipt;
     // We have a successful receipt
-    const calculatedSubtotal = calculateItemTotal(receiptInformation.items)
+    const calculatedSubtotal = calculateItemTotal(receiptEntity.items)
 
     if (!moneyValuesEqual(calculatedSubtotal, subtotal)) {
         return {
-            error: true,
-            code: 'SUBTOTAL_MISMATCH',
-            clientSubtotal: subtotal,
-            serverSubtotal: calculatedSubtotal,
+            success: false,
+            error: 'checksum_failed'
         }
     }
     const calculatedGrandTotal = subtotal + tip + tax
@@ -186,10 +156,8 @@ export async function finalizeReceiptTotals(
     // If it exists. The client is also free to just submit a request and have the server do the math
     if (!moneyValuesEqual(calculatedGrandTotal, grandTotal)) {
         return {
-            error: true,
-            code: 'GRANDTOTAL_MISMATCH',
-            clientGrandTotal: grandTotal,
-            serverGrandTotal: calculatedGrandTotal,
+            success: false,
+            error: 'checksum_failed'
         }
     }
 

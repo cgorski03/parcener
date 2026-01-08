@@ -8,4 +8,4 @@
  * - features/room (getReceiptIsValid)
  */
 
-export { getReceiptIsValid } from './get-receipt-service'
+export { getReceiptState } from './get-receipt-service'

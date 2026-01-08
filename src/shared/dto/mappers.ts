@@ -67,7 +67,7 @@ export function mapPaymentMethodToDto(paymentMethod: PaymentMethod): PaymentMeth
     }
 }
 
-function mapPaymentMethodToPayToDto(paymentMethod: PaymentMethod): PaymentMethodPayToDto | null {
+export function mapPaymentMethodToPayToDto(paymentMethod: PaymentMethod): PaymentMethodPayToDto | null {
     if (!paymentMethod) return null;
     return {
         type: paymentMethod.type,

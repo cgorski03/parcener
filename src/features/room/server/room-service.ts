@@ -1,11 +1,11 @@
 import { eq, and } from 'drizzle-orm'
 import { DbTxType, DbType, room, roomMember } from '@/shared/server/db'
-import { getReceiptIsValid } from '@/features/receipt-review/server/internal'
-import { ROOM_EXISTS_ERROR } from '@/shared/server/response-types'
-import type { RoomMemberDto } from '@/shared/dto/types'
+import { getReceiptState } from '@/features/receipt-review/server/internal'
+import type { RoomDto, RoomMemberDto } from '@/shared/dto/types'
 import { getRoomMembership } from './room-member-service'
 import { RoomIdentity } from '@/shared/auth/server/room-identity'
 import { getPaymentMethodSecure } from '@/features/payment-methods/server/internal'
+import { mapPaymentMethodToPayToDto } from '@/shared/dto/mappers'
 
 export type CreateRoomRequest = {
     title: string
@@ -13,22 +13,27 @@ export type CreateRoomRequest = {
     userId: string
 }
 
+export type CreateRoomResponseType = { success: true, room: RoomDto } |
+{ success: false, error: 'receipt_not_valid' } |
+{ success: false, error: 'invalid_payment_method' } |
+{ success: false, error: 'room_exists' };
+
 export async function createRoom(
     db: DbType,
     receiptId: string,
     paymentMethodId: string | null,
     userId: string,
-) {
-    const validResponse = await getReceiptIsValid(db, receiptId, userId)
-    if (!('success' in validResponse)) {
-        return validResponse
+): Promise<CreateRoomResponseType> {
+    const response = await getReceiptState(db, receiptId, userId)
+    if (response.status !== 'valid') {
+        return { success: false, error: 'receipt_not_valid' }
     }
 
     let verifiedPaymentInfo = null
     if (paymentMethodId) {
         const method = await getPaymentMethodSecure(db, userId, paymentMethodId)
         if (!method) {
-            return { success: false, error: 'Invalid payment method' }
+            return { success: false, error: 'invalid_payment_method' }
         }
         verifiedPaymentInfo = method
     }
@@ -40,7 +45,7 @@ export async function createRoom(
         })
 
         if (existingRoom) {
-            return ROOM_EXISTS_ERROR
+            return { success: false, error: 'room_exists' }
         }
 
         // B. Create the Room
@@ -48,7 +53,7 @@ export async function createRoom(
             .insert(room)
             .values({
                 receiptId,
-                title: validResponse.receipt?.title ?? 'Untitled Room',
+                title: response.receipt?.title ?? 'Untitled Room',
                 createdBy: userId,
                 hostPaymentMethodId: verifiedPaymentInfo
                     ? verifiedPaymentInfo.id
@@ -56,7 +61,16 @@ export async function createRoom(
             })
             .returning()
 
-        return { success: true, room: newRoom }
+        const { id, hostPaymentMethodId, ...rest } = newRoom;
+
+
+        return {
+            success: true, room: {
+                roomId: id,
+                hostPaymentInformation: verifiedPaymentInfo ? mapPaymentMethodToPayToDto(verifiedPaymentInfo) : null,
+                ...rest
+            }
+        }
     })
 }
 

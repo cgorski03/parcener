@@ -91,6 +91,7 @@ export const roomSchema = roomObjSchema.extend({
     createdBy: userIdSchema,
     createdAt: z.date(),
     updatedAt: z.date(),
+    hostPaymentInformation: paymentMethodToPaySchema.nullable(),
 })
 
 export const baseRoomMemberSchema = z.object({

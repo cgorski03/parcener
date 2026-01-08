@@ -27,3 +27,4 @@ export function isFailed(
 export function isComplete(receipt: GetReceiptResponse): receipt is ReceiptDto {
     return receipt !== null && 'id' in receipt
 }
+

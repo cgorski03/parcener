@@ -156,7 +156,7 @@ describe('payment-method-service', () => {
             const user1 = await createTestUser()
             const user2 = await createTestUser()
 
-            const user1Method = await createUserPaymentMethod(testDb, user1, {
+            await createUserPaymentMethod(testDb, user1, {
                 type: 'venmo',
                 handle: '@user1',
                 isDefault: false,

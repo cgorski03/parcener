@@ -2,16 +2,12 @@ import {
     GetReceiptResponse,
     RECEIPT_PROCESSING,
     RECEIPT_PROCESSING_FAILED,
-    ReceiptGrandTotalMismatchResponse,
-    ReceiptProcessingFailedResponse,
-    ReceiptProcessingResponse,
-    ReceiptSubtotalMismatchResponse,
 } from './responses'
 import { DbType, receipt } from '@/shared/server/db'
 import { and, eq } from 'drizzle-orm'
 import type { ReceiptDto } from '@/shared/dto/types'
 import { receiptWithItemsToDto } from '@/shared/dto/mappers'
-import { NOT_FOUND, NotFoundResponse } from '@/shared/server/response-types'
+import { NOT_FOUND } from '@/shared/server/response-types'
 import { isFailed, isProcessing, receiptNotFound } from '../lib/receipt-utils'
 import { validateReceiptCalculations } from '@/shared/lib/money-math'
 
@@ -63,55 +59,52 @@ export async function getReceiptWithItems(
     return receiptDto;
 }
 
-export type GetReceiptIsValidResponse =
-    | { success: true; receipt: ReceiptDto }
-    | NotFoundResponse
-    | ReceiptProcessingResponse
-    | ReceiptProcessingFailedResponse
-    | ReceiptSubtotalMismatchResponse
-    | ReceiptGrandTotalMismatchResponse
+export type ReceiptState =
+    | { status: 'valid'; receipt: ReceiptDto }
+    | { status: 'not_found' }
+    | { status: 'processing' }
+    | { status: 'failed'; attempts: number }
+    | { status: 'subtotal_mismatch'; receipt: ReceiptDto; clientSubtotal: number; serverSubtotal: number }
+    | { status: 'grandtotal_mismatch'; receipt: ReceiptDto; clientGrandTotal: number; serverGrandTotal: number }
 
-export async function getReceiptIsValid(
+export async function getReceiptState(
     db: DbType,
     receiptId: string,
     userId: string,
-): Promise<GetReceiptIsValidResponse> {
-    // Will return true if a receipt is valid
-    const receiptInformation = await getReceiptWithItems(db, receiptId, userId)
+): Promise<ReceiptState> {
+    const receipt = await getReceiptWithItems(db, receiptId, userId)
 
-    if (receiptNotFound(receiptInformation) || !receiptInformation) {
-        // Not found
-        return NOT_FOUND
+    if (receiptNotFound(receipt) || !receipt) {
+        return { status: 'not_found' }
     }
-    if (isFailed(receiptInformation)) {
-        return RECEIPT_PROCESSING_FAILED(receiptInformation.attempts)
+    if (isFailed(receipt)) {
+        return { status: 'failed', attempts: receipt.attempts }
     }
-    if (isProcessing(receiptInformation)) {
-        return RECEIPT_PROCESSING
+    if (isProcessing(receipt)) {
+        return { status: 'processing' }
     }
-    const validationResult = validateReceiptCalculations(receiptInformation);
 
-    if (!validationResult.isValid) {
-        // Map validation error to API response format
-        const { error } = validationResult;
-        if (error.code === "SUBTOTAL_MISMATCH") {
+    const validation = validateReceiptCalculations(receipt)
+
+    if (!validation.isValid) {
+        const { error } = validation
+        if (error.code === 'SUBTOTAL_MISMATCH') {
             return {
-                error: true,
-                code: error.code,
+                status: 'subtotal_mismatch',
+                receipt,
                 clientSubtotal: error.clientSubtotal,
                 serverSubtotal: error.serverSubtotal,
-            };
-        } else {
-            return {
-                error: true,
-                code: error.code,
-                clientGrandTotal: error.clientGrandTotal,
-                serverGrandTotal: error.serverGrandTotal,
-            };
+            }
+        }
+        return {
+            status: 'grandtotal_mismatch',
+            receipt,
+            clientGrandTotal: error.clientGrandTotal,
+            serverGrandTotal: error.serverGrandTotal,
         }
     }
 
-    return { success: true, receipt: receiptInformation };
+    return { status: 'valid', receipt }
 }
 
 

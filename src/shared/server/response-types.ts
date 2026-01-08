@@ -34,12 +34,3 @@ export const RECEIPT_PROCESSING_FAILED = (
     attempts,
 })
 
-export const ROOM_CREATE_ERROR: RoomCreateError = {
-    error: true,
-    code: 'ROOM_NOT_CREATED',
-}
-
-export const ROOM_EXISTS_ERROR: RoomCreateExistsError = {
-    error: true,
-    code: 'ROOM_EXISTS',
-}

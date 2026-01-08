@@ -96,7 +96,7 @@ export function ReceiptEditorView({ initialReceipt }: ReceiptEditorProps) {
             setShowCreateRoomSheet(false)
             navigate({
                 to: '/receipt/parce/$roomId',
-                params: { roomId: response.room.id },
+                params: { roomId: response.room.roomId },
                 search: { view: 'items' }
             })
         }
