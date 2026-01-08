@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { testDb } from '@/test/setup';
 import { createTestUser } from '@/test/factories/user';
-import { paymentMethod } from '@/shared/server/db/schema';
+import { paymentMethod, room as roomTable } from '@/shared/server/db/schema';
 import { eq } from 'drizzle-orm';
 import {
   getUserPaymentMethods,
@@ -9,6 +9,8 @@ import {
   deleteUserPaymentMethod,
   getPaymentMethodSecure,
 } from './payment-method-service';
+import { createSuccessfulReceipt } from '@/test/factories/receipt';
+import { createTestRoom } from '@/test/factories/room';
 
 describe('payment-method-service', () => {
   describe('getUserPaymentMethods', () => {
@@ -175,6 +177,33 @@ describe('payment-method-service', () => {
 
       expect(user1Methods).toHaveLength(1);
       expect(user2Methods).toHaveLength(1);
+    });
+
+    it('sets room payment method to null when deleted', async () => {
+      const user = await createTestUser();
+      const { receipt } = await createSuccessfulReceipt(user.id, [
+        { interpretedText: 'Item 1', price: 10 },
+      ]);
+      const createdRoom = await createTestRoom(receipt.id, user.id);
+
+      const method = await createUserPaymentMethod(testDb, user, {
+        type: 'venmo',
+        handle: '@test',
+        isDefault: false,
+      });
+
+      await testDb
+        .update(roomTable)
+        .set({ hostPaymentMethodId: method.paymentMethodId })
+        .where(eq(roomTable.id, createdRoom.id));
+
+      await deleteUserPaymentMethod(testDb, user, method.paymentMethodId);
+
+      const updatedRoom = await testDb.query.room.findFirst({
+        where: (room, { eq }) => eq(room.id, createdRoom.id),
+      });
+
+      expect(updatedRoom?.hostPaymentMethodId).toBeNull();
     });
   });
 
