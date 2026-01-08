@@ -25,7 +25,7 @@ export async function createTestUser(overrides: UserOverrides = {}) {
 }
 
 function generateTestUserId(): string {
-  const timestamp = Date.now().toString().padStart(12, '0');
-  const randomPart = crypto.randomUUID().split('-')[0];
-  return `${timestamp.substring(0, 8)}${timestamp.substring(8)}${randomPart}-${timestamp.substring(4, 6)}${timestamp.substring(6, 8)}-${timestamp.substring(8, 12)}-${randomPart}${randomPart.substring(0, 3)}${randomPart.substring(3)}-${timestamp.substring(0, 12)}`;
+  const timestamp = Date.now().toString().slice(-12).padStart(12, '0');
+  const randomPart = crypto.randomUUID().replace(/-/g, '');
+  return `${timestamp}${randomPart.substring(0, 20)}`;
 }

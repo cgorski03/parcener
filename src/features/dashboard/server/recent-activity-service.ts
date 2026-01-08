@@ -20,27 +20,35 @@ export async function getRecentRooms(
   db: DbType,
   user: AppUser,
 ): Promise<RecentRoomInfoDto[]> {
-  const roomMembers = await db
-    .select({
-      joinedAt: roomMember.joinedAt,
+  const roomMembers = await db.query.roomMember.findMany({
+    where: eq(roomMember.userId, user.id),
+    orderBy: [desc(roomMember.joinedAt)],
+    limit: 5,
+    with: {
       room: {
-        roomId: room.id,
-        receiptId: room.receiptId,
-        title: room.title,
-        createdBy: room.createdBy,
-        createdAt: room.createdAt,
-        updatedAt: room.updatedAt,
+        with: {
+          hostPaymentMethod: true,
+        },
       },
-    })
-    .from(roomMember)
-    .innerJoin(room, eq(roomMember.roomId, room.id))
-    .where(eq(roomMember.userId, user.id))
-    .orderBy(desc(roomMember.joinedAt))
-    .limit(5);
+    },
+  });
 
   const result = roomMembers.map(({ joinedAt, room }) => ({
     joinedAt: joinedAt.toISOString(),
-    room: roomSchema.parse(room),
+    room: roomSchema.parse({
+      roomId: room.id,
+      receiptId: room.receiptId,
+      title: room.title,
+      createdBy: room.createdBy,
+      createdAt: room.createdAt,
+      updatedAt: room.updatedAt,
+      hostPaymentInformation: room.hostPaymentMethod
+        ? {
+            type: room.hostPaymentMethod.type,
+            handle: room.hostPaymentMethod.handle,
+          }
+        : null,
+    }),
   }));
   return result;
 }
