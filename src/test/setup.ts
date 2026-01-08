@@ -12,7 +12,9 @@ beforeAll(() => {
 });
 
 // Create test database connection
-const client = postgres(env.HYPERDRIVE.connectionString);
+const client = postgres(env.HYPERDRIVE.connectionString, {
+  onnotice: () => {},
+});
 export const testDb = drizzle(client, {
   schema: { ...schema, ...authSchema },
 });
