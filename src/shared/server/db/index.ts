@@ -1,23 +1,21 @@
-import { drizzle, PostgresJsQueryResultHKT } from 'drizzle-orm/postgres-js'
-import postgres from 'postgres'
-import * as schema from './schema'
-import * as authSchema from './auth-schema'
-import { ExtractTablesWithRelations } from 'drizzle-orm'
-import { PgTransaction } from 'drizzle-orm/pg-core'
-import { createServerOnlyFn } from '@tanstack/react-start'
-
-
+import { drizzle, PostgresJsQueryResultHKT } from 'drizzle-orm/postgres-js';
+import postgres from 'postgres';
+import * as schema from './schema';
+import * as authSchema from './auth-schema';
+import { ExtractTablesWithRelations } from 'drizzle-orm';
+import { PgTransaction } from 'drizzle-orm/pg-core';
+import { createServerOnlyFn } from '@tanstack/react-start';
 
 type FullSchema = typeof schema & typeof authSchema;
 
 // EXPORTS
 
 export const getDb = createServerOnlyFn((env: any) => {
-    const client = postgres(env.HYPERDRIVE.connectionString)
+  const client = postgres(env.HYPERDRIVE.connectionString);
 
-    return drizzle(client, {
-        schema: { ...schema, ...authSchema },
-    })
+  return drizzle(client, {
+    schema: { ...schema, ...authSchema },
+  });
 });
 
 export * from './auth-schema';
@@ -30,7 +28,7 @@ export type DbType = ReturnType<typeof getDb>;
 
 // 3. Define the Transaction Type
 export type DbTxType = PgTransaction<
-    PostgresJsQueryResultHKT,
-    FullSchema,
-    ExtractTablesWithRelations<FullSchema>
+  PostgresJsQueryResultHKT,
+  FullSchema,
+  ExtractTablesWithRelations<FullSchema>
 >;

@@ -8,106 +8,106 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from './routes/__root'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as AuthedRouteRouteImport } from './routes/_authed/route'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as AuthedUploadRouteImport } from './routes/_authed/upload'
-import { Route as AuthedAccountRouteImport } from './routes/_authed/account'
-import { Route as AuthedAcceptInviteRouteImport } from './routes/_authed/acceptInvite'
-import { Route as ReceiptParceRouteRouteImport } from './routes/receipt/parce/route'
-import { Route as ReceiptParceRoomIdRouteImport } from './routes/receipt/parce/$roomId'
-import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
-import { Route as AuthedReceiptReviewReceiptIdRouteImport } from './routes/_authed/receipt.review.$receiptId'
+import { Route as rootRouteImport } from './routes/__root';
+import { Route as LoginRouteImport } from './routes/login';
+import { Route as AuthedRouteRouteImport } from './routes/_authed/route';
+import { Route as IndexRouteImport } from './routes/index';
+import { Route as AuthedUploadRouteImport } from './routes/_authed/upload';
+import { Route as AuthedAccountRouteImport } from './routes/_authed/account';
+import { Route as AuthedAcceptInviteRouteImport } from './routes/_authed/acceptInvite';
+import { Route as ReceiptParceRouteRouteImport } from './routes/receipt/parce/route';
+import { Route as ReceiptParceRoomIdRouteImport } from './routes/receipt/parce/$roomId';
+import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$';
+import { Route as AuthedReceiptReviewReceiptIdRouteImport } from './routes/_authed/receipt.review.$receiptId';
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const AuthedRouteRoute = AuthedRouteRouteImport.update({
   id: '/_authed',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const AuthedUploadRoute = AuthedUploadRouteImport.update({
   id: '/upload',
   path: '/upload',
   getParentRoute: () => AuthedRouteRoute,
-} as any)
+} as any);
 const AuthedAccountRoute = AuthedAccountRouteImport.update({
   id: '/account',
   path: '/account',
   getParentRoute: () => AuthedRouteRoute,
-} as any)
+} as any);
 const AuthedAcceptInviteRoute = AuthedAcceptInviteRouteImport.update({
   id: '/acceptInvite',
   path: '/acceptInvite',
   getParentRoute: () => AuthedRouteRoute,
-} as any)
+} as any);
 const ReceiptParceRouteRoute = ReceiptParceRouteRouteImport.update({
   id: '/receipt/parce',
   path: '/receipt/parce',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const ReceiptParceRoomIdRoute = ReceiptParceRoomIdRouteImport.update({
   id: '/$roomId',
   path: '/$roomId',
   getParentRoute: () => ReceiptParceRouteRoute,
-} as any)
+} as any);
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const AuthedReceiptReviewReceiptIdRoute =
   AuthedReceiptReviewReceiptIdRouteImport.update({
     id: '/receipt/review/$receiptId',
     path: '/receipt/review/$receiptId',
     getParentRoute: () => AuthedRouteRoute,
-  } as any)
+  } as any);
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/login': typeof LoginRoute
-  '/receipt/parce': typeof ReceiptParceRouteRouteWithChildren
-  '/acceptInvite': typeof AuthedAcceptInviteRoute
-  '/account': typeof AuthedAccountRoute
-  '/upload': typeof AuthedUploadRoute
-  '/api/auth/$': typeof ApiAuthSplatRoute
-  '/receipt/parce/$roomId': typeof ReceiptParceRoomIdRoute
-  '/receipt/review/$receiptId': typeof AuthedReceiptReviewReceiptIdRoute
+  '/': typeof IndexRoute;
+  '/login': typeof LoginRoute;
+  '/receipt/parce': typeof ReceiptParceRouteRouteWithChildren;
+  '/acceptInvite': typeof AuthedAcceptInviteRoute;
+  '/account': typeof AuthedAccountRoute;
+  '/upload': typeof AuthedUploadRoute;
+  '/api/auth/$': typeof ApiAuthSplatRoute;
+  '/receipt/parce/$roomId': typeof ReceiptParceRoomIdRoute;
+  '/receipt/review/$receiptId': typeof AuthedReceiptReviewReceiptIdRoute;
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/login': typeof LoginRoute
-  '/receipt/parce': typeof ReceiptParceRouteRouteWithChildren
-  '/acceptInvite': typeof AuthedAcceptInviteRoute
-  '/account': typeof AuthedAccountRoute
-  '/upload': typeof AuthedUploadRoute
-  '/api/auth/$': typeof ApiAuthSplatRoute
-  '/receipt/parce/$roomId': typeof ReceiptParceRoomIdRoute
-  '/receipt/review/$receiptId': typeof AuthedReceiptReviewReceiptIdRoute
+  '/': typeof IndexRoute;
+  '/login': typeof LoginRoute;
+  '/receipt/parce': typeof ReceiptParceRouteRouteWithChildren;
+  '/acceptInvite': typeof AuthedAcceptInviteRoute;
+  '/account': typeof AuthedAccountRoute;
+  '/upload': typeof AuthedUploadRoute;
+  '/api/auth/$': typeof ApiAuthSplatRoute;
+  '/receipt/parce/$roomId': typeof ReceiptParceRoomIdRoute;
+  '/receipt/review/$receiptId': typeof AuthedReceiptReviewReceiptIdRoute;
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/_authed': typeof AuthedRouteRouteWithChildren
-  '/login': typeof LoginRoute
-  '/receipt/parce': typeof ReceiptParceRouteRouteWithChildren
-  '/_authed/acceptInvite': typeof AuthedAcceptInviteRoute
-  '/_authed/account': typeof AuthedAccountRoute
-  '/_authed/upload': typeof AuthedUploadRoute
-  '/api/auth/$': typeof ApiAuthSplatRoute
-  '/receipt/parce/$roomId': typeof ReceiptParceRoomIdRoute
-  '/_authed/receipt/review/$receiptId': typeof AuthedReceiptReviewReceiptIdRoute
+  __root__: typeof rootRouteImport;
+  '/': typeof IndexRoute;
+  '/_authed': typeof AuthedRouteRouteWithChildren;
+  '/login': typeof LoginRoute;
+  '/receipt/parce': typeof ReceiptParceRouteRouteWithChildren;
+  '/_authed/acceptInvite': typeof AuthedAcceptInviteRoute;
+  '/_authed/account': typeof AuthedAccountRoute;
+  '/_authed/upload': typeof AuthedUploadRoute;
+  '/api/auth/$': typeof ApiAuthSplatRoute;
+  '/receipt/parce/$roomId': typeof ReceiptParceRoomIdRoute;
+  '/_authed/receipt/review/$receiptId': typeof AuthedReceiptReviewReceiptIdRoute;
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath
+  fileRoutesByFullPath: FileRoutesByFullPath;
   fullPaths:
     | '/'
     | '/login'
@@ -117,8 +117,8 @@ export interface FileRouteTypes {
     | '/upload'
     | '/api/auth/$'
     | '/receipt/parce/$roomId'
-    | '/receipt/review/$receiptId'
-  fileRoutesByTo: FileRoutesByTo
+    | '/receipt/review/$receiptId';
+  fileRoutesByTo: FileRoutesByTo;
   to:
     | '/'
     | '/login'
@@ -128,7 +128,7 @@ export interface FileRouteTypes {
     | '/upload'
     | '/api/auth/$'
     | '/receipt/parce/$roomId'
-    | '/receipt/review/$receiptId'
+    | '/receipt/review/$receiptId';
   id:
     | '__root__'
     | '/'
@@ -140,97 +140,97 @@ export interface FileRouteTypes {
     | '/_authed/upload'
     | '/api/auth/$'
     | '/receipt/parce/$roomId'
-    | '/_authed/receipt/review/$receiptId'
-  fileRoutesById: FileRoutesById
+    | '/_authed/receipt/review/$receiptId';
+  fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  AuthedRouteRoute: typeof AuthedRouteRouteWithChildren
-  LoginRoute: typeof LoginRoute
-  ReceiptParceRouteRoute: typeof ReceiptParceRouteRouteWithChildren
-  ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  IndexRoute: typeof IndexRoute;
+  AuthedRouteRoute: typeof AuthedRouteRouteWithChildren;
+  LoginRoute: typeof LoginRoute;
+  ReceiptParceRouteRoute: typeof ReceiptParceRouteRouteWithChildren;
+  ApiAuthSplatRoute: typeof ApiAuthSplatRoute;
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
     '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+      id: '/login';
+      path: '/login';
+      fullPath: '/login';
+      preLoaderRoute: typeof LoginRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     '/_authed': {
-      id: '/_authed'
-      path: ''
-      fullPath: ''
-      preLoaderRoute: typeof AuthedRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+      id: '/_authed';
+      path: '';
+      fullPath: '';
+      preLoaderRoute: typeof AuthedRouteRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+      id: '/';
+      path: '/';
+      fullPath: '/';
+      preLoaderRoute: typeof IndexRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     '/_authed/upload': {
-      id: '/_authed/upload'
-      path: '/upload'
-      fullPath: '/upload'
-      preLoaderRoute: typeof AuthedUploadRouteImport
-      parentRoute: typeof AuthedRouteRoute
-    }
+      id: '/_authed/upload';
+      path: '/upload';
+      fullPath: '/upload';
+      preLoaderRoute: typeof AuthedUploadRouteImport;
+      parentRoute: typeof AuthedRouteRoute;
+    };
     '/_authed/account': {
-      id: '/_authed/account'
-      path: '/account'
-      fullPath: '/account'
-      preLoaderRoute: typeof AuthedAccountRouteImport
-      parentRoute: typeof AuthedRouteRoute
-    }
+      id: '/_authed/account';
+      path: '/account';
+      fullPath: '/account';
+      preLoaderRoute: typeof AuthedAccountRouteImport;
+      parentRoute: typeof AuthedRouteRoute;
+    };
     '/_authed/acceptInvite': {
-      id: '/_authed/acceptInvite'
-      path: '/acceptInvite'
-      fullPath: '/acceptInvite'
-      preLoaderRoute: typeof AuthedAcceptInviteRouteImport
-      parentRoute: typeof AuthedRouteRoute
-    }
+      id: '/_authed/acceptInvite';
+      path: '/acceptInvite';
+      fullPath: '/acceptInvite';
+      preLoaderRoute: typeof AuthedAcceptInviteRouteImport;
+      parentRoute: typeof AuthedRouteRoute;
+    };
     '/receipt/parce': {
-      id: '/receipt/parce'
-      path: '/receipt/parce'
-      fullPath: '/receipt/parce'
-      preLoaderRoute: typeof ReceiptParceRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+      id: '/receipt/parce';
+      path: '/receipt/parce';
+      fullPath: '/receipt/parce';
+      preLoaderRoute: typeof ReceiptParceRouteRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     '/receipt/parce/$roomId': {
-      id: '/receipt/parce/$roomId'
-      path: '/$roomId'
-      fullPath: '/receipt/parce/$roomId'
-      preLoaderRoute: typeof ReceiptParceRoomIdRouteImport
-      parentRoute: typeof ReceiptParceRouteRoute
-    }
+      id: '/receipt/parce/$roomId';
+      path: '/$roomId';
+      fullPath: '/receipt/parce/$roomId';
+      preLoaderRoute: typeof ReceiptParceRoomIdRouteImport;
+      parentRoute: typeof ReceiptParceRouteRoute;
+    };
     '/api/auth/$': {
-      id: '/api/auth/$'
-      path: '/api/auth/$'
-      fullPath: '/api/auth/$'
-      preLoaderRoute: typeof ApiAuthSplatRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+      id: '/api/auth/$';
+      path: '/api/auth/$';
+      fullPath: '/api/auth/$';
+      preLoaderRoute: typeof ApiAuthSplatRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     '/_authed/receipt/review/$receiptId': {
-      id: '/_authed/receipt/review/$receiptId'
-      path: '/receipt/review/$receiptId'
-      fullPath: '/receipt/review/$receiptId'
-      preLoaderRoute: typeof AuthedReceiptReviewReceiptIdRouteImport
-      parentRoute: typeof AuthedRouteRoute
-    }
+      id: '/_authed/receipt/review/$receiptId';
+      path: '/receipt/review/$receiptId';
+      fullPath: '/receipt/review/$receiptId';
+      preLoaderRoute: typeof AuthedReceiptReviewReceiptIdRouteImport;
+      parentRoute: typeof AuthedRouteRoute;
+    };
   }
 }
 
 interface AuthedRouteRouteChildren {
-  AuthedAcceptInviteRoute: typeof AuthedAcceptInviteRoute
-  AuthedAccountRoute: typeof AuthedAccountRoute
-  AuthedUploadRoute: typeof AuthedUploadRoute
-  AuthedReceiptReviewReceiptIdRoute: typeof AuthedReceiptReviewReceiptIdRoute
+  AuthedAcceptInviteRoute: typeof AuthedAcceptInviteRoute;
+  AuthedAccountRoute: typeof AuthedAccountRoute;
+  AuthedUploadRoute: typeof AuthedUploadRoute;
+  AuthedReceiptReviewReceiptIdRoute: typeof AuthedReceiptReviewReceiptIdRoute;
 }
 
 const AuthedRouteRouteChildren: AuthedRouteRouteChildren = {
@@ -238,22 +238,22 @@ const AuthedRouteRouteChildren: AuthedRouteRouteChildren = {
   AuthedAccountRoute: AuthedAccountRoute,
   AuthedUploadRoute: AuthedUploadRoute,
   AuthedReceiptReviewReceiptIdRoute: AuthedReceiptReviewReceiptIdRoute,
-}
+};
 
 const AuthedRouteRouteWithChildren = AuthedRouteRoute._addFileChildren(
   AuthedRouteRouteChildren,
-)
+);
 
 interface ReceiptParceRouteRouteChildren {
-  ReceiptParceRoomIdRoute: typeof ReceiptParceRoomIdRoute
+  ReceiptParceRoomIdRoute: typeof ReceiptParceRoomIdRoute;
 }
 
 const ReceiptParceRouteRouteChildren: ReceiptParceRouteRouteChildren = {
   ReceiptParceRoomIdRoute: ReceiptParceRoomIdRoute,
-}
+};
 
 const ReceiptParceRouteRouteWithChildren =
-  ReceiptParceRouteRoute._addFileChildren(ReceiptParceRouteRouteChildren)
+  ReceiptParceRouteRoute._addFileChildren(ReceiptParceRouteRouteChildren);
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -261,16 +261,16 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   ReceiptParceRouteRoute: ReceiptParceRouteRouteWithChildren,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
-}
+};
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>()
+  ._addFileTypes<FileRouteTypes>();
 
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
+import type { getRouter } from './router.tsx';
+import type { createStart } from '@tanstack/react-start';
 declare module '@tanstack/react-start' {
   interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
+    ssr: true;
+    router: Awaited<ReturnType<typeof getRouter>>;
   }
 }

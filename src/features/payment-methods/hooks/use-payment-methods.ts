@@ -1,108 +1,125 @@
-import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
-import { createPaymentMethod, deletePaymentMethod, getPaymentMethods } from "../server/payment-methods-rpc";
-import { logger } from "@/shared/observability/logger";
-import { SENTRY_EVENTS } from "@/shared/observability/sentry-events";
-import { queryOptions } from "@tanstack/react-query";
-import type { CreatePaymentMethodRequest, PaymentMethodDto } from "@/shared/dto/types";
+import {
+  useMutation,
+  useQueryClient,
+  useSuspenseQuery,
+} from '@tanstack/react-query';
+import {
+  createPaymentMethod,
+  deletePaymentMethod,
+  getPaymentMethods,
+} from '../server/payment-methods-rpc';
+import { logger } from '@/shared/observability/logger';
+import { SENTRY_EVENTS } from '@/shared/observability/sentry-events';
+import { queryOptions } from '@tanstack/react-query';
+import type {
+  CreatePaymentMethodRequest,
+  PaymentMethodDto,
+} from '@/shared/dto/types';
 
 export const PaymentQueryKeys = {
-    all: ["paymentMethods"] as const,
+  all: ['paymentMethods'] as const,
 };
 
-export const paymentMethodsOptions = (enabled?: boolean) => queryOptions({
+export const paymentMethodsOptions = (enabled?: boolean) =>
+  queryOptions({
     queryKey: PaymentQueryKeys.all,
     queryFn: async () => {
-        try {
-            return await getPaymentMethods();
-        } catch (error) {
-            logger.error(error, SENTRY_EVENTS.ACCOUNT.PAYMENT_METHOD.GET);
-            throw error;
-        }
+      try {
+        return await getPaymentMethods();
+      } catch (error) {
+        logger.error(error, SENTRY_EVENTS.ACCOUNT.PAYMENT_METHOD.GET);
+        throw error;
+      }
     },
     staleTime: 1000 * 60 * 10,
     refetchOnWindowFocus: false,
     enabled: enabled ?? true,
-});
+  });
 /**
  * Hook to fetch all payment methods for the current user
  */
 export const usePaymentMethodsSuspense = () => {
-    const { data, ...rest } = useSuspenseQuery(paymentMethodsOptions());
+  const { data, ...rest } = useSuspenseQuery(paymentMethodsOptions());
 
-    // Since data is guaranteed defined, logic is cleaner
-    const defaultPaymentMethod = data.find((pm) => pm.isDefault) || data[0];
+  // Since data is guaranteed defined, logic is cleaner
+  const defaultPaymentMethod = data.find((pm) => pm.isDefault) || data[0];
 
-    return {
-        data,
-        defaultPaymentMethod,
-        ...rest,
-    };
+  return {
+    data,
+    defaultPaymentMethod,
+    ...rest,
+  };
 };
 
 export const useDefaultPaymentMethod = () => {
-    const { data: paymentMethods, ...rest } = useSuspenseQuery(
-        paymentMethodsOptions(),
-    );
-    const defaultPaymentMethod =
-        paymentMethods.find((pm) => pm.isDefault) || paymentMethods[0] || null;
+  const { data: paymentMethods, ...rest } = useSuspenseQuery(
+    paymentMethodsOptions(),
+  );
+  const defaultPaymentMethod =
+    paymentMethods.find((pm) => pm.isDefault) || paymentMethods[0] || null;
 
-    return {
-        defaultPaymentMethod,
-        ...rest,
-    };
+  return {
+    defaultPaymentMethod,
+    ...rest,
+  };
 };
 /**
  * Hook to create a new payment method
  */
 export const useCreatePaymentMethod = () => {
-    const queryClient = useQueryClient();
+  const queryClient = useQueryClient();
 
-    return useMutation({
-        mutationFn: async (data: CreatePaymentMethodRequest) => {
-            return await createPaymentMethod({ data });
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: PaymentQueryKeys.all });
-        },
-        onError: (error) => {
-            logger.error(error, SENTRY_EVENTS.ACCOUNT.PAYMENT_METHOD.CREATE);
-        },
-    });
+  return useMutation({
+    mutationFn: async (data: CreatePaymentMethodRequest) => {
+      return await createPaymentMethod({ data });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: PaymentQueryKeys.all });
+    },
+    onError: (error) => {
+      logger.error(error, SENTRY_EVENTS.ACCOUNT.PAYMENT_METHOD.CREATE);
+    },
+  });
 };
 
 /**
  * Hook to delete a payment method
  */
 export const useDeletePaymentMethod = () => {
-    const queryClient = useQueryClient();
+  const queryClient = useQueryClient();
 
-    return useMutation({
-        mutationFn: async (paymentMethodId: string) => {
-            return await deletePaymentMethod({ data: { paymentMethodId } });
-        },
-        onMutate: async (deletedId) => {
-            // Optimistic Update: Remove the item from UI immediately
-            await queryClient.cancelQueries({ queryKey: PaymentQueryKeys.all });
-            const previousMethods = queryClient.getQueryData<PaymentMethodDto[]>(PaymentQueryKeys.all);
+  return useMutation({
+    mutationFn: async (paymentMethodId: string) => {
+      return await deletePaymentMethod({ data: { paymentMethodId } });
+    },
+    onMutate: async (deletedId) => {
+      // Optimistic Update: Remove the item from UI immediately
+      await queryClient.cancelQueries({ queryKey: PaymentQueryKeys.all });
+      const previousMethods = queryClient.getQueryData<PaymentMethodDto[]>(
+        PaymentQueryKeys.all,
+      );
 
-            queryClient.setQueryData(PaymentQueryKeys.all, (old: PaymentMethodDto[]) => {
-                if (!old) return [];
-                return old.filter((method) => method.paymentMethodId !== deletedId);
-            });
+      queryClient.setQueryData(
+        PaymentQueryKeys.all,
+        (old: PaymentMethodDto[]) => {
+          if (!old) return [];
+          return old.filter((method) => method.paymentMethodId !== deletedId);
+        },
+      );
 
-            return { previousMethods };
-        },
-        onError: (err, deletedId, context) => {
-            // Rollback if server call fails
-            if (context?.previousMethods) {
-                queryClient.setQueryData(PaymentQueryKeys.all, context.previousMethods);
-            }
-            logger.error(err, SENTRY_EVENTS.ACCOUNT.PAYMENT_METHOD.DELETE, {
-                paymentMethodId: deletedId,
-            });
-        },
-        onSettled: () => {
-            queryClient.invalidateQueries({ queryKey: PaymentQueryKeys.all });
-        },
-    });
+      return { previousMethods };
+    },
+    onError: (err, deletedId, context) => {
+      // Rollback if server call fails
+      if (context?.previousMethods) {
+        queryClient.setQueryData(PaymentQueryKeys.all, context.previousMethods);
+      }
+      logger.error(err, SENTRY_EVENTS.ACCOUNT.PAYMENT_METHOD.DELETE, {
+        paymentMethodId: deletedId,
+      });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: PaymentQueryKeys.all });
+    },
+  });
 };

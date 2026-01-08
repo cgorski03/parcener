@@ -1,21 +1,21 @@
-import { Link } from '@tanstack/react-router'
-import { Button } from '@/shared/components/ui/button'
-import { Badge } from '@/shared/components/ui/badge'
-import { ArrowRight, Receipt, Zap, Shield, ScanLine, Lock } from 'lucide-react'
-import GitHubIcon from '@/shared/components/icons/github'
-import { authClient } from '@/shared/lib/auth-client'
+import { Link } from '@tanstack/react-router';
+import { Button } from '@/shared/components/ui/button';
+import { Badge } from '@/shared/components/ui/badge';
+import { ArrowRight, Receipt, Zap, Shield, ScanLine, Lock } from 'lucide-react';
+import GitHubIcon from '@/shared/components/icons/github';
+import { authClient } from '@/shared/lib/auth-client';
 
 // --- Real App Components ---
-import { BaseReceiptItemCard } from '@/shared/components/item-card/base-receipt-item-card'
-import { PriceBreakdown } from '@/shared/components/price-breakdown'
-import { VimConfigCard } from '@/features/landing/components/vim-config-card'
-import { InteractiveDemo } from '@/features/landing/components/interactive-demo'
-import { RealtimeSimulation } from '@/features/landing/components/realtime-simulation'
-import { AccessCTA } from '@/features/landing/components/acess-cta'
-import { Logo } from '@/shared/components/layout/logo'
+import { BaseReceiptItemCard } from '@/shared/components/item-card/base-receipt-item-card';
+import { PriceBreakdown } from '@/shared/components/price-breakdown';
+import { VimConfigCard } from '@/features/landing/components/vim-config-card';
+import { InteractiveDemo } from '@/features/landing/components/interactive-demo';
+import { RealtimeSimulation } from '@/features/landing/components/realtime-simulation';
+import { AccessCTA } from '@/features/landing/components/acess-cta';
+import { Logo } from '@/shared/components/layout/logo';
 
 export function LandingPage() {
-  const { data: session } = authClient.useSession()
+  const { data: session } = authClient.useSession();
 
   return (
     <div className="min-h-screen bg-background text-foreground font-sans overflow-x-hidden selection:bg-primary/20">
@@ -252,5 +252,5 @@ export function LandingPage() {
         </div>
       </footer>
     </div>
-  )
+  );
 }

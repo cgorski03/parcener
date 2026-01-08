@@ -1,5 +1,5 @@
-import z from "zod";
+import z from 'zod';
 
 export const inviteIdSearchParamsSchema = z.object({
-    token: z.uuid({ version: 'v4' }),
-})
+  token: z.uuid({ version: 'v4' }),
+});

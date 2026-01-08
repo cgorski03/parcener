@@ -8,4 +8,4 @@
  * - features/room (getPaymentMethodSecure)
  */
 
-export { getPaymentMethodSecure } from './payment-method-service'
+export { getPaymentMethodSecure } from './payment-method-service';

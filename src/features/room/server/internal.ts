@@ -8,5 +8,5 @@
  * - features/receipt-review (touchRoomFromReceipt, pruneExcessClaimsHelper)
  */
 
-export { touchRoomFromReceipt } from './room-service'
-export { pruneExcessClaimsHelper } from './room-claims-service'
+export { touchRoomFromReceipt } from './room-service';
+export { pruneExcessClaimsHelper } from './room-claims-service';

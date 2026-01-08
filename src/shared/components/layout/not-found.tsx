@@ -1,4 +1,4 @@
-import { ReactNode } from 'react'
+import { ReactNode } from 'react';
 import {
   ArrowLeft,
   FileQuestion,
@@ -6,15 +6,15 @@ import {
   Plus,
   Receipt,
   Users,
-} from 'lucide-react'
-import { Button } from '../ui/button'
-import { Link } from '@tanstack/react-router'
+} from 'lucide-react';
+import { Button } from '../ui/button';
+import { Link } from '@tanstack/react-router';
 
 interface NotFoundShellProps {
-  icon: ReactNode
-  title: string
-  message: string
-  actions?: ReactNode
+  icon: ReactNode;
+  title: string;
+  message: string;
+  actions?: ReactNode;
 }
 
 export function NotFoundShell({
@@ -57,7 +57,7 @@ export function NotFoundShell({
         © {new Date().getFullYear()} Parcener. Built for friends.
       </div>
     </div>
-  )
+  );
 }
 
 export function GeneralNotFound() {
@@ -75,7 +75,7 @@ export function GeneralNotFound() {
         </Button>
       }
     />
-  )
+  );
 }
 
 export function ReviewNotFound() {
@@ -101,7 +101,7 @@ export function ReviewNotFound() {
         </div>
       }
     />
-  )
+  );
 }
 
 export function RoomNotFound() {
@@ -127,5 +127,5 @@ export function RoomNotFound() {
         </div>
       }
     />
-  )
+  );
 }

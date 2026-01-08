@@ -1,8 +1,8 @@
-import { and, eq } from 'drizzle-orm'
-import { touchRoomId } from './room-service'
-import { DbType, roomMember } from '@/shared/server/db'
-import { RoomIdentity } from '@/shared/auth/server/room-identity'
-import { RoomMembership } from '@/shared/dto/types'
+import { and, eq } from 'drizzle-orm';
+import { touchRoomId } from './room-service';
+import { DbType, roomMember } from '@/shared/server/db';
+import { RoomIdentity } from '@/shared/auth/server/room-identity';
+import { RoomMembership } from '@/shared/dto/types';
 
 export async function resolveMembershipState(
   db: DbType,
@@ -11,10 +11,14 @@ export async function resolveMembershipState(
 ) {
   // 1. If we have a User ID, they take priority. Check for an existing membership.
   if (ident.userId) {
-    const userMember = await getRoomMembershipByUserId(db, roomId, ident.userId)
+    const userMember = await getRoomMembershipByUserId(
+      db,
+      roomId,
+      ident.userId,
+    );
 
     if (userMember) {
-      return { membership: userMember, canMerge: false }
+      return { membership: userMember, canMerge: false };
     }
 
     // 2. User exists but has no membership.
@@ -24,15 +28,15 @@ export async function resolveMembershipState(
         db,
         roomId,
         ident.guestUuid,
-      )
+      );
       if (guestMember) {
-        return { membership: guestMember, canMerge: true }
+        return { membership: guestMember, canMerge: true };
       }
     }
   }
   // Fallback to legacy behavior
-  const standardMember = await getRoomMembership(db, ident, roomId)
-  return { membership: standardMember, canMerge: false }
+  const standardMember = await getRoomMembership(db, ident, roomId);
+  return { membership: standardMember, canMerge: false };
 }
 
 export async function getRoomMembership(
@@ -41,7 +45,7 @@ export async function getRoomMembership(
   roomId: string,
 ): Promise<RoomMembership | null> {
   if (!identity.guestUuid && !identity.userId) {
-    return null
+    return null;
   }
 
   // Check for guest membership first (needed for guest->user upgrade)
@@ -50,13 +54,13 @@ export async function getRoomMembership(
       db,
       roomId,
       identity.guestUuid,
-    )
-    if (guestMember) return guestMember
+    );
+    if (guestMember) return guestMember;
   }
 
   return identity.userId
     ? await getRoomMembershipByUserId(db, roomId, identity.userId)
-    : null
+    : null;
 }
 
 export async function getRoomMembershipByUserId(
@@ -66,12 +70,12 @@ export async function getRoomMembershipByUserId(
 ): Promise<RoomMembership | null> {
   const member = await db.query.roomMember.findFirst({
     where: and(eq(roomMember.roomId, roomId), eq(roomMember.userId, userId)),
-  })
+  });
 
-  if (!member) return null
+  if (!member) return null;
 
-  const { id, ...rest } = member
-  return { roomMemberId: id, ...rest }
+  const { id, ...rest } = member;
+  return { roomMemberId: id, ...rest };
 }
 
 export async function getRoomMembershipByGuestId(
@@ -84,12 +88,12 @@ export async function getRoomMembershipByGuestId(
       eq(roomMember.roomId, roomId),
       eq(roomMember.guestUuid, guestId),
     ),
-  })
+  });
 
-  if (!member) return null
+  if (!member) return null;
 
-  const { id, ...rest } = member
-  return { roomMemberId: id, ...rest }
+  const { id, ...rest } = member;
+  return { roomMemberId: id, ...rest };
 }
 
 export async function editRoomMemberDisplayName(
@@ -110,16 +114,16 @@ export async function editRoomMemberDisplayName(
             : eq(roomMember.guestUuid, identity.guestUuid!),
         ),
       )
-      .returning()
+      .returning();
 
-    await touchRoomId(tx, roomId)
-    return updatedRoomMember
-  })
-  const { id, ...rest } = updatedRoomMember
+    await touchRoomId(tx, roomId);
+    return updatedRoomMember;
+  });
+  const { id, ...rest } = updatedRoomMember;
   return {
     roomMemberId: id,
     ...rest,
-  }
+  };
 }
 
 export async function upgradeRoomMember(
@@ -127,7 +131,7 @@ export async function upgradeRoomMember(
   identity: RoomIdentity,
   roomId: string,
 ) {
-  if (!identity.guestUuid || !identity.userId) return null
+  if (!identity.guestUuid || !identity.userId) return null;
   const [member] = await db
     .update(roomMember)
     .set({ userId: identity.userId })
@@ -137,10 +141,10 @@ export async function upgradeRoomMember(
         eq(roomMember.guestUuid, identity.guestUuid),
       ),
     )
-    .returning()
+    .returning();
 
-  if (!member) return null
+  if (!member) return null;
 
-  const { id, ...rest } = member
-  return { roomMemberId: id, ...rest }
+  const { id, ...rest } = member;
+  return { roomMemberId: id, ...rest };
 }

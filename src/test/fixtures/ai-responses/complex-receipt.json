@@ -1,48 +1,48 @@
 {
-    "items": [
-        {
-            "rawText": "MARGHERITA PIZZA",
-            "interpreted": "Margherita Pizza",
-            "price": 18.0,
-            "quantity": 1
-        },
-        {
-            "rawText": "GARLIC BREAD (2)",
-            "interpreted": "Garlic Bread",
-            "price": 6.5,
-            "quantity": 2
-        },
-        {
-            "rawText": "CAESAR SALAD",
-            "interpreted": "Caesar Salad",
-            "price": 12.0,
-            "quantity": 1
-        },
-        {
-            "rawText": "TIRAMISU",
-            "interpreted": "Tiramisu Dessert",
-            "price": 9.0,
-            "quantity": 1
-        },
-        {
-            "rawText": "ESPRESSO x3",
-            "interpreted": "Espresso",
-            "price": 3.5,
-            "quantity": 3
-        },
-        {
-            "rawText": "SPARKLING WATER",
-            "interpreted": "Sparkling Water",
-            "price": 4.0,
-            "quantity": 1
-        }
-    ],
-    "subtotal": 62.0,
-    "tax": 4.96,
-    "tip": 12.0,
-    "total": 78.96,
-    "metadata": {
-        "restaurant": "Trattoria Bella",
-        "date": "2024-03-20"
+  "items": [
+    {
+      "rawText": "MARGHERITA PIZZA",
+      "interpreted": "Margherita Pizza",
+      "price": 18.0,
+      "quantity": 1
+    },
+    {
+      "rawText": "GARLIC BREAD (2)",
+      "interpreted": "Garlic Bread",
+      "price": 6.5,
+      "quantity": 2
+    },
+    {
+      "rawText": "CAESAR SALAD",
+      "interpreted": "Caesar Salad",
+      "price": 12.0,
+      "quantity": 1
+    },
+    {
+      "rawText": "TIRAMISU",
+      "interpreted": "Tiramisu Dessert",
+      "price": 9.0,
+      "quantity": 1
+    },
+    {
+      "rawText": "ESPRESSO x3",
+      "interpreted": "Espresso",
+      "price": 3.5,
+      "quantity": 3
+    },
+    {
+      "rawText": "SPARKLING WATER",
+      "interpreted": "Sparkling Water",
+      "price": 4.0,
+      "quantity": 1
     }
+  ],
+  "subtotal": 62.0,
+  "tax": 4.96,
+  "tip": 12.0,
+  "total": 78.96,
+  "metadata": {
+    "restaurant": "Trattoria Bella",
+    "date": "2024-03-20"
+  }
 }

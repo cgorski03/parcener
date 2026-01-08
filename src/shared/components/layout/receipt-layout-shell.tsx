@@ -1,7 +1,7 @@
 interface ReceiptLayoutShellProps {
-  header: React.ReactNode
-  children: React.ReactNode
-  footer?: React.ReactNode
+  header: React.ReactNode;
+  children: React.ReactNode;
+  footer?: React.ReactNode;
 }
 
 export function ReceiptLayoutShell({
@@ -28,5 +28,5 @@ export function ReceiptLayoutShell({
         </div>
       )}
     </div>
-  )
+  );
 }

@@ -1,107 +1,107 @@
 {
-    "$schema": "./node_modules/wrangler/config-schema.json",
-    "name": "parcener",
-    "compatibility_date": "2025-09-02",
-    "compatibility_flags": ["nodejs_compat"],
-    "main": "src/shared/server/entry.ts",
-    "workers_dev": false,
-    "vars": {
-        "NODE_ENV": "production",
-        "BASE_URL": "https://parcener.app",
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "parcener",
+  "compatibility_date": "2025-09-02",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "src/shared/server/entry.ts",
+  "workers_dev": false,
+  "vars": {
+    "NODE_ENV": "production",
+    "BASE_URL": "https://parcener.app",
+  },
+  "r2_buckets": [
+    {
+      "bucket_name": "parcener-receipt-images",
+      "binding": "parcener_receipt_images",
     },
-    "r2_buckets": [
-        {
-            "bucket_name": "parcener-receipt-images",
-            "binding": "parcener_receipt_images",
-        },
+  ],
+  "queues": {
+    "producers": [
+      {
+        "binding": "RECEIPT_QUEUE",
+        "queue": "parcener-receipt-queue",
+      },
     ],
-    "queues": {
+    "consumers": [
+      {
+        "queue": "parcener-receipt-queue",
+        "max_batch_size": 1,
+        "max_retries": 3,
+      },
+    ],
+  },
+  "hyperdrive": [
+    {
+      "binding": "HYPERDRIVE",
+      "id": "2c12d08424e7403b9cdc2b5825af13d5",
+      "localConnectionString": "postgres://colin:secure_password@localhost:5432/split?sslmode=disable",
+    },
+  ],
+  "observability": {
+    "enabled": true,
+    "logs": {
+      "enabled": true,
+      "head_sampling_rate": 1,
+      "invocation_logs": true,
+      "persist": true,
+    },
+  },
+  "routes": [
+    {
+      "pattern": "parcener.app",
+      "custom_domain": true,
+    },
+    {
+      "pattern": "www.parcener.app",
+      "custom_domain": true,
+    },
+  ],
+  "env": {
+    "staging": {
+      "workers_dev": false,
+      "main": "./dist/server/index.js",
+      "assets": {
+        "directory": "./dist/client",
+        "binding": "ASSETS",
+      },
+      "vars": {
+        "NODE_ENV": "staging",
+        "BASE_URL": "https://staging.parcener.app",
+      },
+      "r2_buckets": [
+        {
+          "bucket_name": "parcener-receipt-images-staging",
+          "binding": "parcener_receipt_images",
+        },
+      ],
+      "queues": {
         "producers": [
-            {
-                "binding": "RECEIPT_QUEUE",
-                "queue": "parcener-receipt-queue",
-            },
+          {
+            "binding": "RECEIPT_QUEUE",
+            "queue": "parcener-receipt-queue-staging",
+          },
         ],
         "consumers": [
-            {
-                "queue": "parcener-receipt-queue",
-                "max_batch_size": 1,
-                "max_retries": 3,
-            },
+          {
+            "queue": "parcener-receipt-queue-staging",
+            "max_batch_size": 1,
+            "max_retries": 3,
+          },
         ],
-    },
-    "hyperdrive": [
+      },
+      "hyperdrive": [
         {
-            "binding": "HYPERDRIVE",
-            "id": "2c12d08424e7403b9cdc2b5825af13d5",
-            "localConnectionString": "postgres://colin:secure_password@localhost:5432/split?sslmode=disable"
-        }
-    ],
-    "observability": {
-        "enabled": true,
-        "logs": {
-            "enabled": true,
-            "head_sampling_rate": 1,
-            "invocation_logs": true,
-            "persist": true
-        }
-    },
-    "routes": [
-        {
-            "pattern": "parcener.app",
-            "custom_domain": true
+          "binding": "HYPERDRIVE",
+          "id": "5ce88dd038144aceb48b746cf281f22e",
+          "localConnectionString": "postgres://colin:secure_password@localhost:5432/split?sslmode=disable",
         },
+      ],
+      "routes": [
         {
-            "pattern": "www.parcener.app",
-            "custom_domain": true
-        }
-    ],    
-    "env": {
-        "staging": {
-            "workers_dev": false,
-            "main": "./dist/server/index.js",
-            "assets": {
-                "directory": "./dist/client",
-                "binding": "ASSETS"
-            },
-            "vars": {
-                "NODE_ENV": "staging",
-                "BASE_URL": "https://staging.parcener.app",
-            },
-            "r2_buckets": [
-                {
-                    "bucket_name": "parcener-receipt-images-staging",
-                    "binding": "parcener_receipt_images",
-                },
-            ],
-            "queues": {
-                "producers": [
-                    {
-                        "binding": "RECEIPT_QUEUE",
-                        "queue": "parcener-receipt-queue-staging",
-                    },
-                ],
-                "consumers": [
-                    {
-                        "queue": "parcener-receipt-queue-staging",
-                        "max_batch_size": 1,
-                        "max_retries": 3,
-                    },
-                ],
-            },
-            "hyperdrive": [
-                {
-                    "binding": "HYPERDRIVE",
-                    "id": "5ce88dd038144aceb48b746cf281f22e",
-                    "localConnectionString": "postgres://colin:secure_password@localhost:5432/split?sslmode=disable"
-                }
-            ],
-            "routes": [
-                {
-                    "pattern": "staging.parcener.app",
-                    "custom_domain": true
-                }            
-            ],    
+          "pattern": "staging.parcener.app",
+          "custom_domain": true,
         },
+      ],
     },
+  },
 }
