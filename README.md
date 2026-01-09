@@ -36,20 +36,20 @@ The application is designed to be used on-the-spot and as such UI design is heav
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    Cloudflare Edge Runtime                   │
+│                    Cloudflare Edge Runtime                  │
 │  ┌─────────────────────┐    ┌────────────────────────────┐  │
-│  │   Frontend (React)  │    │   Backend (Services)      │  │
-│  │   - TanStack Router │    │   - RPC Endpoints         │  │
-│  │   - TanStack Query  │    │   - Business Logic        │  │
-│  │   - Components      │    │   - Middleware            │  │
+│  │   Frontend (React)  │    │   Backend (Services)       │  │
+│  │   - TanStack Router │    │   - RPC Endpoints          │  │
+│  │   - TanStack Query  │    │   - Business Logic         │  │
+│  │   - Components      │    │   - Middleware             │  │
 │  └──────────┬──────────┘    └──────────┬─────────────────┘  │
-│             │                          │                     │
-│  ┌──────────┴──────────────────────────┴──────────┐          │
-│  │              Cloudflare Services               │          │
-│  │  - PostgreSQL (via Hyperdrive)                 │          │
-│  │  - R2 (image storage)                          │          │
-│  │  - Queues (async processing)                   │          │
-│  └────────────────────────────────────────────────┘          │
+│             │                          │                    │
+│  ┌──────────┴──────────────────────────┴──────────┐         │
+│  │              Cloudflare Services               │         │
+│  │  - PostgreSQL (via Hyperdrive)                 │         │
+│  │  - R2 (image storage)                          │         │
+│  │  - Queues (async processing)                   │         │
+│  └────────────────────────────────────────────────┘         │
 └─────────────────────────────────────────────────────────────┘
 
 Data Flow:

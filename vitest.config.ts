@@ -10,6 +10,7 @@ export default defineWorkersConfig({
   test: {
     globals: true,
     setupFiles: ['./src/test/setup.ts'],
+    exclude: ['**/node_modules/**', '**/*.e2e.ts'],
     poolOptions: {
       workers: {
         singleWorker: true,

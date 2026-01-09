@@ -12,3 +12,7 @@ count.txt
 .vinxi
 todos.json
 progress.txt
+
+# Playwright
+playwright-report/
+test-results/

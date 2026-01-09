@@ -57,6 +57,34 @@
     },
   ],
   "env": {
+    "test": {
+      "workers_dev": true,
+      "vars": {
+        "NODE_ENV": "test",
+        "BASE_URL": "http://localhost:3000"
+      },
+      "r2_buckets": [
+        {
+          "bucket_name": "parcener-receipt-images-test",
+          "binding": "parcener_receipt_images"
+        }
+      ],
+      "queues": {
+        "producers": [
+          {
+            "binding": "RECEIPT_QUEUE",
+            "queue": "parcener-receipt-queue-test"
+          }
+        ]
+      },
+      "hyperdrive": [
+        {
+          "binding": "HYPERDRIVE",
+          "id": "test-hyperdrive",
+          "localConnectionString": "postgres://colin:secure_password@localhost:5433/split_test?sslmode=disable"
+        }
+      ]
+    },
     "staging": {
       "workers_dev": false,
       "main": "./dist/server/index.js",

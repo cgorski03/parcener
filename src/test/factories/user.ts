@@ -1,15 +1,19 @@
 import { user } from '@/shared/server/db/auth-schema';
+import type { DbType } from '@/shared/server/db';
 import { testDb } from '../setup';
 
 type UserOverrides = Partial<typeof user.$inferInsert>;
 
 let userCounter = 0;
 
-export async function createTestUser(overrides: UserOverrides = {}) {
+export async function createTestUser(
+  overrides: UserOverrides = {},
+  db: DbType = testDb,
+) {
   userCounter++;
   const id = overrides.id ?? generateTestUserId();
 
-  const [created] = await testDb
+  const [created] = await db
     .insert(user)
     .values({
       id,
@@ -24,7 +28,7 @@ export async function createTestUser(overrides: UserOverrides = {}) {
   return created;
 }
 
-function generateTestUserId(): string {
+export function generateTestUserId(): string {
   const timestamp = Date.now().toString().slice(-12).padStart(12, '0');
   const randomPart = crypto.randomUUID().replace(/-/g, '');
   return `${timestamp}${randomPart.substring(0, 20)}`;
