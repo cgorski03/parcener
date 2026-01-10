@@ -6,8 +6,11 @@ export const calculateItemTotal = (items: Array<ReceiptItemDto>) => {
     return items.reduce((sum, item) => sum + item.price, 0);
 };
 
-export const moneyValuesEqual = (price1: number, price2: number) =>
-    Math.abs(price1 - price2) < MONEY_EPSILON;
+export const moneyValuesEqual = (price1: number, price2: number) => {
+    const diff = Math.abs(price1 - price2);
+    console.log("dif", diff);
+    return diff < MONEY_EPSILON;
+}
 
 type ReceiptValidationResult =
     | { isValid: true }

@@ -64,7 +64,7 @@ export function ReceiptEditorView({ initialReceipt }: ReceiptEditorProps) {
     const totalHasError = useMemo(() => {
         const calculated =
             Number(subtotal) + receipt.tip + receipt.tax;
-        return moneyValuesEqual(calculated, receipt.grandTotal);
+        return !moneyValuesEqual(calculated, receipt.grandTotal);
     }, [subtotal, receipt]);
 
     // --- HANDLERS ---

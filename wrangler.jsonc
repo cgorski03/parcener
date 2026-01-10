@@ -5,10 +5,6 @@
   "compatibility_flags": ["nodejs_compat"],
   "main": "src/shared/server/entry.ts",
   "workers_dev": false,
-  "vars": {
-    "NODE_ENV": "production",
-    "BASE_URL": "https://parcener.app",
-  },
   "r2_buckets": [
     {
       "bucket_name": "parcener-receipt-images",
@@ -57,46 +53,17 @@
     },
   ],
   "env": {
-    "local": {
-      "workers_dev": true,
-      "vars": {
-        "NODE_ENV": "dev",
-        "BASE_URL": "http://localhost:3000"
-      },
-      "r2_buckets": [
-        {
-          "bucket_name": "parcener-receipt-images-dev",
-          "binding": "parcener_receipt_images"
-        }
-      ],
-      "queues": {
-        "producers": [
-          {
-            "binding": "RECEIPT_QUEUE",
-            "queue": "parcener-receipt-queue-dev"
-          }
-        ]
-      },
-      "hyperdrive": [
-        {
-          "binding": "HYPERDRIVE",
-          "id": "dev-hyperdrive",
-          "localConnectionString": "postgres://colin:secure_password@localhost:5432/split?sslmode=disable"
-        }
-      ]
-    },
     "test": {
       "workers_dev": true,
-      "vars": {
-        "NODE_ENV": "test",
-        "BASE_URL": "http://localhost:3000"
-      },
       "r2_buckets": [
         {
           "bucket_name": "parcener-receipt-images-test",
           "binding": "parcener_receipt_images"
         }
       ],
+      "vars": {
+        "NODE_ENV": "test",
+      },
       "queues": {
         "producers": [
           {
@@ -119,10 +86,6 @@
       "assets": {
         "directory": "./dist/client",
         "binding": "ASSETS",
-      },
-      "vars": {
-        "NODE_ENV": "staging",
-        "BASE_URL": "https://staging.parcener.app",
       },
       "r2_buckets": [
         {
