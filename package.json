@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "type-check": "tsc --noEmit",
-    "dev": "vite dev --port 3000",
+    "dev": "CLOUDFLARE_ENV=local vite dev --port 3000",
     "dev:test": "CLOUDFLARE_ENV=test vite dev --port 3000",
     "build": "tsc --noEmit && NODE_ENV=production vite build",
     "serve": "vite preview",

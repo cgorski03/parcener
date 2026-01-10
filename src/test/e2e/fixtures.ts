@@ -31,7 +31,7 @@ interface AuthFixtures {
     /**
      * Creates an authenticated user with upload privileges
      */
-    authenticateAsAdmin: () => Promise<E2EAuthUser>;
+    authenticateAsUploader: () => Promise<E2EAuthUser>;
 
     /**
      * Creates an authenticated user without upload privileges
@@ -50,17 +50,19 @@ export const test = base.extend<AuthFixtures>({
             const email = options.email ?? `e2e-${testInfo.workerIndex}-${userCounter}-${Date.now()}@test.com`;
             const name = options.name ?? `E2E User ${userCounter}`;
             const password = 'testpassword123';
+
+            // Default to false because the API will ignore this anyway
             const canUpload = options.canUpload ?? false;
 
-            // Sign up via better-auth API with fetchOptions to capture response headers
+            // 1. Sign up (Standard User)
+            // We remove canUpload here because the API rejects/ignores it
             let setCookieHeader = '';
-
             const signUpResult = await authClient.signUp.email(
                 {
                     email,
                     password,
                     name,
-                    canUpload,
+                    canUpload: false,
                 },
                 {
                     onSuccess: (ctx) => {
@@ -73,14 +75,21 @@ export const test = base.extend<AuthFixtures>({
                 throw new Error(`Failed to sign up: ${signUpResult.error.message}`);
             }
 
-            // Parse the session token from set-cookie header
+            const userId = signUpResult.data.user.id;
+
+            if (canUpload) {
+                await e2eDb.update(user)
+                    .set({ canUpload: true })
+                    .where(eq(user.id, userId));
+            }
+
+            // 3. Handle Session Token
             const sessionMatch = setCookieHeader.match(/better-auth\.session_token=([^;]+)/);
             if (!sessionMatch) {
                 throw new Error('No session token in response');
             }
             const sessionToken = sessionMatch[1];
 
-            // Inject the session cookie into the browser context
             await context.addCookies([
                 {
                     name: 'better-auth.session_token',
@@ -92,7 +101,6 @@ export const test = base.extend<AuthFixtures>({
                 },
             ]);
 
-            const userId = signUpResult.data.user.id;
             createdUserIds.push(userId);
 
             return {
@@ -100,7 +108,7 @@ export const test = base.extend<AuthFixtures>({
                     id: userId,
                     email: signUpResult.data.user.email,
                     name: signUpResult.data.user.name,
-                    canUpload,
+                    canUpload, // Return the boolean we requested, not what the API returned initially
                 },
                 sessionToken,
             };
@@ -114,9 +122,9 @@ export const test = base.extend<AuthFixtures>({
         }
     },
 
-    authenticateAsAdmin: async ({ authenticateAs }, use) => {
+    authenticateAsUploader: async ({ authenticateAs }, use) => {
         const authenticate = async () => {
-            return authenticateAs({ name: 'Admin User', canUpload: true });
+            return authenticateAs({ name: 'Uploader', canUpload: true });
         };
         await use(authenticate);
     },
