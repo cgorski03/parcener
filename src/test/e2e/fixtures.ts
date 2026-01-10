@@ -1,4 +1,4 @@
-import { test as base } from '@playwright/test';
+import { test as base, Page } from '@playwright/test';
 import { e2eDb } from './db';
 import { user } from '@/shared/server/db/auth-schema';
 import { eq } from 'drizzle-orm';
@@ -41,6 +41,17 @@ interface AuthFixtures {
 }
 
 export const test = base.extend<AuthFixtures>({
+    // Override page to wait for React hydration after each navigation
+    page: async ({ page }, use) => {
+        const originalGoto = page.goto.bind(page);
+        page.goto = async (url, options) => {
+            const response = await originalGoto(url, options);
+            await page.waitForLoadState('networkidle');
+            return response;
+        };
+        await use(page);
+    },
+
     authenticateAs: async ({ context }, use, testInfo) => {
         // Track created users for cleanup
         const createdUserIds: string[] = [];

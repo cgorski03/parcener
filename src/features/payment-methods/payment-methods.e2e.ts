@@ -19,13 +19,20 @@ test.describe('Payment Methods', () => {
         await page.goto('/account');
 
         // 2. Open Sheet
-        await page.getByRole('button', { name: 'Link Venmo Account' }).click();
+        const linkButton = page.getByRole('button', { name: 'Link Venmo Account' });
+        await expect(linkButton).toBeEnabled();
+        await linkButton.click();
+
+        // Wait for the sheet dialog to be visible
+        await expect(page.getByRole('dialog')).toBeVisible({ timeout: 10000 });
 
         // STEP B: Set up the listener (do not await it yet!)
         const popupPromise = page.waitForEvent('popup');
-        // STEP A: Fill the input FIRST so the button appears
-        // The button logic in your component relies on (cleanHandle.length > 2)
-        await page.getByLabel('Venmo Username').fill('playwright_user');
+
+        // Wait for input to be ready (component has 200ms delay)
+        const input = page.getByLabel('Venmo Username');
+        await expect(input).toBeVisible();
+        await input.fill('playwright_user');
 
 
         // STEP C: Trigger the event
