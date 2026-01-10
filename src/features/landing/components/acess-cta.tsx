@@ -1,4 +1,4 @@
-import { Ticket, ArrowRight, Users } from 'lucide-react';
+import { ArrowRight, Ticket, Users } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 import { Button } from '@/shared/components/ui/button';
 import GitHubIcon from '@/shared/components/icons/github';

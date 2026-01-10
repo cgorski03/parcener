@@ -1,21 +1,23 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import { eq } from 'drizzle-orm';
+import {
+    GetFullRoomInfo,
+    GetRoomHeader,
+    createRoom,
+    joinRoomAction,
+    updateRoomPaymentInformation,
+} from './room-service';
+import type {
+    CreateRoomResponseType
+} from './room-service';
+import type { RoomIdentity } from '@/shared/auth/server/room-identity';
+import type { RoomDto } from '@/shared/dto/types';
 import { testDb } from '@/test/setup';
 import { createTestUser } from '@/test/factories/user';
 import { createSuccessfulReceipt } from '@/test/factories/receipt';
 import { createTestRoom, createTestRoomMember } from '@/test/factories/room';
 import { createUserPaymentMethod } from '@/features/payment-methods/server/payment-method-service';
 import { roomMember } from '@/shared/server/db/schema';
-import { eq } from 'drizzle-orm';
-import {
-    createRoom,
-    updateRoomPaymentInformation,
-    GetFullRoomInfo,
-    GetRoomHeader,
-    joinRoomAction,
-    CreateRoomResponseType,
-} from './room-service';
-import { RoomIdentity } from '@/shared/auth/server/room-identity';
-import { RoomDto } from '@/shared/dto/types';
 
 function assertRoomCreateSuccess(
     result: CreateRoomResponseType,
@@ -177,7 +179,7 @@ describe('room-service', () => {
             expect(result?.id).toBe(room.id);
             expect(result?.members).toHaveLength(1);
             expect(result?.members[0].displayName).toBe('Test User');
-            expect(result?.receipt?.items).toHaveLength(2);
+            expect(result?.receipt.items).toHaveLength(2);
         });
 
         it('includes guest members', async () => {
@@ -207,7 +209,7 @@ describe('room-service', () => {
             const result = await GetRoomHeader(testDb, room.id);
 
             expect(result).toBeDefined();
-            expect(result?.updatedAt).toBeDefined();
+            expect(result.updatedAt).toBeDefined();
         });
     });
 

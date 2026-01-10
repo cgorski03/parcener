@@ -2,12 +2,12 @@ import { ReceiptEditorView } from '../components/editor-view';
 import { ErrorReceiptView } from '../components/error-view';
 import { ProcessingReceiptView } from '../components/processing-view';
 import { isFailed, isProcessing } from '../lib/receipt-utils';
-import { AppHeader } from '@/shared/components/layout/app-header';
 import type { ReceiptWithRoom } from '../server/get-receipt-service';
 import type {
-  ReceiptProcessingResponse,
   ReceiptProcessingFailedResponse,
+  ReceiptProcessingResponse,
 } from '../server/responses';
+import { AppHeader } from '@/shared/components/layout/app-header';
 
 type ReceiptResponse =
   | ReceiptProcessingResponse

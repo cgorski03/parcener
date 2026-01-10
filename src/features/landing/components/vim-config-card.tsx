@@ -1,6 +1,6 @@
-import { cn } from '@/shared/lib/utils';
 import { Check, Copy, Network } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { cn } from '@/shared/lib/utils';
 
 const INITIAL_CODE = [
   '// wrangler.jsonc',
@@ -15,7 +15,7 @@ const INITIAL_CODE = [
 ];
 
 export function VimConfigCard() {
-  const [lines, setLines] = useState<string[]>(INITIAL_CODE);
+  const [lines, setLines] = useState<Array<string>>(INITIAL_CODE);
   const [cursor, setCursor] = useState({ row: 5, col: 0 });
   const [mode, setMode] = useState<'NORMAL' | 'INSERT'>('NORMAL');
   const [isFocused, setIsFocused] = useState(false);
@@ -27,7 +27,7 @@ export function VimConfigCard() {
     r: number,
     c: number,
     curMode: 'NORMAL' | 'INSERT',
-    curLines: string[],
+    curLines: Array<string>,
   ) => {
     const maxRow = curLines.length - 1;
     const safeRow = Math.max(0, Math.min(r, maxRow));
@@ -51,7 +51,7 @@ export function VimConfigCard() {
       }
 
       setCursor((prev) => {
-        let { row, col } = prev;
+        const { row, col } = prev;
         const currentLine = lines[row];
 
         // --- INSERT MODE ---

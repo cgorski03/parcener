@@ -1,4 +1,4 @@
-import { test, expect } from '@/test/e2e/fixtures';
+import { expect, test } from '@/test/e2e/fixtures';
 
 test.describe('Payment Methods', () => {
     test('shows empty state when no payment methods', async ({

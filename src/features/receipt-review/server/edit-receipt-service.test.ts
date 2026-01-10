@@ -1,4 +1,11 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import { eq } from 'drizzle-orm';
+import {
+    createReceiptItem,
+    deleteReceiptItem,
+    editReceiptItem,
+    finalizeReceiptTotals,
+} from './edit-receipt-service';
 import { testDb } from '@/test/setup';
 import { createTestUser } from '@/test/factories/user';
 import {
@@ -7,18 +14,11 @@ import {
     createSuccessfulReceipt,
 } from '@/test/factories/receipt';
 import {
+    createTestClaim,
     createTestRoom,
     createTestRoomMember,
-    createTestClaim,
 } from '@/test/factories/room';
-import {
-    editReceiptItem,
-    createReceiptItem,
-    deleteReceiptItem,
-    finalizeReceiptTotals,
-} from './edit-receipt-service';
 import { claim, receipt, receiptItem, room } from '@/shared/server/db';
-import { eq } from 'drizzle-orm';
 
 const toMoneyStr = (num: number) => num.toFixed(2);
 
@@ -42,22 +42,22 @@ describe('edit-receipt-service', () => {
                 user.id,
             );
 
-            expect(result?.interpretedText).toBe('Updated Item');
-            expect(result?.price).toBe(15);
-            expect(result?.quantity).toBe(3);
+            expect(result.interpretedText).toBe('Updated Item');
+            expect(result.price).toBe(15);
+            expect(result.quantity).toBe(3);
         });
 
         it('will adjust quantity of second claimer when reducing quantity', async () => {
             const user1 = await createTestUser();
             const user2 = await createTestUser();
-            const { receipt, items } = await createSuccessfulReceipt(user1.id, [
+            const { receipt: seededReceipt, items } = await createSuccessfulReceipt(user1.id, [
                 { interpretedText: 'Item 1', price: 10, quantity: 5 },
             ]);
-            const room = await createTestRoom(receipt.id, user1.id);
-            const member1 = await createTestRoomMember(room.id, { userId: user1.id });
-            const member2 = await createTestRoomMember(room.id, { userId: user2.id });
-            const firstClaim = await createTestClaim(room.id, member1.id, items[0].id, 2);
-            const secondClaim = await createTestClaim(room.id, member2.id, items[0].id, 2);
+            const seededRoom = await createTestRoom(seededReceipt.id, user1.id);
+            const member1 = await createTestRoomMember(seededRoom.id, { userId: user1.id });
+            const member2 = await createTestRoomMember(seededRoom.id, { userId: user2.id });
+            const firstClaim = await createTestClaim(seededRoom.id, member1.id, items[0].id, 2);
+            const secondClaim = await createTestClaim(seededRoom.id, member2.id, items[0].id, 2);
 
             await editReceiptItem(
                 testDb,
@@ -84,14 +84,14 @@ describe('edit-receipt-service', () => {
     it('will remove a claim entirely when pruning ', async () => {
         const user1 = await createTestUser();
         const user2 = await createTestUser();
-        const { receipt, items } = await createSuccessfulReceipt(user1.id, [
+        const { receipt: seededReceipt, items } = await createSuccessfulReceipt(user1.id, [
             { interpretedText: 'Item 1', price: 10, quantity: 5 },
         ]);
-        const room = await createTestRoom(receipt.id, user1.id);
-        const member1 = await createTestRoomMember(room.id, { userId: user1.id });
-        const member2 = await createTestRoomMember(room.id, { userId: user2.id });
-        const firstClaim = await createTestClaim(room.id, member1.id, items[0].id, 2);
-        await createTestClaim(room.id, member2.id, items[0].id, 2);
+        const seededRoom = await createTestRoom(seededReceipt.id, user1.id);
+        const member1 = await createTestRoomMember(seededRoom.id, { userId: user1.id });
+        const member2 = await createTestRoomMember(seededRoom.id, { userId: user2.id });
+        const firstClaim = await createTestClaim(seededRoom.id, member1.id, items[0].id, 2);
+        await createTestClaim(seededRoom.id, member2.id, items[0].id, 2);
 
         await editReceiptItem(
             testDb,
@@ -118,7 +118,7 @@ describe('edit-receipt-service', () => {
 describe('createReceiptItem', () => {
     it('creates a new receipt item', async () => {
         const user = await createTestUser();
-        const { receipt } = await createSuccessfulReceipt(user.id, [
+        const { receipt: seededReceipt } = await createSuccessfulReceipt(user.id, [
             { interpretedText: 'Item 1', price: 10 },
         ]);
 
@@ -130,18 +130,18 @@ describe('createReceiptItem', () => {
                 quantity: 2,
                 rawText: null,
             },
-            receipt.id,
+            seededReceipt.id,
             user.id,
         );
 
-        expect(result?.interpretedText).toBe('New Item');
-        expect(result?.price).toBe(15);
-        expect(result?.quantity).toBe(2);
+        expect(result.interpretedText).toBe('New Item');
+        expect(result.price).toBe(15);
+        expect(result.quantity).toBe(2);
     });
 
     it('adds item to receipt', async () => {
         const user = await createTestUser();
-        const { receipt } = await createSuccessfulReceipt(user.id, [
+        const { receipt: seededReceipt } = await createSuccessfulReceipt(user.id, [
             { interpretedText: 'Item 1', price: 10 },
         ]);
 
@@ -153,12 +153,12 @@ describe('createReceiptItem', () => {
                 quantity: 1,
                 rawText: null,
             },
-            receipt.id,
+            seededReceipt.id,
             user.id,
         );
 
         const items = await testDb.query.receiptItem.findMany({
-            where: eq(receiptItem.receiptId, receipt.id),
+            where: eq(receiptItem.receiptId, seededReceipt.id),
         });
 
         expect(items).toHaveLength(2);
@@ -168,7 +168,7 @@ describe('createReceiptItem', () => {
 describe('deleteReceiptItem', () => {
     it('deletes receipt item', async () => {
         const user = await createTestUser();
-        const { receipt, items } = await createSuccessfulReceipt(user.id, [
+        const { receipt: seededReceipt, items } = await createSuccessfulReceipt(user.id, [
             { interpretedText: 'Item 1', price: 10, quantity: 2 },
         ]);
 
@@ -185,7 +185,7 @@ describe('deleteReceiptItem', () => {
         );
 
         const itemsAfter = await testDb.query.receiptItem.findMany({
-            where: eq(receiptItem.receiptId, receipt.id),
+            where: eq(receiptItem.receiptId, seededReceipt.id),
         });
 
         expect(itemsAfter).toHaveLength(0);
@@ -255,10 +255,10 @@ describe('finalizeReceiptTotals', () => {
 
     it('touches room when finalizing totals', async () => {
         const user = await createTestUser();
-        const { receipt } = await createSuccessfulReceipt(user.id, [
+        const { receipt: seededReceipt } = await createSuccessfulReceipt(user.id, [
             { interpretedText: 'Item 1', price: 10 },
         ]);
-        const seededRoom = await createTestRoom(receipt.id, user.id);
+        const seededRoom = await createTestRoom(seededReceipt.id, user.id);
 
         const before = await testDb.query.room.findFirst({
             where: eq(room.id, seededRoom.id),
@@ -267,7 +267,7 @@ describe('finalizeReceiptTotals', () => {
         await finalizeReceiptTotals(
             testDb,
             {
-                receiptId: receipt.id,
+                receiptId: seededReceipt.id,
                 subtotal: 10,
                 tax: 0,
                 tip: 0,
@@ -345,14 +345,14 @@ describe('finalizeReceiptTotals', () => {
 
     it('returns subtotal mismatch error', async () => {
         const user = await createTestUser();
-        const { receipt } = await createSuccessfulReceipt(user.id, [
+        const { receipt: seededReceipt } = await createSuccessfulReceipt(user.id, [
             { interpretedText: 'Item 1', price: 10, quantity: 2 },
         ]);
 
         const result = await finalizeReceiptTotals(
             testDb,
             {
-                receiptId: receipt.id,
+                receiptId: seededReceipt.id,
                 subtotal: 999,
                 tax: 0,
                 tip: 0,
@@ -366,7 +366,7 @@ describe('finalizeReceiptTotals', () => {
 
     it('returns grand total mismatch error', async () => {
         const user = await createTestUser();
-        const { receipt, items } = await createSuccessfulReceipt(user.id, [
+        const { receipt: seededReceipt, items } = await createSuccessfulReceipt(user.id, [
             { interpretedText: 'Item 1', price: 10, quantity: 2 },
         ]);
 
@@ -379,7 +379,7 @@ describe('finalizeReceiptTotals', () => {
         const result = await finalizeReceiptTotals(
             testDb,
             {
-                receiptId: receipt.id,
+                receiptId: seededReceipt.id,
                 subtotal,
                 tax: 0,
                 tip: 0,

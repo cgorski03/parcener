@@ -1,5 +1,5 @@
-import { BetterAuthOptions } from 'better-auth';
 import { env } from 'cloudflare:workers';
+import type { BetterAuthOptions } from 'better-auth';
 
 export const authConfig = {
     emailAndPassword: {

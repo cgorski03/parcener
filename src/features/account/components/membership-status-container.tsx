@@ -1,6 +1,6 @@
+import { useSuspenseQuery } from '@tanstack/react-query';
 import { Card, CardContent } from '@/shared/components/ui/card';
 import { Separator } from '@/shared/components/ui/separator';
-import { useSuspenseQuery } from '@tanstack/react-query';
 import { userQueryOptionsWithRedirect } from '@/shared/hooks/use-user';
 import { Skeleton } from '@/shared/components/ui/skeleton';
 import { InviteSection } from '@/features/invitations/components/invite-section';

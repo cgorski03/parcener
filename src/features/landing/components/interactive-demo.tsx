@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Receipt } from 'lucide-react';
+import type { ReceiptItemDto } from '@/shared/dto/types';
 import { BaseReceiptItemCard } from '@/shared/components/item-card/base-receipt-item-card';
 import { PriceBreakdown } from '@/shared/components/price-breakdown';
 import { QuantityControl } from '@/shared/components/item-card/quantity-control';
-import type { ReceiptItemDto } from '@/shared/dto/types';
 import { RoomMemberAvatar } from '@/features/room/components/room-member-avatar';
 
 // --- Mock Data Types ---
@@ -24,7 +24,7 @@ function DemoCollabItemCard({
 }: {
   item: ReceiptItemDto;
   myQty: number;
-  others: MockClaim[];
+  others: Array<MockClaim>;
   onUpdate: (newQty: number) => void;
 }) {
   const otherClaimedQty = others.reduce((acc, curr) => acc + curr.quantity, 0);
@@ -87,7 +87,7 @@ function DemoCollabItemCard({
 
 export function InteractiveDemo() {
   // 1. Setup Items
-  const demoItems: ReceiptItemDto[] = [
+  const demoItems: Array<ReceiptItemDto> = [
     {
       receiptItemId: '1',
       quantity: 1,
@@ -121,7 +121,7 @@ export function InteractiveDemo() {
   });
 
   // 3. Setup "Others" State (Static for demo, simulates active room)
-  const otherClaims: Record<string, MockClaim[]> = {
+  const otherClaims: Record<string, Array<MockClaim>> = {
     '2': [
       { memberId: '2', displayName: 'Rory', avatarUrl: null, quantity: 1 },
       { memberId: '3', displayName: 'Patricio', avatarUrl: null, quantity: 1 },
@@ -199,7 +199,7 @@ export function InteractiveDemo() {
                   key={item.receiptItemId}
                   item={item}
                   myQty={myClaims[item.receiptItemId] || 0}
-                  others={otherClaims[item.receiptItemId] || []}
+                  others={otherClaims[item.receiptItemId] ?? []}
                   onUpdate={(q) => handleUpdate(item.receiptItemId, q)}
                 />
               ))}

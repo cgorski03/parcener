@@ -1,8 +1,8 @@
+import { queryOptions } from '@tanstack/react-query';
 import {
   getUserRpc,
   getUserWithRedirect,
 } from '@/features/account/server/account-rpc';
-import { queryOptions } from '@tanstack/react-query';
 
 export const userQueryOptions = queryOptions({
   queryKey: ['user'],

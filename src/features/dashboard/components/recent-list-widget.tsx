@@ -1,9 +1,9 @@
-import { Button } from '@/shared/components/ui/button';
 import { Link } from '@tanstack/react-router';
+import { Button } from '@/shared/components/ui/button';
 
 interface RecentListProps<T> {
   title: string;
-  data: T[] | undefined;
+  data: Array<T> | undefined;
   isLoading: boolean;
   emptyState: {
     icon: React.ReactNode;

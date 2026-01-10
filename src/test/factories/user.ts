@@ -1,6 +1,6 @@
-import { user } from '@/shared/server/db/auth-schema';
-import type { DbType } from '@/shared/server/db';
 import { testDb } from '../setup';
+import type { DbType } from '@/shared/server/db';
+import { user } from '@/shared/server/db/auth-schema';
 
 type UserOverrides = Partial<typeof user.$inferInsert>;
 

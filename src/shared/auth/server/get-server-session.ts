@@ -1,4 +1,4 @@
-import { ApplicationAuthClient } from '.';
+import type { ApplicationAuthClient } from '.';
 
 export async function getServerSession(
   req: Request,

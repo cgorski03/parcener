@@ -1,6 +1,6 @@
-import { pgTable, text, timestamp, boolean } from 'drizzle-orm/pg-core';
-import { paymentMethod, receipt, room, roomMember } from './schema';
+import { boolean, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
+import { paymentMethod, receipt, room, roomMember } from './schema';
 
 export const user = pgTable('user', {
   id: text('id').primaryKey(),

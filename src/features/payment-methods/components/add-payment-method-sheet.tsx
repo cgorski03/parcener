@@ -1,4 +1,6 @@
-import { useState, useRef, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { AlertCircle, ExternalLink, Loader2 } from 'lucide-react';
+import { useCreatePaymentMethod } from '../hooks/use-payment-methods';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
@@ -9,9 +11,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/shared/components/ui/sheet';
-import { Loader2, ExternalLink, AlertCircle } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
-import { useCreatePaymentMethod } from '../hooks/use-payment-methods';
 
 interface AddPaymentMethodSheetProps {
   open: boolean;

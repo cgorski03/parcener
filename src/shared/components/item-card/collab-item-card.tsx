@@ -1,6 +1,6 @@
 import { BaseReceiptItemCard } from './base-receipt-item-card';
 import { QuantityControl } from './quantity-control';
-import { ItemWithClaims } from '@/features/room/hooks/use-claims';
+import type { ItemWithClaims } from '@/features/room/hooks/use-claims';
 import { RoomMemberAvatar } from '@/features/room/components/room-member-avatar';
 import { useDebouncedClaim } from '@/features/room/hooks/use-debounced-claim';
 

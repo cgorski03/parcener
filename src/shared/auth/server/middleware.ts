@@ -1,6 +1,6 @@
 import { createMiddleware } from '@tanstack/react-start';
-import { getServerSession } from './get-server-session';
 import { redirect } from '@tanstack/react-router';
+import { getServerSession } from './get-server-session';
 
 export const protectedFunctionMiddleware = createMiddleware().server(
   async ({ next, context, request }) => {

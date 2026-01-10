@@ -1,7 +1,7 @@
-import { protectedFunctionMiddleware } from '@/shared/auth/server/middleware';
-import { nameTransaction } from '@/shared/observability/server/sentry-middleware';
 import { createServerFn } from '@tanstack/react-start';
 import { getRecentReceipts, getRecentRooms } from './recent-activity-service';
+import { protectedFunctionMiddleware } from '@/shared/auth/server/middleware';
+import { nameTransaction } from '@/shared/observability/server/sentry-middleware';
 import { logger } from '@/shared/observability/logger';
 import { SENTRY_EVENTS } from '@/shared/observability/sentry-events';
 

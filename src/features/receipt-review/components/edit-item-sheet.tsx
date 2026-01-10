@@ -1,3 +1,6 @@
+import { Trash2 } from 'lucide-react';
+import React, { useState } from 'react';
+import type { CreateReceiptItemDto, ReceiptItemDto } from '@/shared/dto/types';
 import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
 import {
@@ -7,9 +10,6 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/shared/components/ui/sheet';
-import { Trash2 } from 'lucide-react';
-import React, { useState } from 'react';
-import type { CreateReceiptItemDto, ReceiptItemDto } from '@/shared/dto/types';
 import { Button } from '@/shared/components/ui/button';
 
 function ReceiptItemSheet(props: {

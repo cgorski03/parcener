@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import type { ReceiptItemDto } from '@/shared/dto/types';
 import { CollaborativeRoomHeader } from '@/shared/components/layout/collaborative-room-header';
 import { BaseReceiptItemCard } from '@/shared/components/item-card/base-receipt-item-card';
-import type { ReceiptItemDto } from '@/shared/dto/types';
 import { RoomMemberAvatar } from '@/features/room/components/room-member-avatar';
 
 // --- Mock Data Types ---
@@ -18,7 +18,7 @@ function SimulatedItemCard({
   others,
 }: {
   item: ReceiptItemDto;
-  others: MockClaim[];
+  others: Array<MockClaim>;
 }) {
   // Determine if fully claimed (for visual dimming)
   const claimedQty = others.reduce((acc, curr) => acc + curr.quantity, 0);
@@ -58,7 +58,7 @@ export function RealtimeSimulation() {
   // Define the story: "Patricio claims coffee", then "Rory claims pancakes"
   const [step, setStep] = useState(0);
 
-  const items: ReceiptItemDto[] = [
+  const items: Array<ReceiptItemDto> = [
     {
       receiptItemId: 'sim-1',
       quantity: 1,
@@ -170,7 +170,7 @@ export function RealtimeSimulation() {
             others={
               currentClaims[
                 item.receiptItemId as keyof typeof currentClaims
-              ] as MockClaim[]
+              ] as Array<MockClaim>
             }
           />
         ))}

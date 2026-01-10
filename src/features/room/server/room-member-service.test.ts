@@ -1,373 +1,373 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import { eq } from 'drizzle-orm';
+import {
+    editRoomMemberDisplayName,
+    getRoomMembership,
+    getRoomMembershipByGuestId,
+    getRoomMembershipByUserId,
+    resolveMembershipState,
+    upgradeRoomMember,
+} from './room-member-service';
+import type { RoomIdentity } from '@/shared/auth/server/room-identity';
 import { testDb } from '@/test/setup';
 import { createTestUser } from '@/test/factories/user';
 import { createSuccessfulReceipt } from '@/test/factories/receipt';
 import { createTestRoom, createTestRoomMember } from '@/test/factories/room';
-import { RoomIdentity } from '@/shared/auth/server/room-identity';
 import { room } from '@/shared/server/db/schema';
-import { eq } from 'drizzle-orm';
-import {
-  getRoomMembership,
-  getRoomMembershipByUserId,
-  getRoomMembershipByGuestId,
-  editRoomMemberDisplayName,
-  upgradeRoomMember,
-  resolveMembershipState,
-} from './room-member-service';
 
 describe('room-member-service', () => {
-  describe('getRoomMembershipByUserId', () => {
-    it('returns membership for user', async () => {
-      const user = await createTestUser();
-      const { receipt } = await createSuccessfulReceipt(user.id, [
-        { interpretedText: 'Item 1', price: 10 },
-      ]);
-      const room = await createTestRoom(receipt.id, user.id);
-      const member = await createTestRoomMember(room.id, {
-        userId: user.id,
-        displayName: 'Test User',
-      });
+    describe('getRoomMembershipByUserId', () => {
+        it('returns membership for user', async () => {
+            const user = await createTestUser();
+            const { receipt } = await createSuccessfulReceipt(user.id, [
+                { interpretedText: 'Item 1', price: 10 },
+            ]);
+            const testRoom = await createTestRoom(receipt.id, user.id);
+            const member = await createTestRoomMember(testRoom.id, {
+                userId: user.id,
+                displayName: 'Test User',
+            });
 
-      const result = await getRoomMembershipByUserId(testDb, room.id, user.id);
+            const result = await getRoomMembershipByUserId(testDb, testRoom.id, user.id);
 
-      expect(result).toBeDefined();
-      expect(result?.roomMemberId).toBe(member.id);
-      expect(result?.userId).toBe(user.id);
-      expect(result?.displayName).toBe('Test User');
+            expect(result).toBeDefined();
+            expect(result?.roomMemberId).toBe(member.id);
+            expect(result?.userId).toBe(user.id);
+            expect(result?.displayName).toBe('Test User');
+        });
+
+        it('returns null for non-existent membership', async () => {
+            const user = await createTestUser();
+
+            const result = await getRoomMembershipByUserId(
+                testDb,
+                '00000000-0000-0000-0000-000000000000',
+                user.id,
+            );
+
+            expect(result).toBeNull();
+        });
+
+        it('returns null for different user in room', async () => {
+            const user1 = await createTestUser();
+            const user2 = await createTestUser();
+            const { receipt } = await createSuccessfulReceipt(user1.id, [
+                { interpretedText: 'Item 1', price: 10 },
+            ]);
+            const testRoom = await createTestRoom(receipt.id, user1.id);
+            await createTestRoomMember(testRoom.id, { userId: user1.id });
+
+            const result = await getRoomMembershipByUserId(testDb, testRoom.id, user2.id);
+
+            expect(result).toBeNull();
+        });
     });
 
-    it('returns null for non-existent membership', async () => {
-      const user = await createTestUser();
+    describe('getRoomMembershipByGuestId', () => {
+        it('returns membership for guest', async () => {
+            const user = await createTestUser();
+            const { receipt } = await createSuccessfulReceipt(user.id, [
+                { interpretedText: 'Item 1', price: 10 },
+            ]);
+            const testRoom = await createTestRoom(receipt.id, user.id);
+            const guestUuid = crypto.randomUUID();
+            const member = await createTestRoomMember(testRoom.id, {
+                guestUuid,
+                displayName: 'Guest',
+            });
 
-      const result = await getRoomMembershipByUserId(
-        testDb,
-        '00000000-0000-0000-0000-000000000000',
-        user.id,
-      );
+            const result = await getRoomMembershipByGuestId(
+                testDb,
+                testRoom.id,
+                guestUuid,
+            );
 
-      expect(result).toBeNull();
+            expect(result).toBeDefined();
+            expect(result?.roomMemberId).toBe(member.id);
+            expect(result?.guestUuid).toBe(guestUuid);
+        });
     });
 
-    it('returns null for different user in room', async () => {
-      const user1 = await createTestUser();
-      const user2 = await createTestUser();
-      const { receipt } = await createSuccessfulReceipt(user1.id, [
-        { interpretedText: 'Item 1', price: 10 },
-      ]);
-      const room = await createTestRoom(receipt.id, user1.id);
-      await createTestRoomMember(room.id, { userId: user1.id });
+    describe('getRoomMembership', () => {
+        it('returns user membership when userId is provided', async () => {
+            const user = await createTestUser();
+            const { receipt } = await createSuccessfulReceipt(user.id, [
+                { interpretedText: 'Item 1', price: 10 },
+            ]);
+            const testRoom = await createTestRoom(receipt.id, user.id);
+            await createTestRoomMember(testRoom.id, {
+                userId: user.id,
+                displayName: 'Test User',
+            });
 
-      const result = await getRoomMembershipByUserId(testDb, room.id, user2.id);
+            const identity: RoomIdentity = {
+                userId: user.id,
+                isAuthenticated: true,
+                name: 'Test',
+            };
 
-      expect(result).toBeNull();
-    });
-  });
+            const result = await getRoomMembership(testDb, identity, testRoom.id);
 
-  describe('getRoomMembershipByGuestId', () => {
-    it('returns membership for guest', async () => {
-      const user = await createTestUser();
-      const { receipt } = await createSuccessfulReceipt(user.id, [
-        { interpretedText: 'Item 1', price: 10 },
-      ]);
-      const room = await createTestRoom(receipt.id, user.id);
-      const guestUuid = crypto.randomUUID();
-      const member = await createTestRoomMember(room.id, {
-        guestUuid,
-        displayName: 'Guest',
-      });
+            expect(result).toBeDefined();
+            expect(result?.userId).toBe(user.id);
+        });
 
-      const result = await getRoomMembershipByGuestId(
-        testDb,
-        room.id,
-        guestUuid,
-      );
+        it('returns guest membership when guestUuid is provided', async () => {
+            const user = await createTestUser();
+            const { receipt } = await createSuccessfulReceipt(user.id, [
+                { interpretedText: 'Item 1', price: 10 },
+            ]);
+            const testRoom = await createTestRoom(receipt.id, user.id);
+            const guestUuid = crypto.randomUUID();
+            await createTestRoomMember(testRoom.id, { guestUuid, displayName: 'Guest' });
 
-      expect(result).toBeDefined();
-      expect(result?.roomMemberId).toBe(member.id);
-      expect(result?.guestUuid).toBe(guestUuid);
-    });
-  });
+            const identity: RoomIdentity = { guestUuid, isAuthenticated: false };
 
-  describe('getRoomMembership', () => {
-    it('returns user membership when userId is provided', async () => {
-      const user = await createTestUser();
-      const { receipt } = await createSuccessfulReceipt(user.id, [
-        { interpretedText: 'Item 1', price: 10 },
-      ]);
-      const room = await createTestRoom(receipt.id, user.id);
-      await createTestRoomMember(room.id, {
-        userId: user.id,
-        displayName: 'Test User',
-      });
+            const result = await getRoomMembership(testDb, identity, testRoom.id);
 
-      const identity: RoomIdentity = {
-        userId: user.id,
-        isAuthenticated: true,
-        name: 'Test',
-      };
+            expect(result).toBeDefined();
+            expect(result?.guestUuid).toBe(guestUuid);
+        });
 
-      const result = await getRoomMembership(testDb, identity, room.id);
+        it('returns null when neither userId nor guestUuid is provided', async () => {
+            const identity: RoomIdentity = { isAuthenticated: false };
 
-      expect(result).toBeDefined();
-      expect(result?.userId).toBe(user.id);
+            const result = await getRoomMembership(testDb, identity, 'room-id');
+
+            expect(result).toBeNull();
+        });
     });
 
-    it('returns guest membership when guestUuid is provided', async () => {
-      const user = await createTestUser();
-      const { receipt } = await createSuccessfulReceipt(user.id, [
-        { interpretedText: 'Item 1', price: 10 },
-      ]);
-      const room = await createTestRoom(receipt.id, user.id);
-      const guestUuid = crypto.randomUUID();
-      await createTestRoomMember(room.id, { guestUuid, displayName: 'Guest' });
+    describe('editRoomMemberDisplayName', () => {
+        it('updates user display name', async () => {
+            const user = await createTestUser();
+            const { receipt } = await createSuccessfulReceipt(user.id, [
+                { interpretedText: 'Item 1', price: 10 },
+            ]);
+            const testRoom = await createTestRoom(receipt.id, user.id);
+            await createTestRoomMember(testRoom.id, {
+                userId: user.id,
+                displayName: 'Old Name',
+            });
 
-      const identity: RoomIdentity = { guestUuid, isAuthenticated: false };
+            const identity: RoomIdentity = {
+                userId: user.id,
+                isAuthenticated: true,
+                name: 'Test',
+            };
 
-      const result = await getRoomMembership(testDb, identity, room.id);
+            const result = await editRoomMemberDisplayName(
+                testDb,
+                identity,
+                testRoom.id,
+                'New Name',
+            );
 
-      expect(result).toBeDefined();
-      expect(result?.guestUuid).toBe(guestUuid);
+            expect(result.displayName).toBe('New Name');
+        });
+
+        it('updates guest display name', async () => {
+            const user = await createTestUser();
+            const { receipt } = await createSuccessfulReceipt(user.id, [
+                { interpretedText: 'Item 1', price: 10 },
+            ]);
+            const testRoom = await createTestRoom(receipt.id, user.id);
+            const guestUuid = crypto.randomUUID();
+            await createTestRoomMember(testRoom.id, {
+                guestUuid,
+                displayName: 'Old Guest',
+            });
+
+            const identity: RoomIdentity = { guestUuid, isAuthenticated: false };
+
+            const result = await editRoomMemberDisplayName(
+                testDb,
+                identity,
+                testRoom.id,
+                'New Guest',
+            );
+
+            expect(result.displayName).toBe('New Guest');
+        });
     });
 
-    it('returns null when neither userId nor guestUuid is provided', async () => {
-      const identity: RoomIdentity = { isAuthenticated: false };
+    describe('upgradeRoomMember', () => {
+        it('upgrades guest member to user', async () => {
+            const user = await createTestUser();
+            const { receipt } = await createSuccessfulReceipt(user.id, [
+                { interpretedText: 'Item 1', price: 10 },
+            ]);
 
-      const result = await getRoomMembership(testDb, identity, 'room-id');
+            const testRoom = await createTestRoom(receipt.id, user.id);
+            const guestUuid = crypto.randomUUID();
+            const member = await createTestRoomMember(testRoom.id, {
+                guestUuid,
+                displayName: 'Guest',
+            });
 
-      expect(result).toBeNull();
+            const identity: RoomIdentity = {
+                userId: user.id,
+                guestUuid,
+                isAuthenticated: true,
+                name: 'Test',
+            };
+
+            const result = await upgradeRoomMember(testDb, identity, testRoom.id);
+
+            expect(result?.userId).toBe(user.id);
+            expect(result?.roomMemberId).toBe(member.id);
+        });
+
+        it('updates room timestamp', async () => {
+            const user = await createTestUser();
+            const { receipt } = await createSuccessfulReceipt(user.id, [
+                { interpretedText: 'Item 1', price: 10 },
+            ]);
+            const seededRoom = await createTestRoom(receipt.id, user.id);
+            await createTestRoomMember(seededRoom.id, {
+                userId: user.id,
+                displayName: 'Old Name',
+            });
+            const identity: RoomIdentity = {
+                userId: user.id,
+                isAuthenticated: true,
+                name: 'Test',
+            };
+            const before = await testDb.query.room.findFirst({
+                where: eq(room.id, seededRoom.id),
+            });
+            await editRoomMemberDisplayName(
+                testDb,
+                identity,
+                seededRoom.id,
+                'New Name',
+            );
+            const after = await testDb.query.room.findFirst({
+                where: eq(room.id, seededRoom.id),
+            });
+            expect(before?.updatedAt).toBeDefined();
+            expect(after?.updatedAt).toBeDefined();
+            expect(after?.updatedAt.getTime()).toBeGreaterThan(
+                before?.updatedAt.getTime() || 0,
+            );
+        });
     });
-  });
+    it('returns null when guestUuid is not provided', async () => {
+        const user = await createTestUser();
+        const { receipt } = await createSuccessfulReceipt(user.id, [
+            { interpretedText: 'Item 1', price: 10 },
+        ]);
+        const testRoom = await createTestRoom(receipt.id, user.id);
 
-  describe('editRoomMemberDisplayName', () => {
-    it('updates user display name', async () => {
-      const user = await createTestUser();
-      const { receipt } = await createSuccessfulReceipt(user.id, [
-        { interpretedText: 'Item 1', price: 10 },
-      ]);
-      const room = await createTestRoom(receipt.id, user.id);
-      await createTestRoomMember(room.id, {
-        userId: user.id,
-        displayName: 'Old Name',
-      });
+        const identity: RoomIdentity = {
+            userId: user.id,
+            isAuthenticated: true,
+            name: 'Test',
+        };
 
-      const identity: RoomIdentity = {
-        userId: user.id,
-        isAuthenticated: true,
-        name: 'Test',
-      };
+        const result = await upgradeRoomMember(testDb, identity, testRoom.id);
 
-      const result = await editRoomMemberDisplayName(
-        testDb,
-        identity,
-        room.id,
-        'New Name',
-      );
-
-      expect(result?.displayName).toBe('New Name');
-    });
-
-    it('updates guest display name', async () => {
-      const user = await createTestUser();
-      const { receipt } = await createSuccessfulReceipt(user.id, [
-        { interpretedText: 'Item 1', price: 10 },
-      ]);
-      const room = await createTestRoom(receipt.id, user.id);
-      const guestUuid = crypto.randomUUID();
-      await createTestRoomMember(room.id, {
-        guestUuid,
-        displayName: 'Old Guest',
-      });
-
-      const identity: RoomIdentity = { guestUuid, isAuthenticated: false };
-
-      const result = await editRoomMemberDisplayName(
-        testDb,
-        identity,
-        room.id,
-        'New Guest',
-      );
-
-      expect(result?.displayName).toBe('New Guest');
-    });
-  });
-
-  describe('upgradeRoomMember', () => {
-    it('upgrades guest member to user', async () => {
-      const user = await createTestUser();
-      const { receipt } = await createSuccessfulReceipt(user.id, [
-        { interpretedText: 'Item 1', price: 10 },
-      ]);
-
-      const room = await createTestRoom(receipt.id, user.id);
-      const guestUuid = crypto.randomUUID();
-      const member = await createTestRoomMember(room.id, {
-        guestUuid,
-        displayName: 'Guest',
-      });
-
-      const identity: RoomIdentity = {
-        userId: user.id,
-        guestUuid,
-        isAuthenticated: true,
-        name: 'Test',
-      };
-
-      const result = await upgradeRoomMember(testDb, identity, room.id);
-
-      expect(result?.userId).toBe(user.id);
-      expect(result?.roomMemberId).toBe(member.id);
+        expect(result).toBeNull();
     });
 
-    it('updates room timestamp', async () => {
-      const user = await createTestUser();
-      const { receipt } = await createSuccessfulReceipt(user.id, [
-        { interpretedText: 'Item 1', price: 10 },
-      ]);
-      const seededRoom = await createTestRoom(receipt.id, user.id);
-      await createTestRoomMember(seededRoom.id, {
-        userId: user.id,
-        displayName: 'Old Name',
-      });
-      const identity: RoomIdentity = {
-        userId: user.id,
-        isAuthenticated: true,
-        name: 'Test',
-      };
-      const before = await testDb.query.room.findFirst({
-        where: eq(room.id, seededRoom.id),
-      });
-      await editRoomMemberDisplayName(
-        testDb,
-        identity,
-        seededRoom.id,
-        'New Name',
-      );
-      const after = await testDb.query.room.findFirst({
-        where: eq(room.id, seededRoom.id),
-      });
-      expect(before?.updatedAt).toBeDefined();
-      expect(after?.updatedAt).toBeDefined();
-      expect(after?.updatedAt.getTime()).toBeGreaterThan(
-        before?.updatedAt?.getTime() || 0,
-      );
+    it('returns null when userId is not provided', async () => {
+        const user = await createTestUser();
+        const { receipt } = await createSuccessfulReceipt(user.id, [
+            { interpretedText: 'Item 1', price: 10 },
+        ]);
+        const testRoom = await createTestRoom(receipt.id, user.id);
+
+        const identity: RoomIdentity = {
+            guestUuid: crypto.randomUUID(),
+            isAuthenticated: false,
+        };
+
+        const result = await upgradeRoomMember(testDb, identity, testRoom.id);
+
+        expect(result).toBeNull();
     });
-  });
-  it('returns null when guestUuid is not provided', async () => {
-    const user = await createTestUser();
-    const { receipt } = await createSuccessfulReceipt(user.id, [
-      { interpretedText: 'Item 1', price: 10 },
-    ]);
-    const room = await createTestRoom(receipt.id, user.id);
 
-    const identity: RoomIdentity = {
-      userId: user.id,
-      isAuthenticated: true,
-      name: 'Test',
-    };
+    it('returns null when guest member does not exist', async () => {
+        const user = await createTestUser();
+        const { receipt } = await createSuccessfulReceipt(user.id, [
+            { interpretedText: 'Item 1', price: 10 },
+        ]);
+        const testRoom = await createTestRoom(receipt.id, user.id);
 
-    const result = await upgradeRoomMember(testDb, identity, room.id);
+        const identity: RoomIdentity = {
+            userId: user.id,
+            guestUuid: crypto.randomUUID(),
+            isAuthenticated: true,
+            name: 'Test',
+        };
 
-    expect(result).toBeNull();
-  });
+        const result = await upgradeRoomMember(testDb, identity, testRoom.id);
 
-  it('returns null when userId is not provided', async () => {
-    const user = await createTestUser();
-    const { receipt } = await createSuccessfulReceipt(user.id, [
-      { interpretedText: 'Item 1', price: 10 },
-    ]);
-    const room = await createTestRoom(receipt.id, user.id);
-
-    const identity: RoomIdentity = {
-      guestUuid: crypto.randomUUID(),
-      isAuthenticated: false,
-    };
-
-    const result = await upgradeRoomMember(testDb, identity, room.id);
-
-    expect(result).toBeNull();
-  });
-
-  it('returns null when guest member does not exist', async () => {
-    const user = await createTestUser();
-    const { receipt } = await createSuccessfulReceipt(user.id, [
-      { interpretedText: 'Item 1', price: 10 },
-    ]);
-    const room = await createTestRoom(receipt.id, user.id);
-
-    const identity: RoomIdentity = {
-      userId: user.id,
-      guestUuid: crypto.randomUUID(),
-      isAuthenticated: true,
-      name: 'Test',
-    };
-
-    const result = await upgradeRoomMember(testDb, identity, room.id);
-
-    expect(result).toBeNull();
-  });
+        expect(result).toBeNull();
+    });
 });
 
 describe('resolveMembershipState', () => {
-  it('returns user membership when exists', async () => {
-    const user = await createTestUser();
-    const { receipt } = await createSuccessfulReceipt(user.id, [
-      { interpretedText: 'Item 1', price: 10 },
-    ]);
-    const room = await createTestRoom(receipt.id, user.id);
-    await createTestRoomMember(room.id, {
-      userId: user.id,
-      displayName: 'User',
+    it('returns user membership when exists', async () => {
+        const user = await createTestUser();
+        const { receipt } = await createSuccessfulReceipt(user.id, [
+            { interpretedText: 'Item 1', price: 10 },
+        ]);
+        const testRoom = await createTestRoom(receipt.id, user.id);
+        await createTestRoomMember(testRoom.id, {
+            userId: user.id,
+            displayName: 'User',
+        });
+
+        const identity: RoomIdentity = {
+            userId: user.id,
+            isAuthenticated: true,
+            name: 'Test',
+        };
+
+        const result = await resolveMembershipState(testDb, testRoom.id, identity);
+
+        expect(result.membership?.userId).toBe(user.id);
+        expect(result.canMerge).toBe(false);
     });
 
-    const identity: RoomIdentity = {
-      userId: user.id,
-      isAuthenticated: true,
-      name: 'Test',
-    };
+    it('returns guest membership for merge when user has guest cookie', async () => {
+        const user = await createTestUser();
+        const { receipt } = await createSuccessfulReceipt(user.id, [
+            { interpretedText: 'Item 1', price: 10 },
+        ]);
+        const testRoom = await createTestRoom(receipt.id, user.id);
+        const guestUuid = crypto.randomUUID();
+        const member = await createTestRoomMember(testRoom.id, {
+            guestUuid,
+            displayName: 'Guest',
+        });
 
-    const result = await resolveMembershipState(testDb, room.id, identity);
+        const identity: RoomIdentity = {
+            userId: user.id,
+            guestUuid,
+            isAuthenticated: true,
+            name: 'Test',
+        };
 
-    expect(result.membership?.userId).toBe(user.id);
-    expect(result.canMerge).toBe(false);
-  });
+        const result = await resolveMembershipState(testDb, testRoom.id, identity);
 
-  it('returns guest membership for merge when user has guest cookie', async () => {
-    const user = await createTestUser();
-    const { receipt } = await createSuccessfulReceipt(user.id, [
-      { interpretedText: 'Item 1', price: 10 },
-    ]);
-    const room = await createTestRoom(receipt.id, user.id);
-    const guestUuid = crypto.randomUUID();
-    const member = await createTestRoomMember(room.id, {
-      guestUuid,
-      displayName: 'Guest',
+        expect(result.membership?.roomMemberId).toBe(member.id);
+        expect(result.canMerge).toBe(true);
     });
 
-    const identity: RoomIdentity = {
-      userId: user.id,
-      guestUuid,
-      isAuthenticated: true,
-      name: 'Test',
-    };
+    it('returns null membership when no identity provided', async () => {
+        const user = await createTestUser();
+        const { receipt } = await createSuccessfulReceipt(user.id, [
+            { interpretedText: 'Item 1', price: 10 },
+        ]);
+        const testRoom = await createTestRoom(receipt.id, user.id);
 
-    const result = await resolveMembershipState(testDb, room.id, identity);
+        const identity: RoomIdentity = { isAuthenticated: false };
 
-    expect(result.membership?.roomMemberId).toBe(member.id);
-    expect(result.canMerge).toBe(true);
-  });
+        const result = await resolveMembershipState(testDb, testRoom.id, identity);
 
-  it('returns null membership when no identity provided', async () => {
-    const user = await createTestUser();
-    const { receipt } = await createSuccessfulReceipt(user.id, [
-      { interpretedText: 'Item 1', price: 10 },
-    ]);
-    const room = await createTestRoom(receipt.id, user.id);
-
-    const identity: RoomIdentity = { isAuthenticated: false };
-
-    const result = await resolveMembershipState(testDb, room.id, identity);
-
-    expect(result.membership).toBeNull();
-    expect(result.canMerge).toBe(false);
-  });
+        expect(result.membership).toBeNull();
+        expect(result.canMerge).toBe(false);
+    });
 });

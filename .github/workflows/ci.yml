@@ -1,4 +1,4 @@
-name: E2E Tests
+name: CI
 
 on:
   push:
@@ -7,10 +7,40 @@ on:
     branches: [main]
 
 jobs:
+  fast-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+      
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Generate CF Types
+        run: |
+          touch .dev.vars
+          pnpm wrangler types
+
+      - name: Unit Tests
+        run: pnpm run test
+
+      - name: Type Check
+        run: pnpm exec tsc
+
+      - name: Lint
+        run: pnpm run lint
+
+  # JOB 2: Heavy checks (E2E)
   e2e:
+    needs: fast-checks # Only run E2E if unit tests pass to save CI minutes
     runs-on: ubuntu-latest
     timeout-minutes: 15
-
     services:
       postgres:
         image: postgres:15
@@ -28,14 +58,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v4
         with:
           version: 10
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: 'pnpm'
@@ -43,10 +69,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Install Playwright Browsers
+        run: pnpm exec playwright install --with-deps
+
       - name: Run E2E tests
         run: pnpm test:e2e:ci
         env:
           CI: true
+          DATABASE_URL: postgres://colin:secure_password@localhost:5433/split_test
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4

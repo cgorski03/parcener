@@ -1,6 +1,6 @@
 import {
-  AvatarFallback,
   Avatar,
+  AvatarFallback,
   AvatarImage,
 } from '@/shared/components/ui/avatar';
 

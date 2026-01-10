@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import {
-    useCreateInvitation,
-    inviteRateLimitOptions,
-} from '../hooks/use-invitations';
 import { CheckCircle2, Loader2, Lock, Share, Ticket } from 'lucide-react';
+import { useSuspenseQuery } from '@tanstack/react-query';
+import {
+    inviteRateLimitOptions,
+    useCreateInvitation,
+} from '../hooks/use-invitations';
 import { Button } from '@/shared/components/ui/button';
 import { QrShareSheet } from '@/shared/components/common/qr-code-shareable-sheet';
-import { useSuspenseQuery } from '@tanstack/react-query';
 
 export function InviteSection() {
     const { data: inviteData } = useSuspenseQuery(inviteRateLimitOptions);
@@ -27,7 +27,7 @@ export function InviteSection() {
                     <Loader2 className="mr-2 h-3 w-3 animate-spin" /> Creating...
                 </>
             );
-        if (!inviteData?.canInvite)
+        if (!inviteData.canInvite)
             return (
                 <>
                     <Lock className="mr-2 h-3 w-3" /> Invites Locked
@@ -70,11 +70,9 @@ export function InviteSection() {
                                 <h4 className="text-sm font-semibold text-foreground">
                                     Share Access
                                 </h4>
-                                {inviteData && (
-                                    <span className="text-[10px] font-medium bg-background border text-muted-foreground px-2 py-0.5 rounded-full shadow-sm">
-                                        {inviteData.limit - inviteData.used} remaining
-                                    </span>
-                                )}
+                                <span className="text-[10px] font-medium bg-background border text-muted-foreground px-2 py-0.5 rounded-full shadow-sm">
+                                    {inviteData.limit - inviteData.used} remaining
+                                </span>
                             </div>
                             <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
                                 Parcener is invite-only. You can create invitations to share

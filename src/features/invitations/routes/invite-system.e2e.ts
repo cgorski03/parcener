@@ -1,4 +1,4 @@
-import { test, expect } from '@/test/e2e/fixtures';
+import { expect, test } from '@/test/e2e/fixtures';
 import { e2eDb } from '@/test/e2e/db';
 import { invite } from '@/shared/server/db/schema';
 

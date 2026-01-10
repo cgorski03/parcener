@@ -1,8 +1,9 @@
 import { and, eq } from 'drizzle-orm';
 import { touchRoomId } from './room-service';
-import { DbType, roomMember } from '@/shared/server/db';
-import { RoomIdentity } from '@/shared/auth/server/room-identity';
-import { RoomMembership } from '@/shared/dto/types';
+import type { DbType} from '@/shared/server/db';
+import type { RoomIdentity } from '@/shared/auth/server/room-identity';
+import type { RoomMembership } from '@/shared/dto/types';
+import { roomMember } from '@/shared/server/db';
 
 export async function resolveMembershipState(
   db: DbType,
@@ -102,8 +103,8 @@ export async function editRoomMemberDisplayName(
   roomId: string,
   displayName: string,
 ) {
-  const updatedRoomMember = await db.transaction(async (tx) => {
-    const [updatedRoomMember] = await tx
+  const updatedMember = await db.transaction(async (tx) => {
+    const [member] = await tx
       .update(roomMember)
       .set({ displayName })
       .where(
@@ -117,9 +118,9 @@ export async function editRoomMemberDisplayName(
       .returning();
 
     await touchRoomId(tx, roomId);
-    return updatedRoomMember;
+    return member;
   });
-  const { id, ...rest } = updatedRoomMember;
+  const { id, ...rest } = updatedMember;
   return {
     roomMemberId: id,
     ...rest,
@@ -132,7 +133,7 @@ export async function upgradeRoomMember(
   roomId: string,
 ) {
   if (!identity.guestUuid || !identity.userId) return null;
-  const [member] = await db
+  const members = await db
     .update(roomMember)
     .set({ userId: identity.userId })
     .where(
@@ -143,8 +144,8 @@ export async function upgradeRoomMember(
     )
     .returning();
 
-  if (!member) return null;
+  if (members.length === 0) return null;
 
-  const { id, ...rest } = member;
+  const { id, ...rest } = members[0];
   return { roomMemberId: id, ...rest };
 }

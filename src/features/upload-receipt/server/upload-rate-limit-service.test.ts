@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { createTestUser } from '@/test/factories';
 import { receipt } from '@/shared/server/db';
 import { getUserUploadRateLimit } from '@/features/upload-receipt/server/upload-rate-limit-service';

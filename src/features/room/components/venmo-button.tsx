@@ -1,6 +1,6 @@
+import { ExternalLink, Smartphone } from 'lucide-react';
 import { useIsMobile } from '@/shared/hooks/use-mobile';
 import { Button } from '@/shared/components/ui/button';
-import { ExternalLink, Smartphone } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 
 interface VenmoButtonProps {

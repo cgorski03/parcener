@@ -1,7 +1,8 @@
 import { and, desc, eq } from 'drizzle-orm';
 import { touchRoomId } from './room-service';
-import { RoomIdentity } from '@/shared/auth/server/room-identity';
-import { claim, DbTxType, DbType, room } from '@/shared/server/db';
+import type { RoomIdentity } from '@/shared/auth/server/room-identity';
+import type { DbTxType, DbType } from '@/shared/server/db';
+import { claim, room } from '@/shared/server/db';
 
 type ItemClaimRequest = {
     roomId: string;
@@ -16,7 +17,7 @@ export async function claimItem(db: DbType, request: ItemClaimRequest) {
     // Ensure the item belongs to the room
     return await db.transaction(async (tx) => {
         const item = await tx.query.receiptItem.findFirst({
-            where: (items, { eq, exists, and }) =>
+            where: (items, { exists }) =>
                 and(
                     eq(items.id, receiptItemId),
                     exists(

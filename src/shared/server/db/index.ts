@@ -1,10 +1,11 @@
-import { drizzle, PostgresJsQueryResultHKT } from 'drizzle-orm/postgres-js';
+import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import * as schema from './schema';
-import * as authSchema from './auth-schema';
-import { ExtractTablesWithRelations } from 'drizzle-orm';
-import { PgTransaction } from 'drizzle-orm/pg-core';
 import { createServerOnlyFn } from '@tanstack/react-start';
+import * as authSchema from './auth-schema';
+import * as schema from './schema';
+import type { PgTransaction } from 'drizzle-orm/pg-core';
+import type { ExtractTablesWithRelations } from 'drizzle-orm';
+import type { PostgresJsQueryResultHKT } from 'drizzle-orm/postgres-js';
 
 type FullSchema = typeof schema & typeof authSchema;
 

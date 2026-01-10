@@ -2,10 +2,10 @@ import { beforeAll, beforeEach, vi } from 'vitest';
 import { sql } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import * as schema from '@/shared/server/db/schema';
-import * as authSchema from '@/shared/server/db/auth-schema';
 import { env } from 'cloudflare:test';
 import { tablesToTruncate } from './helpers/truncate-tables';
+import * as schema from '@/shared/server/db/schema';
+import * as authSchema from '@/shared/server/db/auth-schema';
 
 // Stub environment variables for tests
 beforeAll(() => {

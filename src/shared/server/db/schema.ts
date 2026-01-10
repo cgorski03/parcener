@@ -8,11 +8,10 @@ import {
     pgTable,
     text,
     timestamp,
-    uuid,
-    varchar,
+    unique,
+    uuid, varchar
 } from 'drizzle-orm/pg-core';
 import { user } from './auth-schema';
-import { unique } from 'drizzle-orm/pg-core';
 
 export const receiptProcessingEnum = pgEnum('processing_status', [
     'processing',
@@ -148,10 +147,7 @@ export const paymentMethod = pgTable('payment_method', {
 export const receiptRelations = relations(receipt, ({ one, many }) => ({
     items: many(receiptItem),
     processingInfo: many(receiptProcessingInformation),
-    room: one(room, {
-        fields: [receipt.id],
-        references: [room.receiptId],
-    }),
+    room: one(room),
 }));
 
 export const roomMemberRelations = relations(roomMember, ({ one, many }) => ({
@@ -243,5 +239,5 @@ export type NewPaymentMethod = typeof paymentMethod.$inferInsert;
 
 export type Invite = typeof invite.$inferSelect;
 export type ReceiptEntityWithItems = Receipt & {
-    items: ReceiptItem[];
+    items: Array<ReceiptItem>;
 };

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { getServerSession } from './get-server-session';
 
 describe('get-server-session', () => {

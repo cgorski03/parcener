@@ -1,8 +1,8 @@
-import { test as base, Page } from '@playwright/test';
-import { e2eDb } from './db';
-import { user } from '@/shared/server/db/auth-schema';
+import { test as base } from '@playwright/test';
 import { eq } from 'drizzle-orm';
-import { AppUser } from '@/shared/server/db';
+import { e2eDb } from './db';
+import type { AppUser } from '@/shared/server/db';
+import { user } from '@/shared/server/db/auth-schema';
 import { authClient } from '@/shared/lib/auth-client';
 
 // Create auth client for E2E tests (vanilla JS, not React)
@@ -54,7 +54,7 @@ export const test = base.extend<AuthFixtures>({
 
     authenticateAs: async ({ context }, use, testInfo) => {
         // Track created users for cleanup
-        const createdUserIds: string[] = [];
+        const createdUserIds: Array<string> = [];
 
         const authenticate = async (options: CreateUserOptions = {}): Promise<E2EAuthUser> => {
             userCounter++;

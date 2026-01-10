@@ -1,6 +1,6 @@
-import z from 'zod';
-import * as schema from './dtos.ts';
-import { Claim } from '@/shared/server/db/schema';
+import type z from 'zod';
+import type * as schema from './dtos.ts';
+import type { Claim } from '@/shared/server/db/schema';
 
 export type ReceiptItemDto = z.infer<typeof schema.receiptItemDtoSchema>;
 export type CreateReceiptItemDto = z.infer<
@@ -31,8 +31,8 @@ export type PaymentMethodPayToDto = z.infer<
 // Combined Types
 export type FullRoomInfoDto = RoomDto & {
   receipt: ReceiptDto;
-  claims: Claim[];
-  members: RoomMemberDto[];
+  claims: Array<Claim>;
+  members: Array<RoomMemberDto>;
   receiptIsValid: boolean;
 };
 export type RecentRoomInfoDto = {

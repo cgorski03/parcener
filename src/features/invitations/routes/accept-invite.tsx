@@ -1,4 +1,13 @@
 import { Link } from '@tanstack/react-router';
+import {
+  AlertCircle,
+  ArrowRight,
+  CheckCircle2,
+  Home,
+  ShieldCheck,
+  XCircle,
+} from 'lucide-react';
+import type { InviteStatus } from '../server/invitation-service';
 import { Button } from '@/shared/components/ui/button';
 import {
   Card,
@@ -8,15 +17,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/shared/components/ui/card';
-import {
-  CheckCircle2,
-  XCircle,
-  ShieldCheck,
-  AlertCircle,
-  ArrowRight,
-  Home,
-} from 'lucide-react';
-import type { InviteStatus } from '../server/invitation-service';
 
 type AcceptInvitePageProps = {
   status: InviteStatus;

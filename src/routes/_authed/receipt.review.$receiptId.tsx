@@ -1,11 +1,11 @@
+import { createFileRoute, notFound } from '@tanstack/react-router';
 import { useGetReceiptReview } from '@/features/receipt-review/hooks/use-get-receipt';
 import { receiptNotFound } from '@/features/receipt-review/lib/receipt-utils';
 import {
-  ReceiptReviewPage,
   ReceiptReviewLoading,
+  ReceiptReviewPage,
 } from '@/features/receipt-review/routes/review';
 import { ReviewNotFound } from '@/shared/components/layout/not-found';
-import { createFileRoute, notFound } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/_authed/receipt/review/$receiptId')({
   head: () => ({

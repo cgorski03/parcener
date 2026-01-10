@@ -1,6 +1,6 @@
-import { cn } from '@/shared/lib/utils';
-import { ReactNode } from 'react';
 import { AppNavigation } from './app-navigation';
+import type { ReactNode } from 'react';
+import { cn } from '@/shared/lib/utils';
 
 interface AppHeaderProps {
   title?: ReactNode;

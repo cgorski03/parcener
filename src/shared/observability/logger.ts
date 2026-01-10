@@ -1,7 +1,7 @@
 import {
-  withScope,
-  captureException,
   addBreadcrumb,
+  captureException,
+  withScope,
 } from '@sentry/tanstackstart-react';
 
 export const logger = {

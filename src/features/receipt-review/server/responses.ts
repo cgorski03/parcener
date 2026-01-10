@@ -1,5 +1,5 @@
-import { NotFoundResponse } from '@/shared/server/response-types';
-import { ReceiptWithRoom } from './get-receipt-service';
+import type { ReceiptWithRoom } from './get-receipt-service';
+import type { NotFoundResponse } from '@/shared/server/response-types';
 
 export type ReceiptProcessingResponse = { error: true; code: 'PROCESSING' };
 export type ReceiptProcessingFailedResponse = {

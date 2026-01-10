@@ -1,174 +1,174 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import { eq } from 'drizzle-orm';
 import {
-  createTestUser,
-  createTestReceipt,
-  createTestRoom,
-  createTestRoomMember,
+    createTestReceipt,
+    createTestRoom,
+    createTestRoomMember,
+    createTestUser,
 } from '@/test/factories';
 import {
-  getRecentReceipts,
-  getRecentRooms,
+    getRecentReceipts,
+    getRecentRooms,
 } from '@/features/dashboard/server/recent-activity-service';
 import { testDb } from '@/test/setup';
 import { user } from '@/shared/server/db/auth-schema';
-import { eq } from 'drizzle-orm';
 
 describe('getRecentReceipts', () => {
-  it('returns null for user without upload permission', async () => {
-    const userEntity = await createTestUser({ canUpload: false });
+    it('returns null for user without upload permission', async () => {
+        const userEntity = await createTestUser({ canUpload: false });
 
-    const result = await getRecentReceipts(testDb, userEntity);
+        const result = await getRecentReceipts(testDb, userEntity);
 
-    expect(result).toBeNull();
-  });
-
-  it('returns empty array for user with no receipts', async () => {
-    const userEntity = await createTestUser({ canUpload: true });
-
-    const result = await getRecentReceipts(testDb, userEntity);
-
-    expect(result).toBeDefined();
-    expect(Array.isArray(result)).toBe(true);
-    expect(result!.length).toBe(0);
-  });
-
-  it('returns user most recent receipts', async () => {
-    const userEntity = await createTestUser({ canUpload: true });
-
-    await createTestReceipt(userEntity.id, {
-      title: 'Receipt 1',
-      createdAt: new Date('2025-01-06T10:00:00Z'),
-    });
-    await createTestReceipt(userEntity.id, {
-      title: 'Receipt 2',
-      createdAt: new Date('2025-01-06T09:00:00Z'),
-    });
-    await createTestReceipt(userEntity.id, {
-      title: 'Receipt 3',
-      createdAt: new Date('2025-01-06T11:00:00Z'),
+        expect(result).toBeNull();
     });
 
-    const result = await getRecentReceipts(testDb, userEntity);
+    it('returns empty array for user with no receipts', async () => {
+        const userEntity = await createTestUser({ canUpload: true });
 
-    expect(result).toBeDefined();
-    expect(result!.length).toBe(3);
-    expect(result![0].title).toBe('Receipt 3');
-    expect(result![1].title).toBe('Receipt 2');
-    expect(result![2].title).toBe('Receipt 1');
-  });
+        const result = await getRecentReceipts(testDb, userEntity);
 
-  it('returns null for user without upload permission', async () => {
-    const userEntity = await createTestUser({ canUpload: true });
-
-    await createTestReceipt(userEntity.id, {
-      title: 'Old Receipt',
+        expect(result).toBeDefined();
+        expect(Array.isArray(result)).toBe(true);
+        expect(result!.length).toBe(0);
     });
 
-    await testDb
-      .update(user)
-      .set({ canUpload: false })
-      .where(eq(user.id, userEntity.id));
+    it('returns user most recent receipts', async () => {
+        const userEntity = await createTestUser({ canUpload: true });
 
-    const updatedUser = { ...userEntity, canUpload: false };
+        await createTestReceipt(userEntity.id, {
+            title: 'Receipt 1',
+            createdAt: new Date('2025-01-06T10:00:00Z'),
+        });
+        await createTestReceipt(userEntity.id, {
+            title: 'Receipt 2',
+            createdAt: new Date('2025-01-06T09:00:00Z'),
+        });
+        await createTestReceipt(userEntity.id, {
+            title: 'Receipt 3',
+            createdAt: new Date('2025-01-06T11:00:00Z'),
+        });
 
-    const result = await getRecentReceipts(testDb, updatedUser);
+        const result = await getRecentReceipts(testDb, userEntity);
 
-    expect(result).toBeNull();
-  });
+        expect(result).toBeDefined();
+        expect(result!.length).toBe(3);
+        expect(result![0].title).toBe('Receipt 3');
+        expect(result![1].title).toBe('Receipt 2');
+        expect(result![2].title).toBe('Receipt 1');
+    });
+
+    it('returns null for user without upload permission', async () => {
+        const userEntity = await createTestUser({ canUpload: true });
+
+        await createTestReceipt(userEntity.id, {
+            title: 'Old Receipt',
+        });
+
+        await testDb
+            .update(user)
+            .set({ canUpload: false })
+            .where(eq(user.id, userEntity.id));
+
+        const updatedUser = { ...userEntity, canUpload: false };
+
+        const result = await getRecentReceipts(testDb, updatedUser);
+
+        expect(result).toBeNull();
+    });
 });
 
 describe('getRecentRooms', () => {
-  it('returns empty array for user with no rooms', async () => {
-    const user = await createTestUser({ canUpload: true });
+    it('returns empty array for user with no rooms', async () => {
+        const seededUser = await createTestUser({ canUpload: true });
 
-    const result = await getRecentRooms(testDb, user);
+        const result = await getRecentRooms(testDb, seededUser);
 
-    expect(result).toBeDefined();
-    expect(Array.isArray(result)).toBe(true);
-    expect(result.length).toBe(0);
-  });
-
-  it('returns user recent rooms ordered by join date', async () => {
-    const user1 = await createTestUser({ canUpload: true });
-    const user2 = await createTestUser({ canUpload: true });
-
-    const receipt1 = await createTestReceipt(user1.id);
-    const receipt2 = await createTestReceipt(user1.id);
-
-    const room1 = await createTestRoom(receipt1.receipt.id, user1.id, {
-      title: 'Room 1',
-    });
-    const room2 = await createTestRoom(receipt2.receipt.id, user1.id, {
-      title: 'Room 2',
+        expect(result).toBeDefined();
+        expect(Array.isArray(result)).toBe(true);
+        expect(result.length).toBe(0);
     });
 
-    await createTestRoomMember(room1.id, {
-      userId: user1.id,
-      joinedAt: new Date('2025-01-06T12:00:00Z'),
+    it('returns user recent rooms ordered by join date', async () => {
+        const user1 = await createTestUser({ canUpload: true });
+        const user2 = await createTestUser({ canUpload: true });
+
+        const receipt1 = await createTestReceipt(user1.id);
+        const receipt2 = await createTestReceipt(user1.id);
+
+        const room1 = await createTestRoom(receipt1.receipt.id, user1.id, {
+            title: 'Room 1',
+        });
+        const room2 = await createTestRoom(receipt2.receipt.id, user1.id, {
+            title: 'Room 2',
+        });
+
+        await createTestRoomMember(room1.id, {
+            userId: user1.id,
+            joinedAt: new Date('2025-01-06T12:00:00Z'),
+        });
+
+        await createTestRoomMember(room2.id, {
+            userId: user1.id,
+            joinedAt: new Date('2025-01-06T11:00:00Z'),
+        });
+
+        await createTestRoomMember(room1.id, {
+            userId: user2.id,
+            joinedAt: new Date('2025-01-06T08:00:00Z'),
+        });
+
+        const result = await getRecentRooms(testDb, user1);
+
+        expect(result).toBeDefined();
+        expect(result.length).toBe(2);
+        expect(result[0].room.roomId).toBe(room2.id);
+        expect(result[1].room.roomId).toBe(room1.id);
     });
 
-    await createTestRoomMember(room2.id, {
-      userId: user1.id,
-      joinedAt: new Date('2025-01-06T11:00:00Z'),
+    it('only returns rooms for requesting user', async () => {
+        const user1 = await createTestUser({ canUpload: true });
+        const user2 = await createTestUser({ canUpload: true });
+
+        const receipt1 = await createTestReceipt(user1.id);
+        const receipt2 = await createTestReceipt(user2.id);
+
+        const room1 = await createTestRoom(receipt1.receipt.id, user1.id, {
+            title: 'Room 1',
+        });
+        const room2 = await createTestRoom(receipt2.receipt.id, user2.id, {
+            title: 'Room 2',
+        });
+
+        await createTestRoomMember(room1.id, { userId: user1.id });
+        await createTestRoomMember(room2.id, { userId: user2.id });
+
+        const result = await getRecentRooms(testDb, user1);
+
+        expect(result).toBeDefined();
+        expect(result.length).toBe(1);
+        expect(result[0].room.roomId).toBe(room1.id);
     });
 
-    await createTestRoomMember(room1.id, {
-      userId: user2.id,
-      joinedAt: new Date('2025-01-06T08:00:00Z'),
+    it('returns rooms for user without upload permission', async () => {
+        const userEntity = await createTestUser({ canUpload: true });
+
+        const receipt = await createTestReceipt(userEntity.id);
+        const room = await createTestRoom(receipt.receipt.id, userEntity.id, {
+            title: 'Existing Room',
+        });
+        await createTestRoomMember(room.id, { userId: userEntity.id });
+
+        await testDb
+            .update(user)
+            .set({ canUpload: false })
+            .where(eq(user.id, userEntity.id));
+
+        const updatedUser = { ...userEntity, canUpload: false };
+
+        const result = await getRecentRooms(testDb, updatedUser);
+
+        expect(result).toBeDefined();
+        expect(result.length).toBe(1);
+        expect(result[0].room.roomId).toBe(room.id);
     });
-
-    const result = await getRecentRooms(testDb, user1);
-
-    expect(result).toBeDefined();
-    expect(result.length).toBe(2);
-    expect(result[0].room.roomId).toBe(room2.id);
-    expect(result[1].room.roomId).toBe(room1.id);
-  });
-
-  it('only returns rooms for requesting user', async () => {
-    const user1 = await createTestUser({ canUpload: true });
-    const user2 = await createTestUser({ canUpload: true });
-
-    const receipt1 = await createTestReceipt(user1.id);
-    const receipt2 = await createTestReceipt(user2.id);
-
-    const room1 = await createTestRoom(receipt1.receipt.id, user1.id, {
-      title: 'Room 1',
-    });
-    const room2 = await createTestRoom(receipt2.receipt.id, user2.id, {
-      title: 'Room 2',
-    });
-
-    await createTestRoomMember(room1.id, { userId: user1.id });
-    await createTestRoomMember(room2.id, { userId: user2.id });
-
-    const result = await getRecentRooms(testDb, user1);
-
-    expect(result).toBeDefined();
-    expect(result.length).toBe(1);
-    expect(result[0].room.roomId).toBe(room1.id);
-  });
-
-  it('returns rooms for user without upload permission', async () => {
-    const userEntity = await createTestUser({ canUpload: true });
-
-    const receipt = await createTestReceipt(userEntity.id);
-    const room = await createTestRoom(receipt.receipt.id, userEntity.id, {
-      title: 'Existing Room',
-    });
-    await createTestRoomMember(room.id, { userId: userEntity.id });
-
-    await testDb
-      .update(user)
-      .set({ canUpload: false })
-      .where(eq(user.id, userEntity.id));
-
-    const updatedUser = { ...userEntity, canUpload: false };
-
-    const result = await getRecentRooms(testDb, updatedUser);
-
-    expect(result).toBeDefined();
-    expect(result.length).toBe(1);
-    expect(result[0].room.roomId).toBe(room.id);
-  });
 });

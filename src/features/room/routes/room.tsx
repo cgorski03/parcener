@@ -1,7 +1,7 @@
-import { AppUser } from '@/shared/server/db';
 import { ActiveRoomScreen } from '../components/active-room-screen';
 import { LobbyScreen } from '../components/lobby-screen';
 import type { FullRoomInfoDto, RoomMembership } from '@/shared/dto/types';
+import type { AppUser } from '@/shared/server/db';
 
 type RoomPageProps = {
   room: FullRoomInfoDto;

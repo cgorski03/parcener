@@ -1,5 +1,6 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { eq } from 'drizzle-orm';
+import { env } from 'cloudflare:test';
 import { createTestUser } from '@/test/factories';
 import { receipt } from '@/shared/server/db';
 import {
@@ -7,7 +8,6 @@ import {
   processingQueueMessageHandler,
 } from '@/features/upload-receipt/server/processing-service';
 import { testDb } from '@/test/setup';
-import { env } from 'cloudflare:test';
 
 /**
  * Tests for upload receipt flow.

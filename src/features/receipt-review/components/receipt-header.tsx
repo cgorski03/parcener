@@ -1,4 +1,4 @@
-import { Receipt, Loader2, XCircle } from 'lucide-react';
+import { Loader2, Receipt, XCircle } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import { AppHeader } from '@/shared/components/layout/app-header';
 

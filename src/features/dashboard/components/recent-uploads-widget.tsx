@@ -1,7 +1,7 @@
-import { Receipt, Plus, ChevronRight } from 'lucide-react';
+import { ChevronRight, Plus, Receipt } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
-import { RecentList } from './recent-list-widget';
 import { useRecentReceipts } from '../hooks/use-recents';
+import { RecentList } from './recent-list-widget';
 
 export function RecentUploads() {
   const { data, isLoading } = useRecentReceipts();

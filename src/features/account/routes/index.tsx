@@ -1,3 +1,8 @@
+import { Suspense } from 'react';
+import {
+  MembershipStatusContainer,
+  MembershipStatusSkeleton,
+} from '../components/membership-status-container';
 import { AppHeader } from '@/shared/components/layout/app-header';
 import {
   Avatar,
@@ -8,11 +13,6 @@ import {
   PaymentMethodsSection,
   PaymentMethodsSkeleton,
 } from '@/features/payment-methods/components/payment-method-section';
-import { Suspense } from 'react';
-import {
-  MembershipStatusContainer,
-  MembershipStatusSkeleton,
-} from '../components/membership-status-container';
 import { SignOutButton } from '@/shared/components/common/sign-out-button';
 import { Route } from '@/routes/_authed/account';
 import { RecentUploads } from '@/features/dashboard/components/recent-uploads-widget';
@@ -29,13 +29,13 @@ export function AccountRouteComponent() {
         {/* 1. Profile Section: Renders instantly from Route Context */}
         <div className="bg-gradient-to-br from-primary/10 via-background to-background rounded-xl border shadow-sm p-4 flex items-center gap-4 relative overflow-hidden">
           <Avatar className="h-14 w-14">
-            <AvatarImage src={user?.image || undefined} />
-            <AvatarFallback>{user?.name?.[0]}</AvatarFallback>
+            <AvatarImage src={user.image || undefined} />
+            <AvatarFallback>{user.name[0]}</AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
-            <h2 className="font-bold text-lg truncate">{user?.name}</h2>
+            <h2 className="font-bold text-lg truncate">{user.name}</h2>
             <p className="text-sm text-muted-foreground truncate">
-              {user?.email}
+              {user.email}
             </p>
           </div>
         </div>

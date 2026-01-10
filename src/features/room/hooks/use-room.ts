@@ -1,14 +1,7 @@
-import type {
-  FullRoomInfoDto,
-  JoinRoomRequest,
-  PaymentMethodDto,
-} from '@/shared/dto/types';
 import {
-  DefinedUseQueryResult,
   useMutation,
   useQuery,
-  useQueryClient,
-  UseQueryResult,
+  useQueryClient
 } from '@tanstack/react-query';
 import { useRouter } from '@tanstack/react-router';
 import {
@@ -17,6 +10,14 @@ import {
   joinRoomRpc,
   updateRoomHostPaymentMethod,
 } from '../server/room-rpc';
+import type {
+  DefinedUseQueryResult,
+  UseQueryResult} from '@tanstack/react-query';
+import type {
+  FullRoomInfoDto,
+  JoinRoomRequest,
+  PaymentMethodDto,
+} from '@/shared/dto/types';
 import { logger } from '@/shared/observability/logger';
 import { SENTRY_EVENTS } from '@/shared/observability/sentry-events';
 import { paymentMethodsOptions } from '@/features/payment-methods/hooks/use-payment-methods';

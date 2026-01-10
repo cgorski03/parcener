@@ -1,21 +1,23 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import { eq } from 'drizzle-orm';
+import {
+    getReceiptState,
+    getReceiptWithItems
+} from './get-receipt-service';
+import type {
+    ReceiptState
+} from './get-receipt-service';
+import type { GetReceiptResponse } from './responses';
 import { testDb } from '@/test/setup';
 import { createTestUser } from '@/test/factories/user';
 import {
-    createTestReceipt,
+    createFailedReceipt,
     createProcessingReceipt,
     createSuccessfulReceipt,
-    createFailedReceipt,
+    createTestReceipt,
 } from '@/test/factories/receipt';
 import { NOT_FOUND, RECEIPT_PROCESSING } from '@/shared/server/response-types';
-import {
-    getReceiptState,
-    getReceiptWithItems,
-    ReceiptState,
-} from './get-receipt-service';
-import { eq } from 'drizzle-orm';
 import { validateReceiptCalculations } from '@/shared/lib/money-math';
-import { GetReceiptResponse } from './responses';
 import { receipt } from '@/shared/server/db';
 
 function assertReceiptSuccess(
@@ -119,16 +121,16 @@ describe('get-receipt-service', () => {
 
         it('returns successful receipt with items', async () => {
             const user = await createTestUser();
-            const { receipt } = await createSuccessfulReceipt(user.id, [
+            const { receipt: seededReceipt } = await createSuccessfulReceipt(user.id, [
                 { interpretedText: 'Item 1', price: 10, quantity: 2 },
                 { interpretedText: 'Item 2', price: 5, quantity: 1 },
             ]);
 
-            const result = await getReceiptWithItems(testDb, receipt.id, user.id);
+            const result = await getReceiptWithItems(testDb, seededReceipt.id, user.id);
 
             assertReceiptSuccess(result);
 
-            expect(result.receiptId).toBe(receipt.id);
+            expect(result.receiptId).toBe(seededReceipt.id);
             expect(result.items).toHaveLength(2);
             expect(result.items[0].interpretedText).toBe('Item 1');
             expect(result.items[1].interpretedText).toBe('Item 2');
@@ -136,13 +138,13 @@ describe('get-receipt-service', () => {
 
         it('returns receipt with roomId when room exists', async () => {
             const user = await createTestUser();
-            const { receipt } = await createSuccessfulReceipt(user.id, [
+            const { receipt: seededReceipt } = await createSuccessfulReceipt(user.id, [
                 { interpretedText: 'Item 1', price: 10 },
             ]);
             const { createTestRoom } = await import('@/test/factories/room');
-            const room = await createTestRoom(receipt.id, user.id);
+            const room = await createTestRoom(seededReceipt.id, user.id);
 
-            const result = await getReceiptWithItems(testDb, receipt.id, user.id);
+            const result = await getReceiptWithItems(testDb, seededReceipt.id, user.id);
             assertReceiptSuccess(result);
 
             expect(result.roomId).toBe(room.id);
@@ -151,11 +153,11 @@ describe('get-receipt-service', () => {
         it('does not return other users receipts', async () => {
             const user1 = await createTestUser();
             const user2 = await createTestUser();
-            const { receipt } = await createSuccessfulReceipt(user1.id, [
+            const { receipt: seededReceipt } = await createSuccessfulReceipt(user1.id, [
                 { interpretedText: 'Item 1', price: 10 },
             ]);
 
-            const result = await getReceiptWithItems(testDb, receipt.id, user2.id);
+            const result = await getReceiptWithItems(testDb, seededReceipt.id, user2.id);
 
             expect(result).toEqual(NOT_FOUND);
         });
@@ -200,12 +202,12 @@ describe('get-receipt-service', () => {
 
         it('returns success for valid receipt', async () => {
             const user = await createTestUser();
-            const { receipt } = await createSuccessfulReceipt(user.id, [
+            const { receipt: seededReceipt } = await createSuccessfulReceipt(user.id, [
                 { interpretedText: 'Item 1', price: 10, quantity: 2 },
                 { interpretedText: 'Item 2', price: 5, quantity: 1 },
             ]);
 
-            const result = await getReceiptState(testDb, receipt.id, user.id);
+            const result = await getReceiptState(testDb, seededReceipt.id, user.id);
 
             // 1. Validate the state
             expect(result.status).toBe('valid');
@@ -214,7 +216,7 @@ describe('get-receipt-service', () => {
             assertValid(result);
 
             // 3. Access properties safely
-            expect(result.receipt.receiptId).toBe(receipt.id);
+            expect(result.receipt.receiptId).toBe(seededReceipt.id);
             expect(result.receipt.items).toHaveLength(2);
         });
 
@@ -276,9 +278,9 @@ describe('get-receipt-service', () => {
                 { interpretedText: 'Item 1', price: 10, quantity: 2 },
                 { interpretedText: 'Item 2', price: 5, quantity: 1 },
             ];
-            const { receipt } = await createSuccessfulReceipt(user.id, items);
+            const { receipt: seededReceipt } = await createSuccessfulReceipt(user.id, items);
 
-            const result = await getReceiptWithItems(testDb, receipt.id, user.id);
+            const result = await getReceiptWithItems(testDb, seededReceipt.id, user.id);
 
             // 1. Narrow the type using the robust helper
             assertReceiptSuccess(result);

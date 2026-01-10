@@ -1,15 +1,16 @@
+import { and, eq } from 'drizzle-orm';
 import type {
   CreatePaymentMethodRequest,
   PaymentMethodDto,
 } from '@/shared/dto/types';
+import type { AppUser, DbType} from '@/shared/server/db';
 import { mapPaymentMethodToDto } from '@/shared/dto/mappers';
-import { AppUser, DbType, paymentMethod, user } from '@/shared/server/db';
-import { eq, and } from 'drizzle-orm';
+import { paymentMethod, user } from '@/shared/server/db';
 
 export async function getUserPaymentMethods(
   db: DbType,
   requestingUser: AppUser,
-): Promise<PaymentMethodDto[]> {
+): Promise<Array<PaymentMethodDto>> {
   const returnedUser = await db.query.user.findFirst({
     where: eq(user.id, requestingUser.id),
     with: {
@@ -17,7 +18,7 @@ export async function getUserPaymentMethods(
     },
   });
 
-  if (!returnedUser || !returnedUser.paymentMethods) return [];
+  if (!returnedUser) return [];
   return returnedUser.paymentMethods.map((method) =>
     mapPaymentMethodToDto(method),
   );
@@ -25,20 +26,20 @@ export async function getUserPaymentMethods(
 
 export async function createUserPaymentMethod(
   db: DbType,
-  user: AppUser,
+  appUser: AppUser,
   request: CreatePaymentMethodRequest,
 ): Promise<PaymentMethodDto> {
   if (request.isDefault) {
     await db
       .update(paymentMethod)
       .set({ isDefault: false })
-      .where(eq(paymentMethod.userId, user.id));
+      .where(eq(paymentMethod.userId, appUser.id));
   }
 
   const [newMethod] = await db
     .insert(paymentMethod)
     .values({
-      userId: user.id,
+      userId: appUser.id,
       type: request.type,
       handle: request.handle,
       isDefault: request.isDefault,
@@ -50,12 +51,12 @@ export async function createUserPaymentMethod(
 
 export async function deleteUserPaymentMethod(
   db: DbType,
-  user: AppUser,
+  appUser: AppUser,
   id: string,
 ): Promise<void> {
   await db
     .delete(paymentMethod)
-    .where(and(eq(paymentMethod.id, id), eq(paymentMethod.userId, user.id)));
+    .where(and(eq(paymentMethod.id, id), eq(paymentMethod.userId, appUser.id)));
 }
 
 export async function getPaymentMethodSecure(

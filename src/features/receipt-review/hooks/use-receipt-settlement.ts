@@ -70,7 +70,7 @@ export function useSettlementCalculation(room: FullRoomInfoDto | undefined) {
     const safeSubtotal = receipt.subtotal || 1;
 
     // 4. Generate settlements
-    const settlements: UserSettlement[] = members.map((member) => {
+    const settlements: Array<UserSettlement> = members.map((member) => {
       const mySubtotal = memberSubtotals.get(member.roomMemberId) || 0;
       const ratio = mySubtotal / safeSubtotal;
 

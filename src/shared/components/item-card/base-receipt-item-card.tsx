@@ -1,7 +1,7 @@
-import { Card } from '@/shared/components/ui/card';
-import type { ReceiptItemDto } from '@/shared/dto/types';
-import { cn } from '@/shared/lib/utils';
 import { DollarSign } from 'lucide-react';
+import type { ReceiptItemDto } from '@/shared/dto/types';
+import { Card } from '@/shared/components/ui/card';
+import { cn } from '@/shared/lib/utils';
 
 export interface BaseItemCardProps {
   item: ReceiptItemDto;

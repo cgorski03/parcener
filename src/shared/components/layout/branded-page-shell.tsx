@@ -1,7 +1,7 @@
-import { CardFooter } from '@/shared/components/ui/card';
-import GitHubIcon from '@/shared/components/icons/github';
 import { AppHeader } from './app-header';
 import { Logo } from './logo';
+import { CardFooter } from '@/shared/components/ui/card';
+import GitHubIcon from '@/shared/components/icons/github';
 
 interface PageShellProps {
   children: React.ReactNode;

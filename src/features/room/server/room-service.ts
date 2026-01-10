@@ -1,9 +1,10 @@
-import { eq, and } from 'drizzle-orm';
-import { DbTxType, DbType, room, roomMember } from '@/shared/server/db';
-import { getReceiptState } from '@/features/receipt-review/server/internal';
-import type { RoomDto, RoomMemberDto } from '@/shared/dto/types';
+import { and, eq } from 'drizzle-orm';
 import { getRoomMembership } from './room-member-service';
-import { RoomIdentity } from '@/shared/auth/server/room-identity';
+import type { DbTxType, DbType} from '@/shared/server/db';
+import type { RoomDto, RoomMemberDto } from '@/shared/dto/types';
+import type { RoomIdentity } from '@/shared/auth/server/room-identity';
+import { room, roomMember } from '@/shared/server/db';
+import { getReceiptState } from '@/features/receipt-review/server/internal';
 import { getPaymentMethodSecure } from '@/features/payment-methods/server/internal';
 import { mapPaymentMethodToPayToDto } from '@/shared/dto/mappers';
 
@@ -54,7 +55,7 @@ export async function createRoom(
       .insert(room)
       .values({
         receiptId,
-        title: response.receipt?.title ?? 'Untitled Room',
+        title: response.receipt.title ?? 'Untitled Room',
         createdBy: userId,
         hostPaymentMethodId: verifiedPaymentInfo
           ? verifiedPaymentInfo.id
@@ -92,7 +93,7 @@ export async function updateRoomPaymentInformation(
   }
 
   return await db.transaction(async (tx) => {
-    const [newRoom] = await tx
+    const rooms = await tx
       .update(room)
       .set({
         hostPaymentMethodId: paymentMethodId,
@@ -100,12 +101,12 @@ export async function updateRoomPaymentInformation(
       .where(and(eq(room.id, roomId), eq(room.createdBy, userId)))
       .returning();
 
-    if (!newRoom) {
+    if (rooms.length === 0) {
       return null;
     }
     await touchRoomId(tx, roomId);
 
-    return newRoom;
+    return rooms[0];
   });
 }
 
@@ -128,7 +129,7 @@ export async function GetFullRoomInfo(db: DbType, roomId: string) {
     },
   });
   if (result == null) return;
-  const processedMembers: RoomMemberDto[] = result?.members.map((m) => ({
+  const processedMembers: Array<RoomMemberDto> = result.members.map((m) => ({
     roomMemberId: m.id,
     displayName: m.displayName,
     avatarUrl: m.user?.image ?? null,

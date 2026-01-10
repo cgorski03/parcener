@@ -1,5 +1,5 @@
+import { Check, Minus, Plus, Users } from 'lucide-react';
 import { Button } from '@/shared/components/ui/button';
-import { Minus, Plus, Check, Users } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 
 interface QuantityControlProps {

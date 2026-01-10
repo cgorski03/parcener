@@ -1,17 +1,17 @@
-import { Card } from '@/shared/components/ui/card';
-import { Button } from '@/shared/components/ui/button';
 import {
   AlertCircle,
   CheckCircle2,
   Loader2,
+  Plus,
   Trash,
   Wallet,
-  Plus,
 } from 'lucide-react';
-import { VenmoButton } from './venmo-button';
 import { Link } from '@tanstack/react-router';
-import { useGetRoomPulse, useUpdateRoomPaymentMethod } from '../hooks/use-room';
 import { useQuery } from '@tanstack/react-query';
+import { useGetRoomPulse, useUpdateRoomPaymentMethod } from '../hooks/use-room';
+import { VenmoButton } from './venmo-button';
+import { Button } from '@/shared/components/ui/button';
+import { Card } from '@/shared/components/ui/card';
 import { paymentMethodsOptions } from '@/features/payment-methods/hooks/use-payment-methods';
 
 interface SettlementPaymentCardProps {

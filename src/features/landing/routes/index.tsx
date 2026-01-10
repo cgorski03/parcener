@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router';
+import { ArrowRight, Lock, Receipt, ScanLine, Shield, Zap } from 'lucide-react';
 import { Button } from '@/shared/components/ui/button';
 import { Badge } from '@/shared/components/ui/badge';
-import { ArrowRight, Receipt, Zap, Shield, ScanLine, Lock } from 'lucide-react';
 import GitHubIcon from '@/shared/components/icons/github';
 import { authClient } from '@/shared/lib/auth-client';
 

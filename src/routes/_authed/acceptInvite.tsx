@@ -1,8 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router';
+import type { InviteStatus } from '@/features/invitations/server/invitation-service';
 import { validateInviteSearch } from '@/shared/lib/validation';
 import { AcceptInvitePage } from '@/features/invitations/routes/accept-invite';
 import { acceptInviteRpc } from '@/features/invitations/server/invitation-rpc';
-import type { InviteStatus } from '@/features/invitations/server/invitation-service';
 
 export const Route = createFileRoute('/_authed/acceptInvite')({
     validateSearch: validateInviteSearch,

@@ -15,16 +15,15 @@ export function useRecentReceipts() {
       if (!receipts) {
         return [];
       }
-      const filteredReceipts = receipts.filter((receipt) => receipt != null);
       // Seed the individual caches
-      filteredReceipts.forEach((receipt) => {
+      receipts.forEach((receipt) => {
         queryClient.setQueryData(
-          ReceiptQueryKeys.detail(receipt?.receiptId),
+          ReceiptQueryKeys.detail(receipt.receiptId),
           receipt,
           { updatedAt: Date.now() },
         );
       });
-      return filteredReceipts;
+      return receipts;
     },
     staleTime: 1000 * 60 * 5,
   });

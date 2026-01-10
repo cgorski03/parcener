@@ -1,4 +1,3 @@
-import { ReactNode } from 'react';
 import {
   ArrowLeft,
   FileQuestion,
@@ -7,8 +6,9 @@ import {
   Receipt,
   Users,
 } from 'lucide-react';
-import { Button } from '../ui/button';
 import { Link } from '@tanstack/react-router';
+import { Button } from '../ui/button';
+import type { ReactNode } from 'react';
 
 interface NotFoundShellProps {
   icon: ReactNode;

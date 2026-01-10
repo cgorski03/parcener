@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { cn } from '@/shared/lib/utils';
 import { AlertCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import { cn } from '@/shared/lib/utils';
 import { Button } from '@/shared/components/ui/button';
 import { Separator } from '@/shared/components/ui/separator';
 
@@ -17,7 +17,7 @@ interface PriceBreakdownProps {
   tip: number;
   grandTotal: number;
   /** Optional list of specific items to display before the math */
-  items?: BreakdownItem[];
+  items?: Array<BreakdownItem>;
   label?: string;
   className?: string;
   onClick?: () => void;
@@ -72,7 +72,7 @@ export function PriceBreakdown({
             )}
           </Button>
         ) : (
-          /*Prevent Layout Shift */
+          /* Prevent Layout Shift */
           <div className="h-6" />
         )}
       </div>

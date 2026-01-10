@@ -1,5 +1,5 @@
-import { room, roomMember, claim } from '@/shared/server/db/schema';
 import { testDb } from '../setup';
+import { claim, room, roomMember } from '@/shared/server/db/schema';
 
 type RoomOverrides = Partial<typeof room.$inferInsert>;
 

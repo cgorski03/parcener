@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
-import { ReceiptWithRoom } from '../server/get-receipt-service';
 import { getReceiptIsValidRpc, getReceiptRpc } from '../server/rpc-get-receipt';
 import { isProcessing } from '../lib/receipt-utils';
+import type { ReceiptWithRoom } from '../server/get-receipt-service';
 
 export const ReceiptQueryKeys = {
   all: ['receipts'] as const,

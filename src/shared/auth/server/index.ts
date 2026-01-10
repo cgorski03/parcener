@@ -1,8 +1,9 @@
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
-import { authConfig } from './schema';
 import { createServerOnlyFn } from '@tanstack/react-start';
-import { type DbType, authSchema } from '@/shared/server/db';
+import { authConfig } from './schema';
+import type {DbType} from '@/shared/server/db';
+import {  authSchema } from '@/shared/server/db';
 
 
 export const createAuth = createServerOnlyFn((db: DbType, env: Env) => {

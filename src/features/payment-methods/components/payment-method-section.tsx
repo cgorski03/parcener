@@ -1,7 +1,4 @@
 import { useState } from 'react';
-import { Card, CardContent } from '@/shared/components/ui/card';
-import { Button } from '@/shared/components/ui/button';
-import { Badge } from '@/shared/components/ui/badge';
 import { CreditCard, ExternalLink, Plus, Trash2, Wallet } from 'lucide-react';
 import {
     useDeletePaymentMethod,
@@ -9,8 +6,11 @@ import {
 } from '../hooks/use-payment-methods';
 import { AddPaymentMethodSheet } from './add-payment-method-sheet';
 import type { PaymentMethodDto, PaymentMethodType } from '@/shared/dto/types';
+import { Badge } from '@/shared/components/ui/badge';
+import { Button } from '@/shared/components/ui/button';
+import { Card, CardContent } from '@/shared/components/ui/card';
 
-const SUPPORTED_METHODS: PaymentMethodType[] = ['venmo'];
+const SUPPORTED_METHODS: Array<PaymentMethodType> = ['venmo'];
 
 export function PaymentMethodsSection() {
     const { data: paymentMethods } = usePaymentMethodsSuspense();
@@ -129,12 +129,15 @@ function PaymentMethodItem({
                 <div
                     className={`
                     flex h-9 w-9 shrink-0 items-center justify-center rounded-md border
-                    ${method.type === 'venmo'
+                    ${
+                        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- future-proofing for additional payment types
+                        method.type === 'venmo'
                             ? 'bg-[#3d95ce]/10 text-[#3d95ce] border-[#3d95ce]/20'
                             : 'bg-muted'
-                        }
+                    }
                 `}
                 >
+                    {/* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- future-proofing for additional payment types */}
                     {method.type === 'venmo' ? (
                         <span className="font-bold text-xs uppercase">V</span>
                     ) : (

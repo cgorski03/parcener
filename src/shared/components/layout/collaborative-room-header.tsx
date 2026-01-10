@@ -1,6 +1,9 @@
-import { Button } from '@/shared/components/ui/button';
-import { ScrollArea, ScrollBar } from '@/shared/components/ui/scroll-area';
-import { Share2, Users, MoreHorizontal, Pencil } from 'lucide-react';
+import { MoreHorizontal, Pencil, Share2, Users } from 'lucide-react';
+import { Link, useLocation } from '@tanstack/react-router';
+import { QrShareSheet } from '../common/qr-code-shareable-sheet';
+import { AppHeader } from './app-header';
+import type { RoomMemberDto } from '@/shared/dto/types';
+import { cn } from '@/shared/lib/utils';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,17 +11,14 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/shared/components/ui/dropdown-menu';
-import { cn } from '@/shared/lib/utils';
-import { Link, useLocation } from '@tanstack/react-router';
-import { QrShareSheet } from '../common/qr-code-shareable-sheet';
-import { AppHeader } from './app-header';
-import type { RoomMemberDto } from '@/shared/dto/types';
+import { ScrollArea, ScrollBar } from '@/shared/components/ui/scroll-area';
+import { Button } from '@/shared/components/ui/button';
 import { RoomMemberAvatar } from '@/features/room/components/room-member-avatar';
 
 interface CollaborativeRoomHeaderProps {
   receiptId: string;
   title: string;
-  members: RoomMemberDto[];
+  members: Array<RoomMemberDto>;
   activeFilterId: string | null;
   isHost: boolean;
   onSelectFilter: (memberId: string | null) => void;

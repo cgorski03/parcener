@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ExternalLink, ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, ExternalLink } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import { authClient } from '@/shared/lib/auth-client';
 import { Button } from '@/shared/components/ui/button';

@@ -1,4 +1,7 @@
 import QRCode from 'react-qr-code';
+import { useState } from 'react';
+import { Check, Copy } from 'lucide-react';
+import { ShareButton } from './share-button';
 import {
     Sheet,
     SheetContent,
@@ -7,9 +10,6 @@ import {
     SheetTrigger,
 } from '@/shared/components/ui/sheet';
 import { Button } from '@/shared/components/ui/button';
-import { useState } from 'react';
-import { ShareButton } from './share-button';
-import { Check, Copy } from 'lucide-react';
 
 interface QrShareSheetProps {
     title?: string;

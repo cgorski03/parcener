@@ -1,6 +1,7 @@
-import { AppUser, DbType, receipt } from '@/shared/server/db';
-import { getStartOfDayUTC } from '@/shared/server/utils/time';
 import { and, eq, gte } from 'drizzle-orm';
+import type { AppUser, DbType} from '@/shared/server/db';
+import { receipt } from '@/shared/server/db';
+import { getStartOfDayUTC } from '@/shared/server/utils/time';
 
 const DAILY_UPLOAD_LIMIT = 3;
 

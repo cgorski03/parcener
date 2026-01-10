@@ -1,4 +1,4 @@
-import { resetDatabase, closeDatabase } from './db';
+import { closeDatabase, resetDatabase } from './db';
 
 export default async function globalSetup() {
   console.log('E2E: Resetting test database...');

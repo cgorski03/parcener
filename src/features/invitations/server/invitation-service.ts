@@ -1,7 +1,8 @@
-import { AppUser, DbType, invite, user } from '@/shared/server/db';
+import { and, eq, gte, isNull } from 'drizzle-orm';
+import type { AppUser, DbType} from '@/shared/server/db';
+import { invite, user } from '@/shared/server/db';
 import { RateLimitError } from '@/shared/server/responses/errors';
 import { getStartOfDayUTC } from '@/shared/server/utils/time';
-import { and, eq, gte, isNull } from 'drizzle-orm';
 
 const DAILY_INVITE_LIMIT = 3;
 
@@ -21,8 +22,8 @@ export type InviteStatus =
     | 'USER_ALREADY_AUTHORIZED'
     | 'ERROR';
 
-export async function getUserInviteRateLimit(db: DbType, user: AppUser) {
-    if (!user.canUpload) {
+export async function getUserInviteRateLimit(db: DbType, appUser: AppUser) {
+    if (!appUser.canUpload) {
         return {
             canInvite: false,
             used: 0,
@@ -30,7 +31,7 @@ export async function getUserInviteRateLimit(db: DbType, user: AppUser) {
         };
     }
 
-    const invitations = await _getInvitationsToday(db, user.id);
+    const invitations = await _getInvitationsToday(db, appUser.id);
 
     return {
         canInvite: invitations.length < DAILY_INVITE_LIMIT,
@@ -39,9 +40,9 @@ export async function getUserInviteRateLimit(db: DbType, user: AppUser) {
     };
 }
 
-export async function createUploadInvitation(db: DbType, user: AppUser) {
+export async function createUploadInvitation(db: DbType, appUser: AppUser) {
     // 1. Check Logic (Bubbles errors automatically)
-    const { canInvite } = await getUserInviteRateLimit(db, user);
+    const { canInvite } = await getUserInviteRateLimit(db, appUser);
 
     // 2. Enforce Business Rule
     if (!canInvite) {
@@ -52,7 +53,7 @@ export async function createUploadInvitation(db: DbType, user: AppUser) {
     const [newInvitation] = await db
         .insert(invite)
         .values({
-            createdBy: user.id,
+            createdBy: appUser.id,
         })
         .returning();
 
@@ -80,7 +81,7 @@ export async function acceptInvitationToUpload(
     // 2. Atomic Transaction
     // We update the invite AND the user together.
     return await db.transaction(async (tx) => {
-        const [claimedInvite] = await tx
+        const claimedInvites = await tx
             .update(invite)
             .set({
                 usedAt: new Date(),
@@ -89,7 +90,7 @@ export async function acceptInvitationToUpload(
             .where(and(eq(invite.id, inviteId), isNull(invite.usedAt)))
             .returning();
 
-        if (!claimedInvite) {
+        if (claimedInvites.length === 0) {
             throw new InviteError('Invite not found or already used', 'NOT_FOUND');
         }
 

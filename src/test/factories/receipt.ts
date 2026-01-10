@@ -1,9 +1,9 @@
+import { testDb } from '../setup';
 import {
     receipt,
     receiptItem,
     receiptProcessingInformation,
 } from '@/shared/server/db/schema';
-import { testDb } from '../setup';
 
 type ReceiptOverrides = Partial<typeof receipt.$inferInsert>;
 type ReceiptItemInput = {
@@ -19,7 +19,7 @@ export async function createTestReceipt(
     userId: string,
     overrides: ReceiptOverrides = {},
     options: {
-        items?: ReceiptItemInput[];
+        items?: Array<ReceiptItemInput>;
         status?: ProcessingStatus;
     } = {},
 ) {
@@ -75,7 +75,7 @@ export async function createProcessingReceipt(userId: string) {
 
 export async function createSuccessfulReceipt(
     userId: string,
-    items: ReceiptItemInput[],
+    items: Array<ReceiptItemInput>,
 ) {
     // Calculate totals from items
     const subtotal = items.reduce(

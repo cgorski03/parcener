@@ -1,8 +1,8 @@
 import { useSuspenseQuery } from '@tanstack/react-query';
-import { uploadRateLimitOptions } from '../hooks/use-upload-receipt';
 import { Lock } from 'lucide-react';
+import { uploadRateLimitOptions } from '../hooks/use-upload-receipt';
+import type { AppUser } from '@/shared/server/db';
 import { Progress } from '@/shared/components/ui/progress';
-import { AppUser } from '@/shared/server/db';
 
 export function AccountUploadsSection({ user }: { user: AppUser }) {
   const { data: uploadData } = useSuspenseQuery(uploadRateLimitOptions);

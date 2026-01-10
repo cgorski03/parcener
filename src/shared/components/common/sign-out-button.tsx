@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { LogOut, Loader2 } from 'lucide-react';
+import { Loader2, LogOut } from 'lucide-react';
 import { useNavigate } from '@tanstack/react-router';
 import { Button } from '@/shared/components/ui/button';
 import { authClient } from '@/shared/lib/auth-client';

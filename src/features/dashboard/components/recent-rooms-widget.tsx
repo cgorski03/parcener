@@ -1,8 +1,8 @@
-import type { RecentRoomInfoDto } from '@/shared/dto/types';
-import { Users, ChevronRight } from 'lucide-react';
+import { ChevronRight, Users } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 import { useRecentRooms } from '../hooks/use-recents';
 import { RecentList } from './recent-list-widget';
+import type { RecentRoomInfoDto } from '@/shared/dto/types';
 
 export function RecentRooms() {
   const { data, isLoading } = useRecentRooms();

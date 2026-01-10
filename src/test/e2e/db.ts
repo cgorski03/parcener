@@ -1,9 +1,9 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import * as schema from '@/shared/server/db/schema';
-import * as authSchema from '@/shared/server/db/auth-schema';
 import { sql } from 'drizzle-orm';
 import { tablesToTruncate } from '../helpers/truncate-tables';
+import * as schema from '@/shared/server/db/schema';
+import * as authSchema from '@/shared/server/db/auth-schema';
 
 const TEST_DB_URL =
   process.env.TEST_DATABASE_URL ||

@@ -3,8 +3,8 @@ import {
   useQuery,
   useSuspenseQuery,
 } from '@tanstack/react-query';
-import { UploadQueryKeys } from './use-upload-receipt';
 import { getUserUploadRateLimitRpc } from '../server/upload-rpc';
+import { UploadQueryKeys } from './use-upload-receipt';
 
 const uploadRateLimitQueryOptions = queryOptions({
   queryKey: UploadQueryKeys.rateLimit(),
