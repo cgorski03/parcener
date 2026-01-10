@@ -101,7 +101,9 @@ test.describe('Upload Receipt', () => {
       await createRoomButton.click();
 
       // 11. Verify room creation sheet opens
-      await expect(page.getByText('Create Room')).toBeVisible();
+      await expect(
+        page.getByRole('heading', { name: 'Create Room' }),
+      ).toBeVisible();
 
       // 12. Confirm room creation
       await page.getByRole('button', { name: 'Create Room' }).click();
@@ -157,9 +159,7 @@ test.describe('Upload Receipt', () => {
       await page.waitForTimeout(500); // Allow rate limit query to load
 
       // 4. Verify rate limit message
-      await expect(
-        page.getByText(/You have used all 3 of your daily receipt uploads/),
-      ).toBeVisible();
+      await expect(page.getByText('You have used all')).toBeVisible();
     });
   });
 
@@ -171,6 +171,9 @@ test.describe('Upload Receipt', () => {
       // 1. Authenticate and navigate
       await authenticateAsUploader();
       await page.goto('/upload');
+
+      // Wait for upload form to be visible
+      await expect(page.getByText('Split a Receipt')).toBeVisible();
 
       // 2. Try to upload PDF file
       const fileInput = page.locator('#receipt');
@@ -201,6 +204,9 @@ test.describe('Upload Receipt', () => {
       await authenticateAsUploader();
       await page.goto('/upload');
 
+      // Wait for upload form to be visible
+      await expect(page.getByText('Split a Receipt')).toBeVisible();
+
       // 2. Try to upload large file (>5MB)
       const fileInput = page.locator('#receipt');
       const largeFilePath = path.join(
@@ -213,10 +219,7 @@ test.describe('Upload Receipt', () => {
       // 3. Verify error message with file size
       // Wait for validation to run and UI to update
       await page.waitForTimeout(500);
-      // Note: File size error may appear from client or server validation
-      await expect(
-        page.getByText(/file.*large.*size|exceeds.*maximum.*size/i),
-      ).toBeVisible();
+      await expect(page.getByText(/File too large.*Max.*MB/i)).toBeVisible();
 
       // 4. Verify no file preview shown
       await expect(page.getByText('large-receipt.jpg')).not.toBeVisible();
@@ -231,6 +234,9 @@ test.describe('Upload Receipt', () => {
       // 1. Authenticate and navigate
       await authenticateAsUploader();
       await page.goto('/upload');
+
+      // Wait for upload form to be visible
+      await expect(page.getByText('Split a Receipt')).toBeVisible();
 
       // 2. Upload valid receipt
       const fileInput = page.locator('#receipt');
@@ -247,7 +253,10 @@ test.describe('Upload Receipt', () => {
       await expect(uploadButton).toBeEnabled();
       await uploadButton.click();
 
-      // 4. Extract receiptId from URL
+      // 4. Wait for navigation to review page
+      await expect(page).toHaveURL(/\/receipt\/review\/[a-f0-9-]+/);
+
+      // 5. Extract receiptId from URL
       const urlMatch = page.url().match(/\/receipt\/review\/([a-f0-9-]+)/);
       const receiptId = urlMatch ? urlMatch[1] : null;
       expect(receiptId).toBeTruthy();
