@@ -33,7 +33,7 @@ describe('room-service', () => {
             const user = await createTestUser();
             const { receipt } = await createSuccessfulReceipt(user.id, [
                 { interpretedText: 'Item 1', price: 10 },
-            ]);
+            ], testDb);
 
             const result = await createRoom(testDb, receipt.id, null, user.id);
 
@@ -48,7 +48,7 @@ describe('room-service', () => {
             const user = await createTestUser();
             const { receipt } = await createSuccessfulReceipt(user.id, [
                 { interpretedText: 'Item 1', price: 10 },
-            ]);
+            ], testDb);
 
             const result = await createRoom(testDb, receipt.id, null, user.id);
 
@@ -59,7 +59,7 @@ describe('room-service', () => {
             const user = await createTestUser();
             const { receipt } = await createSuccessfulReceipt(user.id, [
                 { interpretedText: 'Item 1', price: 10 },
-            ]);
+            ], testDb);
 
             await createRoom(testDb, receipt.id, null, user.id);
             const result = await createRoom(testDb, receipt.id, null, user.id);
@@ -71,7 +71,7 @@ describe('room-service', () => {
             const user = await createTestUser();
             const { receipt } = await createSuccessfulReceipt(user.id, [
                 { interpretedText: 'Item 1', price: 10 },
-            ]);
+            ], testDb);
             const method = await createUserPaymentMethod(testDb, user, {
                 type: 'venmo',
                 handle: '@test',
@@ -97,7 +97,7 @@ describe('room-service', () => {
             const user = await createTestUser();
             const { receipt } = await createSuccessfulReceipt(user.id, [
                 { interpretedText: 'Item 1', price: 10 },
-            ]);
+            ], testDb);
             const roomResult = await createRoom(testDb, receipt.id, null, user.id);
 
             assertRoomCreateSuccess(roomResult);
@@ -124,7 +124,7 @@ describe('room-service', () => {
             const user2 = await createTestUser();
             const { receipt } = await createSuccessfulReceipt(user1.id, [
                 { interpretedText: 'Item 1', price: 10 },
-            ]);
+            ], testDb);
             const roomResult = await createRoom(testDb, receipt.id, null, user1.id);
 
             assertRoomCreateSuccess(roomResult);
@@ -143,7 +143,7 @@ describe('room-service', () => {
             const user = await createTestUser();
             const { receipt } = await createSuccessfulReceipt(user.id, [
                 { interpretedText: 'Item 1', price: 10 },
-            ]);
+            ], testDb);
             const roomResult = await createRoom(testDb, receipt.id, null, user.id);
 
             assertRoomCreateSuccess(roomResult);
@@ -166,7 +166,7 @@ describe('room-service', () => {
             const { receipt } = await createSuccessfulReceipt(user.id, [
                 { interpretedText: 'Item 1', price: 10 },
                 { interpretedText: 'Item 2', price: 20 },
-            ]);
+            ], testDb);
             const room = await createTestRoom(receipt.id, user.id);
             await createTestRoomMember(room.id, {
                 userId: user.id,
@@ -186,7 +186,7 @@ describe('room-service', () => {
             const user = await createTestUser();
             const { receipt } = await createSuccessfulReceipt(user.id, [
                 { interpretedText: 'Item 1', price: 10 },
-            ]);
+            ], testDb);
             const room = await createTestRoom(receipt.id, user.id);
             const guestUuid = crypto.randomUUID();
             await createTestRoomMember(room.id, { guestUuid, displayName: 'Guest' });
@@ -203,7 +203,7 @@ describe('room-service', () => {
             const user = await createTestUser();
             const { receipt } = await createSuccessfulReceipt(user.id, [
                 { interpretedText: 'Item 1', price: 10 },
-            ]);
+            ], testDb);
             const room = await createTestRoom(receipt.id, user.id);
 
             const result = await GetRoomHeader(testDb, room.id);
@@ -218,7 +218,7 @@ describe('room-service', () => {
             const user = await createTestUser();
             const { receipt } = await createSuccessfulReceipt(user.id, [
                 { interpretedText: 'Item 1', price: 10 },
-            ]);
+            ], testDb);
             const room = await createTestRoom(receipt.id, user.id);
 
             const identity: RoomIdentity = {
@@ -240,7 +240,7 @@ describe('room-service', () => {
             const user = await createTestUser();
             const { receipt } = await createSuccessfulReceipt(user.id, [
                 { interpretedText: 'Item 1', price: 10 },
-            ]);
+            ], testDb);
             const room = await createTestRoom(receipt.id, user.id);
 
             const identity: RoomIdentity = {
@@ -266,7 +266,7 @@ describe('room-service', () => {
             const user = await createTestUser();
             const { receipt } = await createSuccessfulReceipt(user.id, [
                 { interpretedText: 'Item 1', price: 10 },
-            ]);
+            ], testDb);
             const room = await createTestRoom(receipt.id, user.id);
             const guestUuid = crypto.randomUUID();
             await createTestRoomMember(room.id, { guestUuid, displayName: 'Guest' });
@@ -291,7 +291,7 @@ describe('room-service', () => {
             const user = await createTestUser();
             const { receipt } = await createSuccessfulReceipt(user.id, [
                 { interpretedText: 'Item 1', price: 10 },
-            ]);
+            ], testDb);
             const room = await createTestRoom(receipt.id, user.id);
 
             const identity: RoomIdentity = {
@@ -313,7 +313,7 @@ describe('room-service', () => {
             const user = await createTestUser();
             const { receipt } = await createSuccessfulReceipt(user.id, [
                 { interpretedText: 'Item 1', price: 10 },
-            ]);
+            ], testDb);
             const room = await createTestRoom(receipt.id, user.id);
 
             const guestUuid = crypto.randomUUID();

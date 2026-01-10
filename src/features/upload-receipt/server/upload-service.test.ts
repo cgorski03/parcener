@@ -4,8 +4,8 @@ import { env } from 'cloudflare:test';
 import { createTestUser } from '@/test/factories';
 import { receipt } from '@/shared/server/db';
 import {
-  processUploadAndEnqueue,
-  processingQueueMessageHandler,
+    processUploadAndEnqueue,
+    processingQueueMessageHandler,
 } from '@/features/upload-receipt/server/processing-service';
 import { testDb } from '@/test/setup';
 
@@ -19,77 +19,77 @@ import { testDb } from '@/test/setup';
  */
 
 describe('processUploadAndEnqueue', () => {
-  it('creates receipt stub and stores image in R2', async () => {
-    const user = await createTestUser({ canUpload: true });
-    const file = new File(['fake-image-content'], 'receipt.jpg', {
-      type: 'image/jpeg',
+    it('creates receipt stub and stores image in R2', async () => {
+        const user = await createTestUser({ canUpload: true });
+        const file = new File(['fake-image-content'], 'receipt.jpg', {
+            type: 'image/jpeg',
+        });
+
+        const result = await processUploadAndEnqueue(testDb, env, file, user.id);
+
+        // Verify receipt was created in database
+        const receiptRecord = await testDb.query.receipt.findFirst({
+            where: eq(receipt.id, result.receiptId),
+        });
+        expect(receiptRecord).toBeDefined();
+        expect(receiptRecord!.userId).toBe(user.id);
+
+        // Verify image was stored in R2
+        const storedImage = await env.parcener_receipt_images.get(result.receiptId);
+        expect(storedImage).not.toBeNull();
     });
 
-    const result = await processUploadAndEnqueue(testDb, env, file, user.id);
+    it('returns a valid receiptId', async () => {
+        const user = await createTestUser({ canUpload: true });
+        const file = new File(['test'], 'receipt.jpg', { type: 'image/jpeg' });
 
-    // Verify receipt was created in database
-    const receiptRecord = await testDb.query.receipt.findFirst({
-      where: eq(receipt.id, result.receiptId),
-    });
-    expect(receiptRecord).toBeDefined();
-    expect(receiptRecord!.userId).toBe(user.id);
+        const result = await processUploadAndEnqueue(testDb, env, file, user.id);
 
-    // Verify image was stored in R2
-    const storedImage = await env.parcener_receipt_images.get(result.receiptId);
-    expect(storedImage).not.toBeNull();
-  });
-
-  it('returns a valid receiptId', async () => {
-    const user = await createTestUser({ canUpload: true });
-    const file = new File(['test'], 'receipt.jpg', { type: 'image/jpeg' });
-
-    const result = await processUploadAndEnqueue(testDb, env, file, user.id);
-
-    expect(result.receiptId).toBeDefined();
-    expect(typeof result.receiptId).toBe('string');
-    expect(result.receiptId.length).toBeGreaterThan(0);
-  });
-
-  it('stores image with correct content type', async () => {
-    const user = await createTestUser({ canUpload: true });
-    const file = new File(['test-png-content'], 'receipt.png', {
-      type: 'image/png',
+        expect(result.receiptId).toBeDefined();
+        expect(typeof result.receiptId).toBe('string');
+        expect(result.receiptId.length).toBeGreaterThan(0);
     });
 
-    const result = await processUploadAndEnqueue(testDb, env, file, user.id);
+    it('stores image with correct content type', async () => {
+        const user = await createTestUser({ canUpload: true });
+        const file = new File(['test-png-content'], 'receipt.png', {
+            type: 'image/png',
+        });
 
-    const storedImage = await env.parcener_receipt_images.get(result.receiptId);
-    expect(storedImage).not.toBeNull();
-    expect(storedImage!.httpMetadata?.contentType).toBe('image/png');
-  });
+        const result = await processUploadAndEnqueue(testDb, env, file, user.id);
+
+        const storedImage = await env.parcener_receipt_images.get(result.receiptId);
+        expect(storedImage).not.toBeNull();
+        expect(storedImage!.httpMetadata?.contentType).toBe('image/png');
+    });
 });
 
 describe('processingQueueMessageHandler', () => {
-  it('throws error when processing fails (to trigger retry)', async () => {
-    const user = await createTestUser({ canUpload: true });
-    const receiptId = crypto.randomUUID();
+    it('throws error when processing fails (to trigger retry)', async () => {
+        const user = await createTestUser({ canUpload: true });
+        const receiptId = crypto.randomUUID();
 
-    await testDb.insert(receipt).values({
-      id: receiptId,
-      userId: user.id,
+        await testDb.insert(receipt).values({
+            id: receiptId,
+            userId: user.id,
+        });
+
+        const ackSpy = vi.fn();
+        const mockMessage = {
+            body: { receiptId },
+            ack: ackSpy,
+        } as unknown as Message<{ receiptId: string }>;
+
+        await expect(
+            processingQueueMessageHandler(
+                testDb,
+                mockMessage,
+                env,
+                {} as ExecutionContext,
+            ),
+        ).rejects.toThrow();
+
+        // Should NOT ack - let outer wrapper retry
+        expect(ackSpy).not.toHaveBeenCalled();
     });
-
-    const ackSpy = vi.fn();
-    const mockMessage = {
-      body: { receiptId },
-      ack: ackSpy,
-    } as unknown as Message<{ receiptId: string }>;
-
-    await expect(
-      processingQueueMessageHandler(
-        testDb,
-        mockMessage,
-        env,
-        {} as ExecutionContext,
-      ),
-    ).rejects.toThrow();
-
-    // Should NOT ack - let outer wrapper retry
-    expect(ackSpy).not.toHaveBeenCalled();
-  });
 });

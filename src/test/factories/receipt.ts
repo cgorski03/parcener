@@ -1,4 +1,4 @@
-import { testDb } from '../setup';
+import type { DbType } from '@/shared/server/db';
 import {
     receipt,
     receiptItem,
@@ -22,10 +22,11 @@ export async function createTestReceipt(
         items?: Array<ReceiptItemInput>;
         status?: ProcessingStatus;
     } = {},
+    db: DbType,
 ) {
     receiptCounter++;
 
-    const [created] = await testDb
+    const [created] = await db
         .insert(receipt)
         .values({
             userId,
@@ -39,7 +40,7 @@ export async function createTestReceipt(
 
     // Add processing information if status provided
     if (options.status) {
-        await testDb.insert(receiptProcessingInformation).values({
+        await db.insert(receiptProcessingInformation).values({
             receiptId: created.id,
             processingStatus: options.status,
             startedAt: new Date(),
@@ -52,7 +53,7 @@ export async function createTestReceipt(
     if (options.items && options.items.length > 0) {
         for (let i = 0; i < options.items.length; i++) {
             const item = options.items[i];
-            const [insertedItem] = await testDb
+            const [insertedItem] = await db
                 .insert(receiptItem)
                 .values({
                     receiptId: created.id,
@@ -69,26 +70,38 @@ export async function createTestReceipt(
     return { receipt: created, items };
 }
 
-export async function createProcessingReceipt(userId: string) {
-    return createTestReceipt(userId, {}, { status: 'processing' });
+export async function createProcessingReceipt(
+    userId: string,
+    overrides: ReceiptOverrides = {},
+    db: DbType,
+) {
+    return createTestReceipt(userId, overrides, { status: 'processing' }, db);
 }
 
 export async function createSuccessfulReceipt(
     userId: string,
     items: Array<ReceiptItemInput>,
+    db: DbType,
 ) {
     // Calculate totals from items
-    const subtotal = items.reduce(
-        (sum, item) => sum + item.price,
-        0,
-    );
+    const subtotal = items.reduce((sum, item) => sum + item.price, 0);
     return createTestReceipt(
         userId,
         { subtotal: subtotal.toString(), grandTotal: subtotal.toString() },
         { items, status: 'success' },
+        db,
     );
 }
 
-export async function createFailedReceipt(userId: string) {
-    return createTestReceipt(userId, {}, { status: 'failed' });
+export async function createFailedReceipt(
+    userId: string,
+    db: DbType,
+) {
+    // Calculate totals from items
+    return createTestReceipt(
+        userId,
+        {},
+        { status: 'failed' },
+        db,
+    );
 }

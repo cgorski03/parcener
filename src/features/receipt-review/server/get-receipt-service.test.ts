@@ -77,6 +77,8 @@ describe('get-receipt-service', () => {
             const user = await createTestUser();
             const { receipt: processingReceipt } = await createProcessingReceipt(
                 user.id,
+                {},
+                testDb,
             );
 
             const result = await getReceiptWithItems(
@@ -92,6 +94,9 @@ describe('get-receipt-service', () => {
             const user = await createTestUser();
             const { receipt: receiptWithNoProcessing } = await createTestReceipt(
                 user.id,
+                {},
+                {},
+                testDb,
             );
 
             const result = await getReceiptWithItems(
@@ -105,7 +110,7 @@ describe('get-receipt-service', () => {
 
         it('returns failed receipt response', async () => {
             const user = await createTestUser();
-            const { receipt: failedReceipt } = await createFailedReceipt(user.id);
+            const { receipt: failedReceipt } = await createFailedReceipt(user.id, testDb);
 
             const result = await getReceiptWithItems(
                 testDb,
@@ -124,7 +129,7 @@ describe('get-receipt-service', () => {
             const { receipt: seededReceipt } = await createSuccessfulReceipt(user.id, [
                 { interpretedText: 'Item 1', price: 10, quantity: 2 },
                 { interpretedText: 'Item 2', price: 5, quantity: 1 },
-            ]);
+            ], testDb);
 
             const result = await getReceiptWithItems(testDb, seededReceipt.id, user.id);
 
@@ -140,7 +145,7 @@ describe('get-receipt-service', () => {
             const user = await createTestUser();
             const { receipt: seededReceipt } = await createSuccessfulReceipt(user.id, [
                 { interpretedText: 'Item 1', price: 10 },
-            ]);
+            ], testDb);
             const { createTestRoom } = await import('@/test/factories/room');
             const room = await createTestRoom(seededReceipt.id, user.id);
 
@@ -155,7 +160,7 @@ describe('get-receipt-service', () => {
             const user2 = await createTestUser();
             const { receipt: seededReceipt } = await createSuccessfulReceipt(user1.id, [
                 { interpretedText: 'Item 1', price: 10 },
-            ]);
+            ], testDb);
 
             const result = await getReceiptWithItems(testDb, seededReceipt.id, user2.id);
 
@@ -175,6 +180,8 @@ describe('get-receipt-service', () => {
             const user = await createTestUser();
             const { receipt: processingReceipt } = await createProcessingReceipt(
                 user.id,
+                {},
+                testDb
             );
 
             const result = await getReceiptState(
@@ -188,7 +195,7 @@ describe('get-receipt-service', () => {
 
         it('returns failed receipt response', async () => {
             const user = await createTestUser();
-            const { receipt: failedReceipt } = await createFailedReceipt(user.id);
+            const { receipt: failedReceipt } = await createFailedReceipt(user.id, testDb);
 
             const result = await getReceiptState(testDb, failedReceipt.id, user.id);
 
@@ -205,7 +212,7 @@ describe('get-receipt-service', () => {
             const { receipt: seededReceipt } = await createSuccessfulReceipt(user.id, [
                 { interpretedText: 'Item 1', price: 10, quantity: 2 },
                 { interpretedText: 'Item 2', price: 5, quantity: 1 },
-            ]);
+            ], testDb);
 
             const result = await getReceiptState(testDb, seededReceipt.id, user.id);
 
@@ -225,6 +232,7 @@ describe('get-receipt-service', () => {
             const { receipt: seededReceipt } = await createSuccessfulReceipt(
                 user.id,
                 [{ interpretedText: 'Item 1', price: 10, quantity: 2 }],
+                testDb
             );
 
             await testDb
@@ -249,6 +257,7 @@ describe('get-receipt-service', () => {
             const { receipt: seededReceipt, items } = await createSuccessfulReceipt(
                 user.id,
                 [{ interpretedText: 'Item 1', price: 10, quantity: 2 }],
+                testDb,
             );
 
             const correctSubtotal = items.reduce(
@@ -278,7 +287,7 @@ describe('get-receipt-service', () => {
                 { interpretedText: 'Item 1', price: 10, quantity: 2 },
                 { interpretedText: 'Item 2', price: 5, quantity: 1 },
             ];
-            const { receipt: seededReceipt } = await createSuccessfulReceipt(user.id, items);
+            const { receipt: seededReceipt } = await createSuccessfulReceipt(user.id, items, testDb);
 
             const result = await getReceiptWithItems(testDb, seededReceipt.id, user.id);
 

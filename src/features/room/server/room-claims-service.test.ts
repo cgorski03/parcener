@@ -19,7 +19,7 @@ describe('room-claims-service', () => {
             const user = await createTestUser();
             const { receipt, items } = await createSuccessfulReceipt(user.id, [
                 { interpretedText: 'Item 1', price: 10, quantity: 5 },
-            ]);
+            ], testDb);
             const testRoom = await createTestRoom(receipt.id, user.id);
             const member = await createTestRoomMember(testRoom.id, { userId: user.id });
 
@@ -49,7 +49,7 @@ describe('room-claims-service', () => {
             const user = await createTestUser();
             const { receipt, items } = await createSuccessfulReceipt(user.id, [
                 { interpretedText: 'Item 1', price: 10, quantity: 5 },
-            ]);
+            ], testDb);
             const testRoom = await createTestRoom(receipt.id, user.id);
             const member = await createTestRoomMember(testRoom.id, { userId: user.id });
 
@@ -87,7 +87,7 @@ describe('room-claims-service', () => {
             const user = await createTestUser();
             const { receipt, items } = await createSuccessfulReceipt(user.id, [
                 { interpretedText: 'Item 1', price: 10, quantity: 5 },
-            ]);
+            ], testDb);
             const testRoom = await createTestRoom(receipt.id, user.id);
             const member = await createTestRoomMember(testRoom.id, { userId: user.id });
             await createTestClaim(testRoom.id, member.id, items[0].id, 2);
@@ -117,7 +117,7 @@ describe('room-claims-service', () => {
             const user = await createTestUser();
             const { receipt } = await createSuccessfulReceipt(user.id, [
                 { interpretedText: 'Item 1', price: 10, quantity: 5 },
-            ]);
+            ], testDb);
             const testRoom = await createTestRoom(receipt.id, user.id);
             const member = await createTestRoomMember(testRoom.id, { userId: user.id });
 
@@ -143,10 +143,10 @@ describe('room-claims-service', () => {
             const user2 = await createTestUser();
             const { receipt: receipt1 } = await createSuccessfulReceipt(user1.id, [
                 { interpretedText: 'Item 1', price: 10, quantity: 5 },
-            ]);
+            ], testDb);
             const { items: items2 } = await createSuccessfulReceipt(user2.id, [
                 { interpretedText: 'Item 2', price: 20, quantity: 3 },
-            ]);
+            ], testDb);
             const testRoom = await createTestRoom(receipt1.id, user1.id);
             const member = await createTestRoomMember(testRoom.id, { userId: user1.id });
 
@@ -172,7 +172,7 @@ describe('room-claims-service', () => {
             const user2 = await createTestUser();
             const { receipt, items } = await createSuccessfulReceipt(user1.id, [
                 { interpretedText: 'Item 1', price: 10, quantity: 5 },
-            ]);
+            ], testDb);
             const testRoom = await createTestRoom(receipt.id, user1.id);
             const member1 = await createTestRoomMember(testRoom.id, { userId: user1.id });
             const member2 = await createTestRoomMember(testRoom.id, { userId: user2.id });
@@ -200,7 +200,7 @@ describe('room-claims-service', () => {
             const user2 = await createTestUser();
             const { receipt, items } = await createSuccessfulReceipt(user1.id, [
                 { interpretedText: 'Item 1', price: 10, quantity: 10 },
-            ]);
+            ], testDb);
             const testRoom = await createTestRoom(receipt.id, user1.id);
             const member1 = await createTestRoomMember(testRoom.id, { userId: user1.id });
             const member2 = await createTestRoomMember(testRoom.id, { userId: user2.id });
@@ -243,7 +243,7 @@ describe('room-claims-service', () => {
             const user = await createTestUser();
             const { receipt, items } = await createSuccessfulReceipt(user.id, [
                 { interpretedText: 'Item 1', price: 10, quantity: 5 },
-            ]);
+            ], testDb);
             const testRoom = await createTestRoom(receipt.id, user.id);
             const member = await createTestRoomMember(testRoom.id, { userId: user.id });
 
@@ -273,7 +273,7 @@ describe('room-claims-service', () => {
             const user = await createTestUser();
             const { receipt, items } = await createSuccessfulReceipt(user.id, [
                 { interpretedText: 'Item 1', price: 10, quantity: 10 },
-            ]);
+            ], testDb);
             const testRoom = await createTestRoom(receipt.id, user.id);
             const guestUuid = crypto.randomUUID();
             const member = await createTestRoomMember(testRoom.id, {
@@ -319,7 +319,7 @@ describe('room-claims-service', () => {
             const user = await createTestUser();
             const { receipt, items } = await createSuccessfulReceipt(user.id, [
                 { interpretedText: 'Item 1', price: 10, quantity: 5 },
-            ]);
+            ], testDb);
             const testRoom = await createTestRoom(receipt.id, user.id);
             const member = await createTestRoomMember(testRoom.id, { userId: user.id });
 

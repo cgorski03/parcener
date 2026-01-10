@@ -12,6 +12,7 @@ count.txt
 .vinxi
 todos.json
 progress.txt
+.claude
 
 # Playwright
 playwright-report/

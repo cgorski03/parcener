@@ -183,7 +183,7 @@ describe('payment-method-service', () => {
             const user = await createTestUser();
             const { receipt } = await createSuccessfulReceipt(user.id, [
                 { interpretedText: 'Item 1', price: 10 },
-            ]);
+            ], testDb);
             const createdRoom = await createTestRoom(receipt.id, user.id);
 
             const method = await createUserPaymentMethod(testDb, user, {

@@ -38,15 +38,15 @@ describe('getRecentReceipts', () => {
         await createTestReceipt(userEntity.id, {
             title: 'Receipt 1',
             createdAt: new Date('2025-01-06T10:00:00Z'),
-        });
+        }, {}, testDb);
         await createTestReceipt(userEntity.id, {
             title: 'Receipt 2',
             createdAt: new Date('2025-01-06T09:00:00Z'),
-        });
+        }, {}, testDb);
         await createTestReceipt(userEntity.id, {
             title: 'Receipt 3',
             createdAt: new Date('2025-01-06T11:00:00Z'),
-        });
+        }, {}, testDb);
 
         const result = await getRecentReceipts(testDb, userEntity);
 
@@ -62,7 +62,7 @@ describe('getRecentReceipts', () => {
 
         await createTestReceipt(userEntity.id, {
             title: 'Old Receipt',
-        });
+        }, {}, testDb);
 
         await testDb
             .update(user)
@@ -92,9 +92,8 @@ describe('getRecentRooms', () => {
         const user1 = await createTestUser({ canUpload: true });
         const user2 = await createTestUser({ canUpload: true });
 
-        const receipt1 = await createTestReceipt(user1.id);
-        const receipt2 = await createTestReceipt(user1.id);
-
+        const receipt1 = await createTestReceipt(user1.id, {}, {}, testDb);
+        const receipt2 = await createTestReceipt(user1.id, {}, {}, testDb);
         const room1 = await createTestRoom(receipt1.receipt.id, user1.id, {
             title: 'Room 1',
         });
@@ -129,9 +128,8 @@ describe('getRecentRooms', () => {
         const user1 = await createTestUser({ canUpload: true });
         const user2 = await createTestUser({ canUpload: true });
 
-        const receipt1 = await createTestReceipt(user1.id);
-        const receipt2 = await createTestReceipt(user2.id);
-
+        const receipt1 = await createTestReceipt(user1.id, {}, {}, testDb);
+        const receipt2 = await createTestReceipt(user1.id, {}, {}, testDb);
         const room1 = await createTestRoom(receipt1.receipt.id, user1.id, {
             title: 'Room 1',
         });
@@ -152,7 +150,7 @@ describe('getRecentRooms', () => {
     it('returns rooms for user without upload permission', async () => {
         const userEntity = await createTestUser({ canUpload: true });
 
-        const receipt = await createTestReceipt(userEntity.id);
+        const receipt = await createTestReceipt(userEntity.id, {}, {}, testDb);
         const room = await createTestRoom(receipt.receipt.id, userEntity.id, {
             title: 'Existing Room',
         });

@@ -28,7 +28,7 @@ describe('edit-receipt-service', () => {
             const user = await createTestUser();
             const { items } = await createSuccessfulReceipt(user.id, [
                 { interpretedText: 'Item 1', price: 10, quantity: 2 },
-            ]);
+            ], testDb);
 
             const result = await editReceiptItem(
                 testDb,
@@ -52,7 +52,7 @@ describe('edit-receipt-service', () => {
             const user2 = await createTestUser();
             const { receipt: seededReceipt, items } = await createSuccessfulReceipt(user1.id, [
                 { interpretedText: 'Item 1', price: 10, quantity: 5 },
-            ]);
+            ], testDb);
             const seededRoom = await createTestRoom(seededReceipt.id, user1.id);
             const member1 = await createTestRoomMember(seededRoom.id, { userId: user1.id });
             const member2 = await createTestRoomMember(seededRoom.id, { userId: user2.id });
@@ -86,7 +86,7 @@ describe('edit-receipt-service', () => {
         const user2 = await createTestUser();
         const { receipt: seededReceipt, items } = await createSuccessfulReceipt(user1.id, [
             { interpretedText: 'Item 1', price: 10, quantity: 5 },
-        ]);
+        ], testDb);
         const seededRoom = await createTestRoom(seededReceipt.id, user1.id);
         const member1 = await createTestRoomMember(seededRoom.id, { userId: user1.id });
         const member2 = await createTestRoomMember(seededRoom.id, { userId: user2.id });
@@ -120,7 +120,7 @@ describe('createReceiptItem', () => {
         const user = await createTestUser();
         const { receipt: seededReceipt } = await createSuccessfulReceipt(user.id, [
             { interpretedText: 'Item 1', price: 10 },
-        ]);
+        ], testDb);
 
         const result = await createReceiptItem(
             testDb,
@@ -143,7 +143,7 @@ describe('createReceiptItem', () => {
         const user = await createTestUser();
         const { receipt: seededReceipt } = await createSuccessfulReceipt(user.id, [
             { interpretedText: 'Item 1', price: 10 },
-        ]);
+        ], testDb);
 
         await createReceiptItem(
             testDb,
@@ -170,7 +170,7 @@ describe('deleteReceiptItem', () => {
         const user = await createTestUser();
         const { receipt: seededReceipt, items } = await createSuccessfulReceipt(user.id, [
             { interpretedText: 'Item 1', price: 10, quantity: 2 },
-        ]);
+        ], testDb);
 
         await deleteReceiptItem(
             testDb,
@@ -218,7 +218,7 @@ describe('finalizeReceiptTotals', () => {
             [
                 { interpretedText: 'Item 1', price: 10, quantity: 2 },
                 { interpretedText: 'Item 2', price: 5, quantity: 1 },
-            ],
+            ], testDb,
         );
 
         const subtotal = items.reduce(
@@ -257,7 +257,7 @@ describe('finalizeReceiptTotals', () => {
         const user = await createTestUser();
         const { receipt: seededReceipt } = await createSuccessfulReceipt(user.id, [
             { interpretedText: 'Item 1', price: 10 },
-        ]);
+        ], testDb);
         const seededRoom = await createTestRoom(seededReceipt.id, user.id);
 
         const before = await testDb.query.room.findFirst({
@@ -306,7 +306,7 @@ describe('finalizeReceiptTotals', () => {
     it('returns invalid_receipt for processing receipt', async () => {
         const user = await createTestUser();
         const { receipt: processingReceipt } = await createProcessingReceipt(
-            user.id,
+            user.id, {}, testDb
         );
 
         const result = await finalizeReceiptTotals(
@@ -326,7 +326,7 @@ describe('finalizeReceiptTotals', () => {
 
     it('returns invalid for a failed receipt response', async () => {
         const user = await createTestUser();
-        const { receipt: failedReceipt } = await createFailedReceipt(user.id);
+        const { receipt: failedReceipt } = await createFailedReceipt(user.id, testDb);
 
         const result = await finalizeReceiptTotals(
             testDb,
@@ -347,7 +347,7 @@ describe('finalizeReceiptTotals', () => {
         const user = await createTestUser();
         const { receipt: seededReceipt } = await createSuccessfulReceipt(user.id, [
             { interpretedText: 'Item 1', price: 10, quantity: 2 },
-        ]);
+        ], testDb);
 
         const result = await finalizeReceiptTotals(
             testDb,
@@ -368,7 +368,7 @@ describe('finalizeReceiptTotals', () => {
         const user = await createTestUser();
         const { receipt: seededReceipt, items } = await createSuccessfulReceipt(user.id, [
             { interpretedText: 'Item 1', price: 10, quantity: 2 },
-        ]);
+        ], testDb);
 
         const subtotal = items.reduce(
             (sum, item) => sum + Number(item.price),
