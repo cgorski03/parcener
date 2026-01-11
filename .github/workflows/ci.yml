@@ -16,7 +16,6 @@ on:
           - 'true'
           - 'false'
 
-# Cancel previous runs on the same branch
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -43,6 +42,23 @@ jobs:
     needs: check-skip
     if: needs.check-skip.outputs.skip_ci != 'true'
     runs-on: ubuntu-latest
+
+    # 1. Start Postgres Container
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: colin
+          POSTGRES_PASSWORD: secure_password
+          POSTGRES_DB: split_test
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -56,13 +72,45 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Generate CF Types
+      - name: Create Env Files
         run: |
-          touch .dev.vars
-          pnpm wrangler types
+          # Create .env.local (Used by Drizzle Kit / App)
+          cat > .env.local << EOF
+          GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}
+          GOOGLE_CLIENT_ID=SHOULDNT_MATTER
+          GOOGLE_CLIENT_SECRET=SHOULDNT_MATTER
+          BETTER_AUTH_SECRET=${{ secrets.BETTER_AUTH_SECRET }}
+          SENTRY_DSN=${{ secrets.SENTRY_DSN }}
+          NODE_ENV=test
+          VITE_NODE_ENV=test
+          VITE_BASE_URL=${{ vars.VITE_BASE_URL }}
+          BASE_URL=${{ vars.VITE_BASE_URL }}
+          VITE_SENTRY_DSN=${{ secrets.SENTRY_DSN }}
+          DATABASE_URL=postgres://colin:secure_password@localhost:5433/split_test
+          EOF
+
+      - name: Generate CF Types
+        run: pnpm wrangler types
+
+      # 2. Wait for DB to be ready
+      - name: Wait for Postgres
+        run: |
+          sudo apt-get install -y postgresql-client
+          until pg_isready -h localhost -p 5433 -U colin; do
+            echo "Waiting for postgres..."
+            sleep 1
+          done
+
+      # 3. Create Tables (Crucial Step)
+      - name: Push Drizzle Schema
+        env:
+          DATABASE_URL: postgres://colin:secure_password@localhost:5433/split_test
+        run: pnpm exec drizzle-kit push
 
       - name: Unit Tests
-        run: pnpm run test
+        env:
+          DEBUG: miniflare:*,wrangler:*
+        run: pnpm run test -- --reporter verbose
 
       - name: Type Check
         run: pnpm exec tsc
@@ -72,7 +120,6 @@ jobs:
 
   e2e:
     needs: [check-skip, fast-checks]
-    # Runs on Pushes OR (PRs targeting main) OR (Manual Trigger with true)
     if: |
       needs.check-skip.outputs.skip_ci != 'true' &&
       ((github.event_name != 'pull_request' || github.base_ref == 'main') ||
@@ -107,6 +154,31 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Create Env Files
+        run: |
+          cat > .env.local << EOF
+          GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}
+          GOOGLE_CLIENT_ID=SHOULDNT_MATTER
+          GOOGLE_CLIENT_SECRET=SHOULDNT_MATTER
+          BETTER_AUTH_SECRET=${{ secrets.BETTER_AUTH_SECRET }}
+          SENTRY_DSN=${{ secrets.SENTRY_DSN }}
+          NODE_ENV=test
+          VITE_NODE_ENV=test
+          VITE_BASE_URL=${{ vars.VITE_BASE_URL }}
+          BASE_URL=${{ vars.VITE_BASE_URL }}
+          VITE_SENTRY_DSN=${{ secrets.SENTRY_DSN }}
+          DATABASE_URL=postgres://colin:secure_password@localhost:5433/split_test
+          EOF
+
+          # Copy to .dev.vars just in case e2e uses wrangler
+          cp .env.local .dev.vars
+
+      # Ensure tables exist for E2E as well
+      - name: Push Drizzle Schema (E2E)
+        env:
+          DATABASE_URL: postgres://colin:secure_password@localhost:5433/split_test
+        run: pnpm exec drizzle-kit push
+
       - name: Install Playwright Browsers
         run: pnpm exec playwright install --with-deps
 
@@ -114,7 +186,6 @@ jobs:
         run: pnpm test:e2e:ci
         env:
           CI: true
-          # Ensure this port matches the service port mapping (5433)
           DATABASE_URL: postgres://colin:secure_password@localhost:5433/split_test
 
       - name: Upload Playwright report
