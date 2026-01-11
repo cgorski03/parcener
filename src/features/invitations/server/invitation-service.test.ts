@@ -2,232 +2,232 @@ import { describe, expect, it } from 'vitest';
 import { createTestUser } from '@/test/factories';
 import { invite } from '@/shared/server/db';
 import {
-    InviteError,
-    acceptInvitationToUpload,
-    createUploadInvitation,
-    getUserInviteRateLimit,
+  InviteError,
+  acceptInvitationToUpload,
+  createUploadInvitation,
+  getUserInviteRateLimit,
 } from '@/features/invitations/server/invitation-service';
 import { testDb } from '@/test/setup';
 
 describe('getUserInviteRateLimit', () => {
-    it('returns false for user without upload permission', async () => {
-        const testUser = await createTestUser(testDb, { canUpload: false });
+  it('returns false for user without upload permission', async () => {
+    const testUser = await createTestUser(testDb, { canUpload: false });
 
-        const result = await getUserInviteRateLimit(testDb, testUser);
+    const result = await getUserInviteRateLimit(testDb, testUser);
 
-        expect(result.canInvite).toBe(false);
-        expect(result.used).toBe(0);
-        expect(result.limit).toBe(0);
+    expect(result.canInvite).toBe(false);
+    expect(result.used).toBe(0);
+    expect(result.limit).toBe(0);
+  });
+
+  it('returns true for user with 0 invites today', async () => {
+    const testUser = await createTestUser(testDb, { canUpload: true });
+
+    const result = await getUserInviteRateLimit(testDb, testUser);
+
+    expect(result.canInvite).toBe(true);
+    expect(result.used).toBe(0);
+    expect(result.limit).toBe(3);
+  });
+
+  it('returns true when invites are below daily limit', async () => {
+    const testUser = await createTestUser(testDb, { canUpload: true });
+
+    await testDb.insert(invite).values({
+      id: crypto.randomUUID(),
+      createdBy: testUser.id,
+      createdAt: new Date(),
     });
 
-    it('returns true for user with 0 invites today', async () => {
-        const testUser = await createTestUser(testDb, { canUpload: true });
+    const result = await getUserInviteRateLimit(testDb, testUser);
 
-        const result = await getUserInviteRateLimit(testDb, testUser);
+    expect(result.canInvite).toBe(true);
+    expect(result.used).toBe(1);
+    expect(result.limit).toBe(3);
+  });
 
-        expect(result.canInvite).toBe(true);
-        expect(result.used).toBe(0);
-        expect(result.limit).toBe(3);
-    });
+  it('returns false when user reaches daily limit', async () => {
+    const testUser = await createTestUser(testDb, { canUpload: true });
 
-    it('returns true when invites are below daily limit', async () => {
-        const testUser = await createTestUser(testDb, { canUpload: true });
+    await testDb.insert(invite).values([
+      {
+        id: crypto.randomUUID(),
+        createdBy: testUser.id,
+        createdAt: new Date(),
+      },
+      {
+        id: crypto.randomUUID(),
+        createdBy: testUser.id,
+        createdAt: new Date(),
+      },
+      {
+        id: crypto.randomUUID(),
+        createdBy: testUser.id,
+        createdAt: new Date(),
+      },
+    ]);
 
-        await testDb.insert(invite).values({
-            id: crypto.randomUUID(),
-            createdBy: testUser.id,
-            createdAt: new Date(),
-        });
+    const result = await getUserInviteRateLimit(testDb, testUser);
 
-        const result = await getUserInviteRateLimit(testDb, testUser);
+    expect(result.canInvite).toBe(false);
+    expect(result.used).toBe(3);
+    expect(result.limit).toBe(3);
+  });
 
-        expect(result.canInvite).toBe(true);
-        expect(result.used).toBe(1);
-        expect(result.limit).toBe(3);
-    });
+  it('only counts invites from today (UTC)', async () => {
+    const testUser = await createTestUser(testDb, { canUpload: true });
 
-    it('returns false when user reaches daily limit', async () => {
-        const testUser = await createTestUser(testDb, { canUpload: true });
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    yesterday.setHours(yesterday.getHours() - 24);
 
-        await testDb.insert(invite).values([
-            {
-                id: crypto.randomUUID(),
-                createdBy: testUser.id,
-                createdAt: new Date(),
-            },
-            {
-                id: crypto.randomUUID(),
-                createdBy: testUser.id,
-                createdAt: new Date(),
-            },
-            {
-                id: crypto.randomUUID(),
-                createdBy: testUser.id,
-                createdAt: new Date(),
-            },
-        ]);
+    await testDb.insert(invite).values([
+      { id: crypto.randomUUID(), createdBy: testUser.id, createdAt: yesterday },
+      {
+        id: crypto.randomUUID(),
+        createdBy: testUser.id,
+        createdAt: new Date(),
+      },
+    ]);
 
-        const result = await getUserInviteRateLimit(testDb, testUser);
+    const result = await getUserInviteRateLimit(testDb, testUser);
 
-        expect(result.canInvite).toBe(false);
-        expect(result.used).toBe(3);
-        expect(result.limit).toBe(3);
-    });
-
-    it('only counts invites from today (UTC)', async () => {
-        const testUser = await createTestUser(testDb, { canUpload: true });
-
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
-        yesterday.setHours(yesterday.getHours() - 24);
-
-        await testDb.insert(invite).values([
-            { id: crypto.randomUUID(), createdBy: testUser.id, createdAt: yesterday },
-            {
-                id: crypto.randomUUID(),
-                createdBy: testUser.id,
-                createdAt: new Date(),
-            },
-        ]);
-
-        const result = await getUserInviteRateLimit(testDb, testUser);
-
-        expect(result.canInvite).toBe(true);
-        expect(result.used).toBe(1);
-        expect(result.limit).toBe(3);
-    });
+    expect(result.canInvite).toBe(true);
+    expect(result.used).toBe(1);
+    expect(result.limit).toBe(3);
+  });
 });
 
 describe('createUploadInvitation', () => {
-    it('creates invitation successfully', async () => {
-        const testUser = await createTestUser(testDb, { canUpload: true });
+  it('creates invitation successfully', async () => {
+    const testUser = await createTestUser(testDb, { canUpload: true });
 
-        const result = await createUploadInvitation(testDb, testUser);
+    const result = await createUploadInvitation(testDb, testUser);
 
-        expect(result.inviteId).toBeDefined();
-        expect(typeof result.inviteId).toBe('string');
+    expect(result.inviteId).toBeDefined();
+    expect(typeof result.inviteId).toBe('string');
 
-        const inviteRecord = await testDb.query.invite.findFirst({
-            where: (inviteTable, { eq }) => eq(inviteTable.id, result.inviteId),
-        });
-
-        expect(inviteRecord).toBeDefined();
-        expect(inviteRecord!.createdBy).toBe(testUser.id);
+    const inviteRecord = await testDb.query.invite.findFirst({
+      where: (inviteTable, { eq }) => eq(inviteTable.id, result.inviteId),
     });
 
-    it('throws RateLimitError when daily limit reached', async () => {
-        const testUser = await createTestUser(testDb, { canUpload: true });
+    expect(inviteRecord).toBeDefined();
+    expect(inviteRecord!.createdBy).toBe(testUser.id);
+  });
 
-        await testDb.insert(invite).values([
-            {
-                id: crypto.randomUUID(),
-                createdBy: testUser.id,
-                createdAt: new Date(),
-            },
-            {
-                id: crypto.randomUUID(),
-                createdBy: testUser.id,
-                createdAt: new Date(),
-            },
-            {
-                id: crypto.randomUUID(),
-                createdBy: testUser.id,
-                createdAt: new Date(),
-            },
-        ]);
+  it('throws RateLimitError when daily limit reached', async () => {
+    const testUser = await createTestUser(testDb, { canUpload: true });
 
-        await expect(createUploadInvitation(testDb, testUser)).rejects.toThrow(
-            'You have exceeded your daily invitation limit.',
-        );
-    });
+    await testDb.insert(invite).values([
+      {
+        id: crypto.randomUUID(),
+        createdBy: testUser.id,
+        createdAt: new Date(),
+      },
+      {
+        id: crypto.randomUUID(),
+        createdBy: testUser.id,
+        createdAt: new Date(),
+      },
+      {
+        id: crypto.randomUUID(),
+        createdBy: testUser.id,
+        createdAt: new Date(),
+      },
+    ]);
+
+    await expect(createUploadInvitation(testDb, testUser)).rejects.toThrow(
+      'You have exceeded your daily invitation limit.',
+    );
+  });
 });
 
 describe('acceptInvitationToUpload', () => {
-    it('claims invite and grants upload permission', async () => {
-        const invitingUser = await createTestUser(testDb, { canUpload: true });
-        const invitedUser = await createTestUser(testDb, { canUpload: false });
+  it('claims invite and grants upload permission', async () => {
+    const invitingUser = await createTestUser(testDb, { canUpload: true });
+    const invitedUser = await createTestUser(testDb, { canUpload: false });
 
-        const inviteRecord = await testDb
-            .insert(invite)
-            .values({
-                id: crypto.randomUUID(),
-                createdBy: invitingUser.id,
-                createdAt: new Date(),
-            })
-            .returning();
+    const inviteRecord = await testDb
+      .insert(invite)
+      .values({
+        id: crypto.randomUUID(),
+        createdBy: invitingUser.id,
+        createdAt: new Date(),
+      })
+      .returning();
 
-        const result = await acceptInvitationToUpload(
-            testDb,
-            invitedUser.id,
-            inviteRecord[0].id,
-        );
+    const result = await acceptInvitationToUpload(
+      testDb,
+      invitedUser.id,
+      inviteRecord[0].id,
+    );
 
-        expect(result.status).toBe('SUCCESS');
+    expect(result.status).toBe('SUCCESS');
 
-        const claimedInvite = await testDb.query.invite.findFirst({
-            where: (inviteTable, { eq }) => eq(inviteTable.id, inviteRecord[0].id),
-        });
-
-        expect(claimedInvite).toBeDefined();
-        expect(claimedInvite!.usedBy).toBe(invitedUser.id);
-        expect(claimedInvite!.usedAt).not.toBeNull();
-
-        const updatedUser = await testDb.query.user.findFirst({
-            where: (userTable, { eq }) => eq(userTable.id, invitedUser.id),
-            columns: { canUpload: true },
-        });
-
-        expect(updatedUser!.canUpload).toBe(true);
+    const claimedInvite = await testDb.query.invite.findFirst({
+      where: (inviteTable, { eq }) => eq(inviteTable.id, inviteRecord[0].id),
     });
 
-    it('returns USER_ALREADY_AUTHORIZED if user already can upload', async () => {
-        const invitingUser = await createTestUser(testDb, { canUpload: true });
-        const authorizedUser = await createTestUser(testDb, { canUpload: true });
+    expect(claimedInvite).toBeDefined();
+    expect(claimedInvite!.usedBy).toBe(invitedUser.id);
+    expect(claimedInvite!.usedAt).not.toBeNull();
 
-        const inviteRecord = await testDb
-            .insert(invite)
-            .values({
-                id: crypto.randomUUID(),
-                createdBy: invitingUser.id,
-                createdAt: new Date(),
-            })
-            .returning();
-
-        const result = await acceptInvitationToUpload(
-            testDb,
-            authorizedUser.id,
-            inviteRecord[0].id,
-        );
-
-        expect(result.status).toBe('USER_ALREADY_AUTHORIZED');
+    const updatedUser = await testDb.query.user.findFirst({
+      where: (userTable, { eq }) => eq(userTable.id, invitedUser.id),
+      columns: { canUpload: true },
     });
 
-    it('throws InviteError with NOT_FOUND if invite does not exist', async () => {
-        const testUser = await createTestUser(testDb, { canUpload: false });
+    expect(updatedUser!.canUpload).toBe(true);
+  });
 
-        await expect(
-            acceptInvitationToUpload(testDb, testUser.id, crypto.randomUUID()),
-        ).rejects.toThrow(InviteError);
-    });
+  it('returns USER_ALREADY_AUTHORIZED if user already can upload', async () => {
+    const invitingUser = await createTestUser(testDb, { canUpload: true });
+    const authorizedUser = await createTestUser(testDb, { canUpload: true });
 
-    it('throws InviteError with NOT_FOUND if invite already used', async () => {
-        const invitingUser = await createTestUser(testDb, { canUpload: true });
-        const invitedUser = await createTestUser(testDb, { canUpload: false });
-        const someOtherUser = await createTestUser(testDb, { canUpload: true });
+    const inviteRecord = await testDb
+      .insert(invite)
+      .values({
+        id: crypto.randomUUID(),
+        createdBy: invitingUser.id,
+        createdAt: new Date(),
+      })
+      .returning();
 
-        const inviteRecord = await testDb
-            .insert(invite)
-            .values({
-                id: crypto.randomUUID(),
-                createdBy: invitingUser.id,
-                createdAt: new Date(),
-                usedAt: new Date(),
-                usedBy: someOtherUser.id,
-            })
-            .returning();
+    const result = await acceptInvitationToUpload(
+      testDb,
+      authorizedUser.id,
+      inviteRecord[0].id,
+    );
 
-        await expect(
-            acceptInvitationToUpload(testDb, invitedUser.id, inviteRecord[0].id),
-        ).rejects.toThrow(InviteError);
-    });
+    expect(result.status).toBe('USER_ALREADY_AUTHORIZED');
+  });
+
+  it('throws InviteError with NOT_FOUND if invite does not exist', async () => {
+    const testUser = await createTestUser(testDb, { canUpload: false });
+
+    await expect(
+      acceptInvitationToUpload(testDb, testUser.id, crypto.randomUUID()),
+    ).rejects.toThrow(InviteError);
+  });
+
+  it('throws InviteError with NOT_FOUND if invite already used', async () => {
+    const invitingUser = await createTestUser(testDb, { canUpload: true });
+    const invitedUser = await createTestUser(testDb, { canUpload: false });
+    const someOtherUser = await createTestUser(testDb, { canUpload: true });
+
+    const inviteRecord = await testDb
+      .insert(invite)
+      .values({
+        id: crypto.randomUUID(),
+        createdBy: invitingUser.id,
+        createdAt: new Date(),
+        usedAt: new Date(),
+        usedBy: someOtherUser.id,
+      })
+      .returning();
+
+    await expect(
+      acceptInvitationToUpload(testDb, invitedUser.id, inviteRecord[0].id),
+    ).rejects.toThrow(InviteError);
+  });
 });

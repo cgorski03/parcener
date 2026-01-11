@@ -1,6 +1,6 @@
 import { and, eq } from 'drizzle-orm';
 import { getRoomMembership } from './room-member-service';
-import type { DbTxType, DbType} from '@/shared/server/db';
+import type { DbTxType, DbType } from '@/shared/server/db';
 import type { RoomDto, RoomMemberDto } from '@/shared/dto/types';
 import type { RoomIdentity } from '@/shared/auth/server/room-identity';
 import { room, roomMember } from '@/shared/server/db';

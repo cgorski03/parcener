@@ -1,8 +1,4 @@
-import {
-  useMutation,
-  useQuery,
-  useQueryClient
-} from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from '@tanstack/react-router';
 import {
   createRoomRpc,
@@ -12,7 +8,8 @@ import {
 } from '../server/room-rpc';
 import type {
   DefinedUseQueryResult,
-  UseQueryResult} from '@tanstack/react-query';
+  UseQueryResult,
+} from '@tanstack/react-query';
 import type {
   FullRoomInfoDto,
   JoinRoomRequest,

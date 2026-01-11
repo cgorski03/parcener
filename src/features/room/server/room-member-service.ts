@@ -1,6 +1,6 @@
 import { and, eq } from 'drizzle-orm';
 import { touchRoomId } from './room-service';
-import type { DbType} from '@/shared/server/db';
+import type { DbType } from '@/shared/server/db';
 import type { RoomIdentity } from '@/shared/auth/server/room-identity';
 import type { RoomMembership } from '@/shared/dto/types';
 import { roomMember } from '@/shared/server/db';

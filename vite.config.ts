@@ -6,17 +6,17 @@ import tailwindcss from '@tailwindcss/vite';
 import { cloudflare } from '@cloudflare/vite-plugin';
 
 const config = defineConfig({
-    plugins: [
-        viteTsConfigPaths({
-            projects: ['./tsconfig.json'],
-        }),
-        tailwindcss(),
-        tanstackStart(),
-        viteReact(),
-        cloudflare({
-            viteEnvironment: { name: 'ssr' },
-        }),
-    ],
+  plugins: [
+    viteTsConfigPaths({
+      projects: ['./tsconfig.json'],
+    }),
+    tailwindcss(),
+    tanstackStart(),
+    viteReact(),
+    cloudflare({
+      viteEnvironment: { name: 'ssr' },
+    }),
+  ],
 });
 
 export default config;

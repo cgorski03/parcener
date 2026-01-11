@@ -58,8 +58,8 @@
       "r2_buckets": [
         {
           "bucket_name": "parcener-receipt-images-test",
-          "binding": "parcener_receipt_images"
-        }
+          "binding": "parcener_receipt_images",
+        },
       ],
       "vars": {
         "NODE_ENV": "test",
@@ -68,17 +68,17 @@
         "producers": [
           {
             "binding": "RECEIPT_QUEUE",
-            "queue": "parcener-receipt-queue-test"
-          }
-        ]
+            "queue": "parcener-receipt-queue-test",
+          },
+        ],
       },
       "hyperdrive": [
         {
           "binding": "HYPERDRIVE",
           "id": "test-hyperdrive",
-          "localConnectionString": "postgres://colin:secure_password@localhost:5433/split_test?sslmode=disable"
-        }
-      ]
+          "localConnectionString": "postgres://colin:secure_password@localhost:5433/split_test?sslmode=disable",
+        },
+      ],
     },
     "staging": {
       "workers_dev": false,

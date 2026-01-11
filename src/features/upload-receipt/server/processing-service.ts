@@ -15,10 +15,9 @@ import {
   saveReceiptInformation,
 } from './repository';
 import { google } from './llm';
-import type {
-  UsageMetadata} from './utils/parse-json';
+import type { UsageMetadata } from './utils/parse-json';
 import type { ReceiptJob } from './types';
-import type { DbType} from '@/shared/server/db';
+import type { DbType } from '@/shared/server/db';
 import type { GoogleGenerativeAIProvider } from '@ai-sdk/google';
 import { receipt } from '@/shared/server/db';
 import { logger } from '@/shared/observability/logger';

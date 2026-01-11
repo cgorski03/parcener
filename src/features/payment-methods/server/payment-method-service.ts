@@ -3,7 +3,7 @@ import type {
   CreatePaymentMethodRequest,
   PaymentMethodDto,
 } from '@/shared/dto/types';
-import type { AppUser, DbType} from '@/shared/server/db';
+import type { AppUser, DbType } from '@/shared/server/db';
 import { mapPaymentMethodToDto } from '@/shared/dto/mappers';
 import { paymentMethod, user } from '@/shared/server/db';
 
