@@ -6,7 +6,7 @@ import { testDb } from '@/test/setup';
 
 describe('getUserUploadRateLimit', () => {
   it('returns false for user without upload permission', async () => {
-    const user = await createTestUser({ canUpload: false });
+    const user = await createTestUser(testDb, { canUpload: false });
 
     const result = await getUserUploadRateLimit(testDb, user);
 
@@ -16,7 +16,7 @@ describe('getUserUploadRateLimit', () => {
   });
 
   it('returns true for user with 0 uploads today', async () => {
-    const user = await createTestUser({ canUpload: true });
+    const user = await createTestUser(testDb, { canUpload: true });
 
     const result = await getUserUploadRateLimit(testDb, user);
 
@@ -26,7 +26,7 @@ describe('getUserUploadRateLimit', () => {
   });
 
   it('returns true when uploads are below daily limit', async () => {
-    const user = await createTestUser({ canUpload: true });
+    const user = await createTestUser(testDb, { canUpload: true });
 
     await testDb.insert(receipt).values({
       id: crypto.randomUUID(),
@@ -42,7 +42,7 @@ describe('getUserUploadRateLimit', () => {
   });
 
   it('returns false when user reaches daily limit', async () => {
-    const user = await createTestUser({ canUpload: true });
+    const user = await createTestUser(testDb, { canUpload: true });
 
     await testDb.insert(receipt).values([
       { id: crypto.randomUUID(), userId: user.id, createdAt: new Date() },
@@ -58,7 +58,7 @@ describe('getUserUploadRateLimit', () => {
   });
 
   it('only counts uploads from today (UTC)', async () => {
-    const user = await createTestUser({ canUpload: true });
+    const user = await createTestUser(testDb, { canUpload: true });
 
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
@@ -77,8 +77,8 @@ describe('getUserUploadRateLimit', () => {
   });
 
   it('excludes uploads from other users', async () => {
-    const user1 = await createTestUser({ canUpload: true });
-    const user2 = await createTestUser({ canUpload: true });
+    const user1 = await createTestUser(testDb, { canUpload: true });
+    const user2 = await createTestUser(testDb, { canUpload: true });
 
     await testDb.insert(receipt).values({
       id: crypto.randomUUID(),

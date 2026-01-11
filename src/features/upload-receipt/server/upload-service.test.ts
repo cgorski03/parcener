@@ -20,7 +20,7 @@ import { testDb } from '@/test/setup';
 
 describe('processUploadAndEnqueue', () => {
     it('creates receipt stub and stores image in R2', async () => {
-        const user = await createTestUser({ canUpload: true });
+        const user = await createTestUser(testDb, { canUpload: true });
         const file = new File(['fake-image-content'], 'receipt.jpg', {
             type: 'image/jpeg',
         });
@@ -40,7 +40,7 @@ describe('processUploadAndEnqueue', () => {
     });
 
     it('returns a valid receiptId', async () => {
-        const user = await createTestUser({ canUpload: true });
+        const user = await createTestUser(testDb, { canUpload: true });
         const file = new File(['test'], 'receipt.jpg', { type: 'image/jpeg' });
 
         const result = await processUploadAndEnqueue(testDb, env, file, user.id);
@@ -51,7 +51,7 @@ describe('processUploadAndEnqueue', () => {
     });
 
     it('stores image with correct content type', async () => {
-        const user = await createTestUser({ canUpload: true });
+        const user = await createTestUser(testDb, { canUpload: true });
         const file = new File(['test-png-content'], 'receipt.png', {
             type: 'image/png',
         });
@@ -66,7 +66,7 @@ describe('processUploadAndEnqueue', () => {
 
 describe('processingQueueMessageHandler', () => {
     it('throws error when processing fails (to trigger retry)', async () => {
-        const user = await createTestUser({ canUpload: true });
+        const user = await createTestUser(testDb, { canUpload: true });
         const receiptId = crypto.randomUUID();
 
         await testDb.insert(receipt).values({

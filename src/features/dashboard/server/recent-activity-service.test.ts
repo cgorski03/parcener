@@ -15,7 +15,7 @@ import { user } from '@/shared/server/db/auth-schema';
 
 describe('getRecentReceipts', () => {
     it('returns null for user without upload permission', async () => {
-        const userEntity = await createTestUser({ canUpload: false });
+        const userEntity = await createTestUser(testDb, { canUpload: false });
 
         const result = await getRecentReceipts(testDb, userEntity);
 
@@ -23,7 +23,7 @@ describe('getRecentReceipts', () => {
     });
 
     it('returns empty array for user with no receipts', async () => {
-        const userEntity = await createTestUser({ canUpload: true });
+        const userEntity = await createTestUser(testDb, { canUpload: true });
 
         const result = await getRecentReceipts(testDb, userEntity);
 
@@ -33,7 +33,7 @@ describe('getRecentReceipts', () => {
     });
 
     it('returns user most recent receipts', async () => {
-        const userEntity = await createTestUser({ canUpload: true });
+        const userEntity = await createTestUser(testDb, { canUpload: true });
 
         await createTestReceipt(userEntity.id, {
             title: 'Receipt 1',
@@ -58,7 +58,7 @@ describe('getRecentReceipts', () => {
     });
 
     it('returns null for user without upload permission', async () => {
-        const userEntity = await createTestUser({ canUpload: true });
+        const userEntity = await createTestUser(testDb, { canUpload: true });
 
         await createTestReceipt(userEntity.id, {
             title: 'Old Receipt',
@@ -79,7 +79,7 @@ describe('getRecentReceipts', () => {
 
 describe('getRecentRooms', () => {
     it('returns empty array for user with no rooms', async () => {
-        const seededUser = await createTestUser({ canUpload: true });
+        const seededUser = await createTestUser(testDb, { canUpload: true });
 
         const result = await getRecentRooms(testDb, seededUser);
 
@@ -89,29 +89,29 @@ describe('getRecentRooms', () => {
     });
 
     it('returns user recent rooms ordered by join date', async () => {
-        const user1 = await createTestUser({ canUpload: true });
-        const user2 = await createTestUser({ canUpload: true });
+        const user1 = await createTestUser(testDb, { canUpload: true });
+        const user2 = await createTestUser(testDb, { canUpload: true });
 
         const receipt1 = await createTestReceipt(user1.id, {}, {}, testDb);
         const receipt2 = await createTestReceipt(user1.id, {}, {}, testDb);
-        const room1 = await createTestRoom(receipt1.receipt.id, user1.id, {
+        const room1 = await createTestRoom(testDb, receipt1.receipt.id, user1.id, {
             title: 'Room 1',
         });
-        const room2 = await createTestRoom(receipt2.receipt.id, user1.id, {
+        const room2 = await createTestRoom(testDb, receipt2.receipt.id, user1.id, {
             title: 'Room 2',
         });
 
-        await createTestRoomMember(room1.id, {
+        await createTestRoomMember(testDb, room1.id, {
             userId: user1.id,
             joinedAt: new Date('2025-01-06T12:00:00Z'),
         });
 
-        await createTestRoomMember(room2.id, {
+        await createTestRoomMember(testDb, room2.id, {
             userId: user1.id,
             joinedAt: new Date('2025-01-06T11:00:00Z'),
         });
 
-        await createTestRoomMember(room1.id, {
+        await createTestRoomMember(testDb, room1.id, {
             userId: user2.id,
             joinedAt: new Date('2025-01-06T08:00:00Z'),
         });
@@ -125,20 +125,20 @@ describe('getRecentRooms', () => {
     });
 
     it('only returns rooms for requesting user', async () => {
-        const user1 = await createTestUser({ canUpload: true });
-        const user2 = await createTestUser({ canUpload: true });
+        const user1 = await createTestUser(testDb, { canUpload: true });
+        const user2 = await createTestUser(testDb, { canUpload: true });
 
         const receipt1 = await createTestReceipt(user1.id, {}, {}, testDb);
         const receipt2 = await createTestReceipt(user1.id, {}, {}, testDb);
-        const room1 = await createTestRoom(receipt1.receipt.id, user1.id, {
+        const room1 = await createTestRoom(testDb, receipt1.receipt.id, user1.id, {
             title: 'Room 1',
         });
-        const room2 = await createTestRoom(receipt2.receipt.id, user2.id, {
+        const room2 = await createTestRoom(testDb, receipt2.receipt.id, user2.id, {
             title: 'Room 2',
         });
 
-        await createTestRoomMember(room1.id, { userId: user1.id });
-        await createTestRoomMember(room2.id, { userId: user2.id });
+        await createTestRoomMember(testDb, room1.id, { userId: user1.id });
+        await createTestRoomMember(testDb, room2.id, { userId: user2.id });
 
         const result = await getRecentRooms(testDb, user1);
 
@@ -148,13 +148,13 @@ describe('getRecentRooms', () => {
     });
 
     it('returns rooms for user without upload permission', async () => {
-        const userEntity = await createTestUser({ canUpload: true });
+        const userEntity = await createTestUser(testDb, { canUpload: true });
 
         const receipt = await createTestReceipt(userEntity.id, {}, {}, testDb);
-        const room = await createTestRoom(receipt.receipt.id, userEntity.id, {
+        const room = await createTestRoom(testDb, receipt.receipt.id, userEntity.id, {
             title: 'Existing Room',
         });
-        await createTestRoomMember(room.id, { userId: userEntity.id });
+        await createTestRoomMember(testDb, room.id, { userId: userEntity.id });
 
         await testDb
             .update(user)

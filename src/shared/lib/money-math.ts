@@ -8,7 +8,6 @@ export const calculateItemTotal = (items: Array<ReceiptItemDto>) => {
 
 export const moneyValuesEqual = (price1: number, price2: number) => {
     const diff = Math.abs(price1 - price2);
-    console.log("dif", diff);
     return diff < MONEY_EPSILON;
 }
 

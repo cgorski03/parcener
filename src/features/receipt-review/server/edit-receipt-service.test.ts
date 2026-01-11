@@ -25,7 +25,7 @@ const toMoneyStr = (num: number) => num.toFixed(2);
 describe('edit-receipt-service', () => {
     describe('editReceiptItem', () => {
         it('updates receipt item', async () => {
-            const user = await createTestUser();
+            const user = await createTestUser(testDb);
             const { items } = await createSuccessfulReceipt(user.id, [
                 { interpretedText: 'Item 1', price: 10, quantity: 2 },
             ], testDb);
@@ -48,16 +48,16 @@ describe('edit-receipt-service', () => {
         });
 
         it('will adjust quantity of second claimer when reducing quantity', async () => {
-            const user1 = await createTestUser();
-            const user2 = await createTestUser();
+            const user1 = await createTestUser(testDb);
+            const user2 = await createTestUser(testDb);
             const { receipt: seededReceipt, items } = await createSuccessfulReceipt(user1.id, [
                 { interpretedText: 'Item 1', price: 10, quantity: 5 },
             ], testDb);
-            const seededRoom = await createTestRoom(seededReceipt.id, user1.id);
-            const member1 = await createTestRoomMember(seededRoom.id, { userId: user1.id });
-            const member2 = await createTestRoomMember(seededRoom.id, { userId: user2.id });
-            const firstClaim = await createTestClaim(seededRoom.id, member1.id, items[0].id, 2);
-            const secondClaim = await createTestClaim(seededRoom.id, member2.id, items[0].id, 2);
+            const seededRoom = await createTestRoom(testDb, seededReceipt.id, user1.id);
+            const member1 = await createTestRoomMember(testDb, seededRoom.id, { userId: user1.id });
+            const member2 = await createTestRoomMember(testDb, seededRoom.id, { userId: user2.id });
+            const firstClaim = await createTestClaim(testDb, seededRoom.id, member1.id, items[0].id, 2);
+            const secondClaim = await createTestClaim(testDb, seededRoom.id, member2.id, items[0].id, 2);
 
             await editReceiptItem(
                 testDb,
@@ -82,16 +82,16 @@ describe('edit-receipt-service', () => {
         });
     });
     it('will remove a claim entirely when pruning ', async () => {
-        const user1 = await createTestUser();
-        const user2 = await createTestUser();
+        const user1 = await createTestUser(testDb);
+        const user2 = await createTestUser(testDb);
         const { receipt: seededReceipt, items } = await createSuccessfulReceipt(user1.id, [
             { interpretedText: 'Item 1', price: 10, quantity: 5 },
         ], testDb);
-        const seededRoom = await createTestRoom(seededReceipt.id, user1.id);
-        const member1 = await createTestRoomMember(seededRoom.id, { userId: user1.id });
-        const member2 = await createTestRoomMember(seededRoom.id, { userId: user2.id });
-        const firstClaim = await createTestClaim(seededRoom.id, member1.id, items[0].id, 2);
-        await createTestClaim(seededRoom.id, member2.id, items[0].id, 2);
+        const seededRoom = await createTestRoom(testDb, seededReceipt.id, user1.id);
+        const member1 = await createTestRoomMember(testDb, seededRoom.id, { userId: user1.id });
+        const member2 = await createTestRoomMember(testDb, seededRoom.id, { userId: user2.id });
+        const firstClaim = await createTestClaim(testDb, seededRoom.id, member1.id, items[0].id, 2);
+        await createTestClaim(testDb, seededRoom.id, member2.id, items[0].id, 2);
 
         await editReceiptItem(
             testDb,
@@ -117,7 +117,7 @@ describe('edit-receipt-service', () => {
 
 describe('createReceiptItem', () => {
     it('creates a new receipt item', async () => {
-        const user = await createTestUser();
+        const user = await createTestUser(testDb);
         const { receipt: seededReceipt } = await createSuccessfulReceipt(user.id, [
             { interpretedText: 'Item 1', price: 10 },
         ], testDb);
@@ -140,7 +140,7 @@ describe('createReceiptItem', () => {
     });
 
     it('adds item to receipt', async () => {
-        const user = await createTestUser();
+        const user = await createTestUser(testDb);
         const { receipt: seededReceipt } = await createSuccessfulReceipt(user.id, [
             { interpretedText: 'Item 1', price: 10 },
         ], testDb);
@@ -167,7 +167,7 @@ describe('createReceiptItem', () => {
 
 describe('deleteReceiptItem', () => {
     it('deletes receipt item', async () => {
-        const user = await createTestUser();
+        const user = await createTestUser(testDb);
         const { receipt: seededReceipt, items } = await createSuccessfulReceipt(user.id, [
             { interpretedText: 'Item 1', price: 10, quantity: 2 },
         ], testDb);
@@ -192,7 +192,7 @@ describe('deleteReceiptItem', () => {
     });
 
     it('returns gracefully for non-existent item', async () => {
-        const user = await createTestUser();
+        const user = await createTestUser(testDb);
 
         await expect(
             deleteReceiptItem(
@@ -212,7 +212,7 @@ describe('deleteReceiptItem', () => {
 
 describe('finalizeReceiptTotals', () => {
     it('finalizes receipt totals successfully', async () => {
-        const user = await createTestUser();
+        const user = await createTestUser(testDb);
         const { receipt: seededReceipt, items } = await createSuccessfulReceipt(
             user.id,
             [
@@ -254,11 +254,11 @@ describe('finalizeReceiptTotals', () => {
     });
 
     it('touches room when finalizing totals', async () => {
-        const user = await createTestUser();
+        const user = await createTestUser(testDb);
         const { receipt: seededReceipt } = await createSuccessfulReceipt(user.id, [
             { interpretedText: 'Item 1', price: 10 },
         ], testDb);
-        const seededRoom = await createTestRoom(seededReceipt.id, user.id);
+        const seededRoom = await createTestRoom(testDb, seededReceipt.id, user.id);
 
         const before = await testDb.query.room.findFirst({
             where: eq(room.id, seededRoom.id),
@@ -286,7 +286,7 @@ describe('finalizeReceiptTotals', () => {
     });
 
     it('returns invalid_receipt for non-existent receipt', async () => {
-        const user = await createTestUser();
+        const user = await createTestUser(testDb);
 
         const result = await finalizeReceiptTotals(
             testDb,
@@ -304,7 +304,7 @@ describe('finalizeReceiptTotals', () => {
     });
 
     it('returns invalid_receipt for processing receipt', async () => {
-        const user = await createTestUser();
+        const user = await createTestUser(testDb);
         const { receipt: processingReceipt } = await createProcessingReceipt(
             user.id, {}, testDb
         );
@@ -325,7 +325,7 @@ describe('finalizeReceiptTotals', () => {
     });
 
     it('returns invalid for a failed receipt response', async () => {
-        const user = await createTestUser();
+        const user = await createTestUser(testDb);
         const { receipt: failedReceipt } = await createFailedReceipt(user.id, testDb);
 
         const result = await finalizeReceiptTotals(
@@ -344,7 +344,7 @@ describe('finalizeReceiptTotals', () => {
     });
 
     it('returns subtotal mismatch error', async () => {
-        const user = await createTestUser();
+        const user = await createTestUser(testDb);
         const { receipt: seededReceipt } = await createSuccessfulReceipt(user.id, [
             { interpretedText: 'Item 1', price: 10, quantity: 2 },
         ], testDb);
@@ -365,7 +365,7 @@ describe('finalizeReceiptTotals', () => {
     });
 
     it('returns grand total mismatch error', async () => {
-        const user = await createTestUser();
+        const user = await createTestUser(testDb);
         const { receipt: seededReceipt, items } = await createSuccessfulReceipt(user.id, [
             { interpretedText: 'Item 1', price: 10, quantity: 2 },
         ], testDb);

@@ -30,7 +30,7 @@ function assertRoomCreateSuccess(
 describe('room-service', () => {
     describe('createRoom', () => {
         it('creates a room for a valid receipt', async () => {
-            const user = await createTestUser();
+            const user = await createTestUser(testDb);
             const { receipt } = await createSuccessfulReceipt(user.id, [
                 { interpretedText: 'Item 1', price: 10 },
             ], testDb);
@@ -45,7 +45,7 @@ describe('room-service', () => {
         });
 
         it('returns error for processing receipt', async () => {
-            const user = await createTestUser();
+            const user = await createTestUser(testDb);
             const { receipt } = await createSuccessfulReceipt(user.id, [
                 { interpretedText: 'Item 1', price: 10 },
             ], testDb);
@@ -56,7 +56,7 @@ describe('room-service', () => {
         });
 
         it('returns ROOM_EXISTS_ERROR if room already exists for receipt', async () => {
-            const user = await createTestUser();
+            const user = await createTestUser(testDb);
             const { receipt } = await createSuccessfulReceipt(user.id, [
                 { interpretedText: 'Item 1', price: 10 },
             ], testDb);
@@ -68,7 +68,7 @@ describe('room-service', () => {
         });
 
         it('associates payment method when provided', async () => {
-            const user = await createTestUser();
+            const user = await createTestUser(testDb);
             const { receipt } = await createSuccessfulReceipt(user.id, [
                 { interpretedText: 'Item 1', price: 10 },
             ], testDb);
@@ -94,7 +94,7 @@ describe('room-service', () => {
 
     describe('updateRoomPaymentInformation', () => {
         it('updates room payment method', async () => {
-            const user = await createTestUser();
+            const user = await createTestUser(testDb);
             const { receipt } = await createSuccessfulReceipt(user.id, [
                 { interpretedText: 'Item 1', price: 10 },
             ], testDb);
@@ -120,8 +120,8 @@ describe('room-service', () => {
         });
 
         it('returns null if user does not own the room', async () => {
-            const user1 = await createTestUser();
-            const user2 = await createTestUser();
+            const user1 = await createTestUser(testDb);
+            const user2 = await createTestUser(testDb);
             const { receipt } = await createSuccessfulReceipt(user1.id, [
                 { interpretedText: 'Item 1', price: 10 },
             ], testDb);
@@ -140,7 +140,7 @@ describe('room-service', () => {
         });
 
         it('sets payment method to null when paymentMethodId is null', async () => {
-            const user = await createTestUser();
+            const user = await createTestUser(testDb);
             const { receipt } = await createSuccessfulReceipt(user.id, [
                 { interpretedText: 'Item 1', price: 10 },
             ], testDb);
@@ -162,13 +162,13 @@ describe('room-service', () => {
 
     describe('GetFullRoomInfo', () => {
         it('returns room with full information', async () => {
-            const user = await createTestUser();
+            const user = await createTestUser(testDb);
             const { receipt } = await createSuccessfulReceipt(user.id, [
                 { interpretedText: 'Item 1', price: 10 },
                 { interpretedText: 'Item 2', price: 20 },
             ], testDb);
-            const room = await createTestRoom(receipt.id, user.id);
-            await createTestRoomMember(room.id, {
+            const room = await createTestRoom(testDb, receipt.id, user.id);
+            await createTestRoomMember(testDb, room.id, {
                 userId: user.id,
                 displayName: 'Test User',
             });
@@ -183,13 +183,13 @@ describe('room-service', () => {
         });
 
         it('includes guest members', async () => {
-            const user = await createTestUser();
+            const user = await createTestUser(testDb);
             const { receipt } = await createSuccessfulReceipt(user.id, [
                 { interpretedText: 'Item 1', price: 10 },
             ], testDb);
-            const room = await createTestRoom(receipt.id, user.id);
+            const room = await createTestRoom(testDb, receipt.id, user.id);
             const guestUuid = crypto.randomUUID();
-            await createTestRoomMember(room.id, { guestUuid, displayName: 'Guest' });
+            await createTestRoomMember(testDb, room.id, { guestUuid, displayName: 'Guest' });
 
             const result = await GetFullRoomInfo(testDb, room.id);
 
@@ -200,11 +200,11 @@ describe('room-service', () => {
 
     describe('GetRoomHeader', () => {
         it('returns room header with updatedAt timestamp', async () => {
-            const user = await createTestUser();
+            const user = await createTestUser(testDb);
             const { receipt } = await createSuccessfulReceipt(user.id, [
                 { interpretedText: 'Item 1', price: 10 },
             ], testDb);
-            const room = await createTestRoom(receipt.id, user.id);
+            const room = await createTestRoom(testDb, receipt.id, user.id);
 
             const result = await GetRoomHeader(testDb, room.id);
 
@@ -215,11 +215,11 @@ describe('room-service', () => {
 
     describe('joinRoomAction', () => {
         it('adds new member to room', async () => {
-            const user = await createTestUser();
+            const user = await createTestUser(testDb);
             const { receipt } = await createSuccessfulReceipt(user.id, [
                 { interpretedText: 'Item 1', price: 10 },
             ], testDb);
-            const room = await createTestRoom(receipt.id, user.id);
+            const room = await createTestRoom(testDb, receipt.id, user.id);
 
             const identity: RoomIdentity = {
                 userId: user.id,
@@ -237,11 +237,11 @@ describe('room-service', () => {
         });
 
         it('returns existing member without creating duplicate', async () => {
-            const user = await createTestUser();
+            const user = await createTestUser(testDb);
             const { receipt } = await createSuccessfulReceipt(user.id, [
                 { interpretedText: 'Item 1', price: 10 },
             ], testDb);
-            const room = await createTestRoom(receipt.id, user.id);
+            const room = await createTestRoom(testDb, receipt.id, user.id);
 
             const identity: RoomIdentity = {
                 userId: user.id,
@@ -263,13 +263,13 @@ describe('room-service', () => {
         });
 
         it('upgrades guest member to user', async () => {
-            const user = await createTestUser();
+            const user = await createTestUser(testDb);
             const { receipt } = await createSuccessfulReceipt(user.id, [
                 { interpretedText: 'Item 1', price: 10 },
             ], testDb);
-            const room = await createTestRoom(receipt.id, user.id);
+            const room = await createTestRoom(testDb, receipt.id, user.id);
             const guestUuid = crypto.randomUUID();
-            await createTestRoomMember(room.id, { guestUuid, displayName: 'Guest' });
+            await createTestRoomMember(testDb, room.id, { guestUuid, displayName: 'Guest' });
 
             const identity: RoomIdentity = {
                 userId: user.id,
@@ -288,11 +288,11 @@ describe('room-service', () => {
         });
 
         it('uses custom display name when provided', async () => {
-            const user = await createTestUser();
+            const user = await createTestUser(testDb);
             const { receipt } = await createSuccessfulReceipt(user.id, [
                 { interpretedText: 'Item 1', price: 10 },
             ], testDb);
-            const room = await createTestRoom(receipt.id, user.id);
+            const room = await createTestRoom(testDb, receipt.id, user.id);
 
             const identity: RoomIdentity = {
                 userId: user.id,
@@ -310,11 +310,11 @@ describe('room-service', () => {
         });
 
         it('creates guest member for unauthenticated user', async () => {
-            const user = await createTestUser();
+            const user = await createTestUser(testDb);
             const { receipt } = await createSuccessfulReceipt(user.id, [
                 { interpretedText: 'Item 1', price: 10 },
             ], testDb);
-            const room = await createTestRoom(receipt.id, user.id);
+            const room = await createTestRoom(testDb, receipt.id, user.id);
 
             const guestUuid = crypto.randomUUID();
             const identity: RoomIdentity = {

@@ -74,7 +74,7 @@ describe('get-receipt-service', () => {
         });
 
         it('returns RECEIPT_PROCESSING for processing receipt', async () => {
-            const user = await createTestUser();
+            const user = await createTestUser(testDb);
             const { receipt: processingReceipt } = await createProcessingReceipt(
                 user.id,
                 {},
@@ -91,7 +91,7 @@ describe('get-receipt-service', () => {
         });
 
         it('returns RECEIPT_PROCESSING for receipt with no processing info', async () => {
-            const user = await createTestUser();
+            const user = await createTestUser(testDb);
             const { receipt: receiptWithNoProcessing } = await createTestReceipt(
                 user.id,
                 {},
@@ -109,7 +109,7 @@ describe('get-receipt-service', () => {
         });
 
         it('returns failed receipt response', async () => {
-            const user = await createTestUser();
+            const user = await createTestUser(testDb);
             const { receipt: failedReceipt } = await createFailedReceipt(user.id, testDb);
 
             const result = await getReceiptWithItems(
@@ -125,7 +125,7 @@ describe('get-receipt-service', () => {
         });
 
         it('returns successful receipt with items', async () => {
-            const user = await createTestUser();
+            const user = await createTestUser(testDb);
             const { receipt: seededReceipt } = await createSuccessfulReceipt(user.id, [
                 { interpretedText: 'Item 1', price: 10, quantity: 2 },
                 { interpretedText: 'Item 2', price: 5, quantity: 1 },
@@ -142,12 +142,12 @@ describe('get-receipt-service', () => {
         });
 
         it('returns receipt with roomId when room exists', async () => {
-            const user = await createTestUser();
+            const user = await createTestUser(testDb);
             const { receipt: seededReceipt } = await createSuccessfulReceipt(user.id, [
                 { interpretedText: 'Item 1', price: 10 },
             ], testDb);
             const { createTestRoom } = await import('@/test/factories/room');
-            const room = await createTestRoom(seededReceipt.id, user.id);
+            const room = await createTestRoom(testDb, seededReceipt.id, user.id);
 
             const result = await getReceiptWithItems(testDb, seededReceipt.id, user.id);
             assertReceiptSuccess(result);
@@ -156,8 +156,8 @@ describe('get-receipt-service', () => {
         });
 
         it('does not return other users receipts', async () => {
-            const user1 = await createTestUser();
-            const user2 = await createTestUser();
+            const user1 = await createTestUser(testDb);
+            const user2 = await createTestUser(testDb);
             const { receipt: seededReceipt } = await createSuccessfulReceipt(user1.id, [
                 { interpretedText: 'Item 1', price: 10 },
             ], testDb);
@@ -177,7 +177,7 @@ describe('get-receipt-service', () => {
         });
 
         it('returns processing for processing receipt', async () => {
-            const user = await createTestUser();
+            const user = await createTestUser(testDb);
             const { receipt: processingReceipt } = await createProcessingReceipt(
                 user.id,
                 {},
@@ -194,7 +194,7 @@ describe('get-receipt-service', () => {
         });
 
         it('returns failed receipt response', async () => {
-            const user = await createTestUser();
+            const user = await createTestUser(testDb);
             const { receipt: failedReceipt } = await createFailedReceipt(user.id, testDb);
 
             const result = await getReceiptState(testDb, failedReceipt.id, user.id);
@@ -208,7 +208,7 @@ describe('get-receipt-service', () => {
         });
 
         it('returns success for valid receipt', async () => {
-            const user = await createTestUser();
+            const user = await createTestUser(testDb);
             const { receipt: seededReceipt } = await createSuccessfulReceipt(user.id, [
                 { interpretedText: 'Item 1', price: 10, quantity: 2 },
                 { interpretedText: 'Item 2', price: 5, quantity: 1 },
@@ -228,7 +228,7 @@ describe('get-receipt-service', () => {
         });
 
         it('returns subtotal mismatch error', async () => {
-            const user = await createTestUser();
+            const user = await createTestUser(testDb);
             const { receipt: seededReceipt } = await createSuccessfulReceipt(
                 user.id,
                 [{ interpretedText: 'Item 1', price: 10, quantity: 2 }],
@@ -253,7 +253,7 @@ describe('get-receipt-service', () => {
         });
 
         it('returns grand total mismatch error', async () => {
-            const user = await createTestUser();
+            const user = await createTestUser(testDb);
             const { receipt: seededReceipt, items } = await createSuccessfulReceipt(
                 user.id,
                 [{ interpretedText: 'Item 1', price: 10, quantity: 2 }],
@@ -282,7 +282,7 @@ describe('get-receipt-service', () => {
         });
 
         it('validates receipt calculations correctly', async () => {
-            const user = await createTestUser();
+            const user = await createTestUser(testDb);
             const items = [
                 { interpretedText: 'Item 1', price: 10, quantity: 2 },
                 { interpretedText: 'Item 2', price: 5, quantity: 1 },

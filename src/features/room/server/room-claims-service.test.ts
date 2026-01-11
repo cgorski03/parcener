@@ -16,12 +16,12 @@ import { claim, room } from '@/shared/server/db';
 describe('room-claims-service', () => {
     describe('claimItem', () => {
         it('creates a new claim', async () => {
-            const user = await createTestUser();
+            const user = await createTestUser(testDb);
             const { receipt, items } = await createSuccessfulReceipt(user.id, [
                 { interpretedText: 'Item 1', price: 10, quantity: 5 },
             ], testDb);
-            const testRoom = await createTestRoom(receipt.id, user.id);
-            const member = await createTestRoomMember(testRoom.id, { userId: user.id });
+            const testRoom = await createTestRoom(testDb, receipt.id, user.id);
+            const member = await createTestRoomMember(testDb, testRoom.id, { userId: user.id });
 
             const identity: RoomIdentity = {
                 userId: user.id,
@@ -46,12 +46,12 @@ describe('room-claims-service', () => {
         });
 
         it('updates existing claim', async () => {
-            const user = await createTestUser();
+            const user = await createTestUser(testDb);
             const { receipt, items } = await createSuccessfulReceipt(user.id, [
                 { interpretedText: 'Item 1', price: 10, quantity: 5 },
             ], testDb);
-            const testRoom = await createTestRoom(receipt.id, user.id);
-            const member = await createTestRoomMember(testRoom.id, { userId: user.id });
+            const testRoom = await createTestRoom(testDb, receipt.id, user.id);
+            const member = await createTestRoomMember(testDb, testRoom.id, { userId: user.id });
 
             const identity: RoomIdentity = {
                 userId: user.id,
@@ -84,13 +84,13 @@ describe('room-claims-service', () => {
         });
 
         it('deletes claim when quantity is 0', async () => {
-            const user = await createTestUser();
+            const user = await createTestUser(testDb);
             const { receipt, items } = await createSuccessfulReceipt(user.id, [
                 { interpretedText: 'Item 1', price: 10, quantity: 5 },
             ], testDb);
-            const testRoom = await createTestRoom(receipt.id, user.id);
-            const member = await createTestRoomMember(testRoom.id, { userId: user.id });
-            await createTestClaim(testRoom.id, member.id, items[0].id, 2);
+            const testRoom = await createTestRoom(testDb, receipt.id, user.id);
+            const member = await createTestRoomMember(testDb, testRoom.id, { userId: user.id });
+            await createTestClaim(testDb, testRoom.id, member.id, items[0].id, 2);
 
             const identity: RoomIdentity = {
                 userId: user.id,
@@ -114,12 +114,12 @@ describe('room-claims-service', () => {
         });
 
         it('throws error if item does not exist', async () => {
-            const user = await createTestUser();
+            const user = await createTestUser(testDb);
             const { receipt } = await createSuccessfulReceipt(user.id, [
                 { interpretedText: 'Item 1', price: 10, quantity: 5 },
             ], testDb);
-            const testRoom = await createTestRoom(receipt.id, user.id);
-            const member = await createTestRoomMember(testRoom.id, { userId: user.id });
+            const testRoom = await createTestRoom(testDb, receipt.id, user.id);
+            const member = await createTestRoomMember(testDb, testRoom.id, { userId: user.id });
 
             const identity: RoomIdentity = {
                 userId: user.id,
@@ -139,16 +139,16 @@ describe('room-claims-service', () => {
         });
 
         it('throws error if item does not belong to room', async () => {
-            const user1 = await createTestUser();
-            const user2 = await createTestUser();
+            const user1 = await createTestUser(testDb);
+            const user2 = await createTestUser(testDb);
             const { receipt: receipt1 } = await createSuccessfulReceipt(user1.id, [
                 { interpretedText: 'Item 1', price: 10, quantity: 5 },
             ], testDb);
             const { items: items2 } = await createSuccessfulReceipt(user2.id, [
                 { interpretedText: 'Item 2', price: 20, quantity: 3 },
             ], testDb);
-            const testRoom = await createTestRoom(receipt1.id, user1.id);
-            const member = await createTestRoomMember(testRoom.id, { userId: user1.id });
+            const testRoom = await createTestRoom(testDb, receipt1.id, user1.id);
+            const member = await createTestRoomMember(testDb, testRoom.id, { userId: user1.id });
 
             const identity: RoomIdentity = {
                 userId: user1.id,
@@ -168,15 +168,15 @@ describe('room-claims-service', () => {
         });
 
         it('throws error when claiming more than available quantity', async () => {
-            const user1 = await createTestUser();
-            const user2 = await createTestUser();
+            const user1 = await createTestUser(testDb);
+            const user2 = await createTestUser(testDb);
             const { receipt, items } = await createSuccessfulReceipt(user1.id, [
                 { interpretedText: 'Item 1', price: 10, quantity: 5 },
             ], testDb);
-            const testRoom = await createTestRoom(receipt.id, user1.id);
-            const member1 = await createTestRoomMember(testRoom.id, { userId: user1.id });
-            const member2 = await createTestRoomMember(testRoom.id, { userId: user2.id });
-            await createTestClaim(testRoom.id, member2.id, items[0].id, 3);
+            const testRoom = await createTestRoom(testDb, receipt.id, user1.id);
+            const member1 = await createTestRoomMember(testDb, testRoom.id, { userId: user1.id });
+            const member2 = await createTestRoomMember(testDb, testRoom.id, { userId: user2.id });
+            await createTestClaim(testDb, testRoom.id, member2.id, items[0].id, 3);
 
             const identity: RoomIdentity = {
                 userId: user1.id,
@@ -196,14 +196,14 @@ describe('room-claims-service', () => {
         });
 
         it('allows multiple members to claim from same item', async () => {
-            const user1 = await createTestUser();
-            const user2 = await createTestUser();
+            const user1 = await createTestUser(testDb);
+            const user2 = await createTestUser(testDb);
             const { receipt, items } = await createSuccessfulReceipt(user1.id, [
                 { interpretedText: 'Item 1', price: 10, quantity: 10 },
             ], testDb);
-            const testRoom = await createTestRoom(receipt.id, user1.id);
-            const member1 = await createTestRoomMember(testRoom.id, { userId: user1.id });
-            const member2 = await createTestRoomMember(testRoom.id, { userId: user2.id });
+            const testRoom = await createTestRoom(testDb, receipt.id, user1.id);
+            const member1 = await createTestRoomMember(testDb, testRoom.id, { userId: user1.id });
+            const member2 = await createTestRoomMember(testDb, testRoom.id, { userId: user2.id });
 
             const identity1: RoomIdentity = {
                 userId: user1.id,
@@ -240,12 +240,12 @@ describe('room-claims-service', () => {
         });
 
         it('allows claiming up to available quantity', async () => {
-            const user = await createTestUser();
+            const user = await createTestUser(testDb);
             const { receipt, items } = await createSuccessfulReceipt(user.id, [
                 { interpretedText: 'Item 1', price: 10, quantity: 5 },
             ], testDb);
-            const testRoom = await createTestRoom(receipt.id, user.id);
-            const member = await createTestRoomMember(testRoom.id, { userId: user.id });
+            const testRoom = await createTestRoom(testDb, receipt.id, user.id);
+            const member = await createTestRoomMember(testDb, testRoom.id, { userId: user.id });
 
             const identity: RoomIdentity = {
                 userId: user.id,
@@ -270,13 +270,13 @@ describe('room-claims-service', () => {
         });
 
         it('preserves claims when guest upgrades to user', async () => {
-            const user = await createTestUser();
+            const user = await createTestUser(testDb);
             const { receipt, items } = await createSuccessfulReceipt(user.id, [
                 { interpretedText: 'Item 1', price: 10, quantity: 10 },
             ], testDb);
-            const testRoom = await createTestRoom(receipt.id, user.id);
+            const testRoom = await createTestRoom(testDb, receipt.id, user.id);
             const guestUuid = crypto.randomUUID();
-            const member = await createTestRoomMember(testRoom.id, {
+            const member = await createTestRoomMember(testDb, testRoom.id, {
                 guestUuid,
                 displayName: 'Guest',
             });
@@ -316,12 +316,12 @@ describe('room-claims-service', () => {
         });
 
         it('touches room updatedAt when claiming items', async () => {
-            const user = await createTestUser();
+            const user = await createTestUser(testDb);
             const { receipt, items } = await createSuccessfulReceipt(user.id, [
                 { interpretedText: 'Item 1', price: 10, quantity: 5 },
             ], testDb);
-            const testRoom = await createTestRoom(receipt.id, user.id);
-            const member = await createTestRoomMember(testRoom.id, { userId: user.id });
+            const testRoom = await createTestRoom(testDb, receipt.id, user.id);
+            const member = await createTestRoomMember(testDb, testRoom.id, { userId: user.id });
 
             const before = await testDb.query.room.findFirst({
                 where: eq(room.id, testRoom.id),

@@ -11,7 +11,7 @@ import { testDb } from '@/test/setup';
 
 describe('getUserInviteRateLimit', () => {
     it('returns false for user without upload permission', async () => {
-        const testUser = await createTestUser({ canUpload: false });
+        const testUser = await createTestUser(testDb, { canUpload: false });
 
         const result = await getUserInviteRateLimit(testDb, testUser);
 
@@ -21,7 +21,7 @@ describe('getUserInviteRateLimit', () => {
     });
 
     it('returns true for user with 0 invites today', async () => {
-        const testUser = await createTestUser({ canUpload: true });
+        const testUser = await createTestUser(testDb, { canUpload: true });
 
         const result = await getUserInviteRateLimit(testDb, testUser);
 
@@ -31,7 +31,7 @@ describe('getUserInviteRateLimit', () => {
     });
 
     it('returns true when invites are below daily limit', async () => {
-        const testUser = await createTestUser({ canUpload: true });
+        const testUser = await createTestUser(testDb, { canUpload: true });
 
         await testDb.insert(invite).values({
             id: crypto.randomUUID(),
@@ -47,7 +47,7 @@ describe('getUserInviteRateLimit', () => {
     });
 
     it('returns false when user reaches daily limit', async () => {
-        const testUser = await createTestUser({ canUpload: true });
+        const testUser = await createTestUser(testDb, { canUpload: true });
 
         await testDb.insert(invite).values([
             {
@@ -75,7 +75,7 @@ describe('getUserInviteRateLimit', () => {
     });
 
     it('only counts invites from today (UTC)', async () => {
-        const testUser = await createTestUser({ canUpload: true });
+        const testUser = await createTestUser(testDb, { canUpload: true });
 
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
@@ -100,7 +100,7 @@ describe('getUserInviteRateLimit', () => {
 
 describe('createUploadInvitation', () => {
     it('creates invitation successfully', async () => {
-        const testUser = await createTestUser({ canUpload: true });
+        const testUser = await createTestUser(testDb, { canUpload: true });
 
         const result = await createUploadInvitation(testDb, testUser);
 
@@ -116,7 +116,7 @@ describe('createUploadInvitation', () => {
     });
 
     it('throws RateLimitError when daily limit reached', async () => {
-        const testUser = await createTestUser({ canUpload: true });
+        const testUser = await createTestUser(testDb, { canUpload: true });
 
         await testDb.insert(invite).values([
             {
@@ -144,8 +144,8 @@ describe('createUploadInvitation', () => {
 
 describe('acceptInvitationToUpload', () => {
     it('claims invite and grants upload permission', async () => {
-        const invitingUser = await createTestUser({ canUpload: true });
-        const invitedUser = await createTestUser({ canUpload: false });
+        const invitingUser = await createTestUser(testDb, { canUpload: true });
+        const invitedUser = await createTestUser(testDb, { canUpload: false });
 
         const inviteRecord = await testDb
             .insert(invite)
@@ -181,8 +181,8 @@ describe('acceptInvitationToUpload', () => {
     });
 
     it('returns USER_ALREADY_AUTHORIZED if user already can upload', async () => {
-        const invitingUser = await createTestUser({ canUpload: true });
-        const authorizedUser = await createTestUser({ canUpload: true });
+        const invitingUser = await createTestUser(testDb, { canUpload: true });
+        const authorizedUser = await createTestUser(testDb, { canUpload: true });
 
         const inviteRecord = await testDb
             .insert(invite)
@@ -203,7 +203,7 @@ describe('acceptInvitationToUpload', () => {
     });
 
     it('throws InviteError with NOT_FOUND if invite does not exist', async () => {
-        const testUser = await createTestUser({ canUpload: false });
+        const testUser = await createTestUser(testDb, { canUpload: false });
 
         await expect(
             acceptInvitationToUpload(testDb, testUser.id, crypto.randomUUID()),
@@ -211,9 +211,9 @@ describe('acceptInvitationToUpload', () => {
     });
 
     it('throws InviteError with NOT_FOUND if invite already used', async () => {
-        const invitingUser = await createTestUser({ canUpload: true });
-        const invitedUser = await createTestUser({ canUpload: false });
-        const someOtherUser = await createTestUser({ canUpload: true });
+        const invitingUser = await createTestUser(testDb, { canUpload: true });
+        const invitedUser = await createTestUser(testDb, { canUpload: false });
+        const someOtherUser = await createTestUser(testDb, { canUpload: true });
 
         const inviteRecord = await testDb
             .insert(invite)

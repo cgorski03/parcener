@@ -15,7 +15,7 @@ import { createTestRoom } from '@/test/factories/room';
 describe('payment-method-service', () => {
     describe('getUserPaymentMethods', () => {
         it('returns empty array when user has no payment methods', async () => {
-            const user = await createTestUser();
+            const user = await createTestUser(testDb);
 
             const methods = await getUserPaymentMethods(testDb, user);
 
@@ -23,7 +23,7 @@ describe('payment-method-service', () => {
         });
 
         it('returns user payment methods', async () => {
-            const user = await createTestUser();
+            const user = await createTestUser(testDb);
 
             await testDb.insert(paymentMethod).values({
                 userId: user.id,
@@ -41,8 +41,8 @@ describe('payment-method-service', () => {
         });
 
         it('only returns methods for requesting user', async () => {
-            const user1 = await createTestUser();
-            const user2 = await createTestUser();
+            const user1 = await createTestUser(testDb);
+            const user2 = await createTestUser(testDb);
 
             await testDb.insert(paymentMethod).values({
                 userId: user1.id,
@@ -70,7 +70,7 @@ describe('payment-method-service', () => {
 
     describe('createUserPaymentMethod', () => {
         it('creates a new payment method', async () => {
-            const user = await createTestUser();
+            const user = await createTestUser(testDb);
 
             const result = await createUserPaymentMethod(testDb, user, {
                 type: 'venmo',
@@ -85,7 +85,7 @@ describe('payment-method-service', () => {
         });
 
         it('sets payment method as default when isDefault is true', async () => {
-            const user = await createTestUser();
+            const user = await createTestUser(testDb);
 
             const result = await createUserPaymentMethod(testDb, user, {
                 type: 'venmo',
@@ -97,7 +97,7 @@ describe('payment-method-service', () => {
         });
 
         it('unsets other payment methods when setting new default', async () => {
-            const user = await createTestUser();
+            const user = await createTestUser(testDb);
 
             await createUserPaymentMethod(testDb, user, {
                 type: 'venmo',
@@ -120,7 +120,7 @@ describe('payment-method-service', () => {
         });
 
         it('stores payment method in database', async () => {
-            const user = await createTestUser();
+            const user = await createTestUser(testDb);
 
             await createUserPaymentMethod(testDb, user, {
                 type: 'venmo',
@@ -140,7 +140,7 @@ describe('payment-method-service', () => {
 
     describe('deleteUserPaymentMethod', () => {
         it('deletes a payment method', async () => {
-            const user = await createTestUser();
+            const user = await createTestUser(testDb);
 
             const created = await createUserPaymentMethod(testDb, user, {
                 type: 'venmo',
@@ -155,8 +155,8 @@ describe('payment-method-service', () => {
         });
 
         it('only deletes payment method belonging to user', async () => {
-            const user1 = await createTestUser();
-            const user2 = await createTestUser();
+            const user1 = await createTestUser(testDb);
+            const user2 = await createTestUser(testDb);
 
             await createUserPaymentMethod(testDb, user1, {
                 type: 'venmo',
@@ -180,11 +180,11 @@ describe('payment-method-service', () => {
         });
 
         it('sets room payment method to null when deleted', async () => {
-            const user = await createTestUser();
+            const user = await createTestUser(testDb);
             const { receipt } = await createSuccessfulReceipt(user.id, [
                 { interpretedText: 'Item 1', price: 10 },
             ], testDb);
-            const createdRoom = await createTestRoom(receipt.id, user.id);
+            const createdRoom = await createTestRoom(testDb, receipt.id, user.id);
 
             const method = await createUserPaymentMethod(testDb, user, {
                 type: 'venmo',
@@ -209,7 +209,7 @@ describe('payment-method-service', () => {
 
     describe('getPaymentMethodSecure', () => {
         it('returns payment method when it belongs to user', async () => {
-            const user = await createTestUser();
+            const user = await createTestUser(testDb);
 
             const created = await createUserPaymentMethod(testDb, user, {
                 type: 'venmo',
@@ -229,8 +229,8 @@ describe('payment-method-service', () => {
         });
 
         it('returns undefined when payment method belongs to different user', async () => {
-            const user1 = await createTestUser();
-            const user2 = await createTestUser();
+            const user1 = await createTestUser(testDb);
+            const user2 = await createTestUser(testDb);
 
             const user1Method = await createUserPaymentMethod(testDb, user1, {
                 type: 'venmo',
@@ -248,7 +248,7 @@ describe('payment-method-service', () => {
         });
 
         it('returns undefined when payment method does not exist', async () => {
-            const user = await createTestUser();
+            const user = await createTestUser(testDb);
 
             const result = await getPaymentMethodSecure(
                 testDb,
