@@ -7,5 +7,12 @@ export async function getServerSession(
   const session = await auth.api.getSession({
     headers: req.headers,
   });
-  return session;
+
+  // Guard against better-auth returning a Response object in edge cases
+  // This happens in race conditions or when session state is invalid
+  if (session && typeof session === 'object' && 'user' in session) {
+    return session;
+  }
+
+  return null;
 }
