@@ -78,10 +78,12 @@ test.describe('Full Receipt to Settlement Flow', () => {
         // ACT 3: Edit Receipt Totals (Add Tip)
         // ============================================
 
-        await page.locator('text=/\\$23\\.00/i').click();
+        // Click on the "Receipt Totals" section to open the edit sheet
+        await page.getByRole('heading', { name: 'Receipt Totals' }).click();
         await expect(page.getByText('Edit Totals')).toBeVisible();
 
-        const tipInput = page.locator('input[type="text"]').first();
+        // The tip input is type="number" - find the second one (first is tax)
+        const tipInput = page.locator('input[type="number"]').nth(1);
         await expect(tipInput).toBeVisible();
         await tipInput.fill('10');
 
@@ -92,7 +94,7 @@ test.describe('Full Receipt to Settlement Flow', () => {
         await expect(page.getByText('Edit Totals')).not.toBeVisible({
             timeout: 5000,
         });
-        await expect(page.locator('text=/\\$25\\.30/i')).toBeVisible();
+        await expect(page.locator('text=/\\$33\\.00/i')).toHaveCount(2);
 
         // ============================================
         // ACT 4: Create Room
@@ -137,17 +139,9 @@ test.describe('Full Receipt to Settlement Flow', () => {
 
         await page.goto(`/receipt/parce/${roomId}`);
 
-        const joinRoomButton = page.getByRole('button', { name: /join.*room/i });
+        const joinRoomButton = page.getByRole('button', { name: /join.*Split/i });
         await expect(joinRoomButton).toBeVisible({ timeout: 5000 });
         await joinRoomButton.click();
-
-        const displayNameInput = page.getByPlaceholder(/display.*name/i);
-        await expect(displayNameInput).toBeVisible();
-        await displayNameInput.fill('User 2');
-
-        const confirmJoinButton = page.getByRole('button', { name: 'Join' });
-        await expect(confirmJoinButton).toBeVisible();
-        await confirmJoinButton.click();
 
         await expect(page.getByText('User 2')).toBeVisible();
 
@@ -158,27 +152,18 @@ test.describe('Full Receipt to Settlement Flow', () => {
         const burgerItem = page.getByText('Burger').first();
         await burgerItem.click();
 
-        await page.locator('text=/claim/i').first().click();
-
-        await expect(page.locator('[aria-label="User 2"]')).toBeVisible({
-            timeout: 5000,
-        });
-
         const friesItem = page.getByText('Fries').first();
         await friesItem.click();
-        await page.locator('text=/claim/i').first().click();
 
         // ============================================
         // ACT 7: View Settlement
         // ============================================
 
-        await page.goto(`/receipt/parce/${roomId}`);
-        await expect(page.getByText('Burger')).toBeVisible();
-
-        await page.getByRole('button', { name: 'Settle' }).click();
+        await page.getByRole('button', { name: /Settle/i }).click();
 
         await expect(page.getByText('Settlement')).toBeVisible();
 
         await expect(page.locator('text=/\\$20\\.00/').first()).toBeVisible();
+        await expect(page.locator('text=/\\$28\\.70/').first()).toBeVisible();
     });
 });

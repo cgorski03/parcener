@@ -12,10 +12,9 @@ test.describe('Upload Receipt - Basic States', () => {
     await authenticateAsUploader();
     await page.goto('/upload');
 
-    await expect(
-      page.getByRole('heading', { name: 'Split a Receipt' }),
-    ).toBeVisible();
-    await expect(page.locator('input[type="file"]')).toBeVisible();
+    await expect(page.getByText('Split a Receipt')).toBeVisible();
+    // File input is hidden/styled, but should be in the DOM
+    await expect(page.locator('input[type="file"]')).toBeAttached();
   });
 
   test('shows processing state after upload', async ({

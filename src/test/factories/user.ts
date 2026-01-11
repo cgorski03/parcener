@@ -11,13 +11,15 @@ export async function createTestUser(
 ) {
     userCounter++;
     const id = overrides.id ?? generateTestUserId();
+    // Use timestamp + random to ensure uniqueness across parallel workers
+    const uniqueSuffix = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
     const [created] = await db
         .insert(user)
         .values({
             id,
             name: overrides.name ?? `Test User ${userCounter}`,
-            email: overrides.email ?? `test${userCounter}@example.com`,
+            email: overrides.email ?? `test-${uniqueSuffix}@example.com`,
             emailVerified: overrides.emailVerified ?? true,
             canUpload: overrides.canUpload ?? true,
             image: overrides.image ?? null,

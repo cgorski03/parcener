@@ -10,7 +10,7 @@ export const Route = createFileRoute('/login')({
     validateSearch: (search: Record<string, unknown>): LoginSearch => {
         return {
             redirectTo:
-                typeof search.redirect === 'string' ? search.redirect : undefined,
+                typeof search.redirectTo === 'string' ? search.redirectTo : undefined,
         };
     },
     head: () => ({
