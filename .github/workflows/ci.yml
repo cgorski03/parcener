@@ -2,12 +2,46 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, staging]
   pull_request:
-    branches: [main]
+    branches: [main, staging]
+  workflow_dispatch:
+    inputs:
+      run_e2e:
+        description: 'Run E2E tests'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+# Cancel previous runs on the same branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
+  check-skip:
+    runs-on: ubuntu-latest
+    outputs:
+      skip_ci: ${{ steps.check.outputs.skip_ci }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Check for [skip-ci]
+        id: check
+        run: |
+          if git log -1 --pretty=%B | grep -q "\[skip-ci\]"; then
+            echo "skip_ci=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip_ci=false" >> $GITHUB_OUTPUT
+          fi
+
   fast-checks:
+    needs: check-skip
+    if: needs.check-skip.outputs.skip_ci != 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -36,9 +70,13 @@ jobs:
       - name: Lint
         run: pnpm run lint
 
-  # JOB 2: Heavy checks (E2E)
   e2e:
-    needs: fast-checks # Only run E2E if unit tests pass to save CI minutes
+    needs: [check-skip, fast-checks]
+    # Runs on Pushes OR (PRs targeting main) OR (Manual Trigger with true)
+    if: |
+      needs.check-skip.outputs.skip_ci != 'true' &&
+      ((github.event_name != 'pull_request' || github.base_ref == 'main') ||
+      (github.event_name == 'workflow_dispatch' && inputs.run_e2e == 'true'))
     runs-on: ubuntu-latest
     timeout-minutes: 15
     services:
@@ -76,6 +114,7 @@ jobs:
         run: pnpm test:e2e:ci
         env:
           CI: true
+          # Ensure this port matches the service port mapping (5433)
           DATABASE_URL: postgres://colin:secure_password@localhost:5433/split_test
 
       - name: Upload Playwright report
@@ -85,3 +124,69 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 7
+
+  deploy-staging:
+    needs: [check-skip, fast-checks, e2e]
+    if: |
+      needs.check-skip.outputs.skip_ci != 'true' &&
+      github.ref == 'refs/heads/staging'
+    runs-on: ubuntu-latest
+    environment:
+      name: staging
+      url: https://staging.parcener.app
+    permissions:
+      contents: read
+      deployments: write
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Deploy to Cloudflare Workers (staging)
+        run: pnpm deploy:staging
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          VITE_NODE_ENV: staging
+          VITE_SENTRY_DSN: ${{ vars.SENTRY_DSN }}
+
+  deploy-production:
+    needs: [check-skip, fast-checks, e2e]
+    if: |
+      needs.check-skip.outputs.skip_ci != 'true' &&
+      github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://parcener.app
+    permissions:
+      contents: read
+      deployments: write
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Deploy to Cloudflare Workers (production)
+        run: pnpm deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          VITE_NODE_ENV: production
+          VITE_SENTRY_DSN: ${{ vars.SENTRY_DSN }}
