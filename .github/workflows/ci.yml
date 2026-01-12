@@ -12,38 +12,20 @@ on:
         required: false
         default: 'false'
         type: choice
-        options:
-          - 'true'
-          - 'false'
+        options: ['true', 'false']
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  check-skip:
+  # ------------------------------------------------------------------
+  # TEST JOB (Unit, Lint, Type, E2E)
+  # ------------------------------------------------------------------
+  tests:
     runs-on: ubuntu-latest
-    outputs:
-      skip_ci: ${{ steps.check.outputs.skip_ci }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
-      - name: Check for [skip-ci]
-        id: check
-        run: |
-          if git log -1 --pretty=%B | grep -q "\[skip-ci\]"; then
-            echo "skip_ci=true" >> $GITHUB_OUTPUT
-          else
-            echo "skip_ci=false" >> $GITHUB_OUTPUT
-          fi
+    timeout-minutes: 20
 
-  fast-checks:
-    needs: check-skip
-    if: needs.check-skip.outputs.skip_ci != 'true'
-    runs-on: ubuntu-latest
-
-    # 1. Start Postgres Container
     services:
       postgres:
         image: postgres:15
@@ -51,30 +33,21 @@ jobs:
           POSTGRES_USER: colin
           POSTGRES_PASSWORD: secure_password
           POSTGRES_DB: split_test
-        ports:
-          - 5433:5432
+        ports: [5433:5432]
         options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+          --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
     steps:
+      # Setup Environment
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
-        with:
-          version: 10
+        with: { version: 10 }
       - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install
+        with: { node-version: '22', cache: 'pnpm' }
+      - run: pnpm install
 
       - name: Create Env Files
         run: |
-          # Create .env.local (Used by Drizzle Kit / App)
           cat > .env.local << EOF
           GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}
           GOOGLE_CLIENT_ID=SHOULDNT_MATTER
@@ -88,25 +61,20 @@ jobs:
           VITE_SENTRY_DSN=${{ secrets.SENTRY_DSN }}
           DATABASE_URL=postgres://colin:secure_password@localhost:5433/split_test
           EOF
+          cp .env.local .dev.vars
 
       - name: Generate CF Types
         run: pnpm wrangler types
 
-      # 2. Wait for DB to be ready
-      - name: Wait for Postgres
-        run: |
-          sudo apt-get install -y postgresql-client
-          until pg_isready -h localhost -p 5433 -U colin; do
-            echo "Waiting for postgres..."
-            sleep 1
-          done
-
-      # 3. Create Tables (Crucial Step)
-      - name: Push Drizzle Schema
+      - name: Prepare Database
         env:
           DATABASE_URL: postgres://colin:secure_password@localhost:5433/split_test
-        run: pnpm exec drizzle-kit push
+        run: |
+          sudo apt-get install -y postgresql-client
+          until pg_isready -h localhost -p 5433 -U colin; do sleep 1; done
+          pnpm exec drizzle-kit push
 
+      # Fast Checks
       - name: Unit Tests
         env:
           DEBUG: miniflare:*,wrangler:*
@@ -118,71 +86,17 @@ jobs:
       - name: Lint
         run: pnpm run lint
 
-  e2e:
-    needs: [check-skip, fast-checks]
-    if: |
-      needs.check-skip.outputs.skip_ci != 'true' &&
-      ((github.event_name != 'pull_request' || github.base_ref == 'main') ||
-      (github.event_name == 'workflow_dispatch' && inputs.run_e2e == 'true'))
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_USER: colin
-          POSTGRES_PASSWORD: secure_password
-          POSTGRES_DB: split_test
-        ports:
-          - 5433:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install
-
-      - name: Create Env Files
-        run: |
-          cat > .env.local << EOF
-          GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}
-          GOOGLE_CLIENT_ID=SHOULDNT_MATTER
-          GOOGLE_CLIENT_SECRET=SHOULDNT_MATTER
-          BETTER_AUTH_SECRET=${{ secrets.BETTER_AUTH_SECRET }}
-          SENTRY_DSN=${{ secrets.SENTRY_DSN }}
-          NODE_ENV=test
-          VITE_NODE_ENV=test
-          VITE_BASE_URL=${{ vars.VITE_BASE_URL }}
-          BASE_URL=${{ vars.VITE_BASE_URL }}
-          VITE_SENTRY_DSN=${{ secrets.SENTRY_DSN }}
-          DATABASE_URL=postgres://colin:secure_password@localhost:5433/split_test
-          EOF
-
-          # Copy to .dev.vars just in case e2e uses wrangler
-          cp .env.local .dev.vars
-
-      # Ensure tables exist for E2E as well
-      - name: Push Drizzle Schema (E2E)
-        env:
-          DATABASE_URL: postgres://colin:secure_password@localhost:5433/split_test
-        run: pnpm exec drizzle-kit push
-
-      - name: Install Playwright Browsers
+      # Heavy Checks (Conditional)
+      - name: Install Playwright
+        if: |
+          (github.event_name != 'pull_request' || github.base_ref == 'main') ||
+          (github.event_name == 'workflow_dispatch' && inputs.run_e2e == 'true')
         run: pnpm exec playwright install --with-deps
 
       - name: Run E2E tests
+        if: |
+          (github.event_name != 'pull_request' || github.base_ref == 'main') ||
+          (github.event_name == 'workflow_dispatch' && inputs.run_e2e == 'true')
         run: pnpm test:e2e:ci
         env:
           CI: true
@@ -196,15 +110,17 @@ jobs:
           path: playwright-report/
           retention-days: 7
 
-  deploy-staging:
-    needs: [check-skip, fast-checks, e2e]
-    if: |
-      needs.check-skip.outputs.skip_ci != 'true' &&
-      github.ref == 'refs/heads/staging'
+  # ------------------------------------------------------------------
+  # DEPLOY JOB
+  # ------------------------------------------------------------------
+  deploy:
+    needs: tests
+    # Only deploy on main or staging
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging'
     runs-on: ubuntu-latest
     environment:
-      name: staging
-      url: https://staging.parcener.app
+      name: ${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}
+      url: ${{ github.ref == 'refs/heads/main' && 'https://parcener.app' || 'https://staging.parcener.app' }}
     permissions:
       contents: read
       deployments: write
@@ -212,52 +128,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
-        with:
-          version: 10
+        with: { version: 10 }
       - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: 'pnpm'
+        with: { node-version: '22', cache: 'pnpm' }
+      - run: pnpm install
 
-      - name: Install dependencies
-        run: pnpm install
-
-      - name: Deploy to Cloudflare Workers (staging)
-        run: pnpm deploy:staging
+      - name: Deploy to Cloudflare Workers
+        run: |
+          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+            pnpm deploy
+          else
+            pnpm deploy:staging
+          fi
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          VITE_NODE_ENV: staging
           VITE_SENTRY_DSN: ${{ vars.SENTRY_DSN }}
-
-  deploy-production:
-    needs: [check-skip, fast-checks, e2e]
-    if: |
-      needs.check-skip.outputs.skip_ci != 'true' &&
-      github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    environment:
-      name: production
-      url: https://parcener.app
-    permissions:
-      contents: read
-      deployments: write
-
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install
-
-      - name: Deploy to Cloudflare Workers (production)
-        run: pnpm deploy
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          VITE_NODE_ENV: production
-          VITE_SENTRY_DSN: ${{ vars.SENTRY_DSN }}
+          VITE_NODE_ENV: ${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}
