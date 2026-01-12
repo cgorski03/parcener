@@ -6,14 +6,14 @@
     "prettier.config.js",
     "vite.config.js"
   ],
+  "exclude": [],
 
   "compilerOptions": {
     "target": "ES2022",
     "jsx": "react-jsx",
     "module": "ESNext",
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "types": ["vite/client"],
-
+    "types": ["vite/client", "@cloudflare/vitest-pool-workers"],
     /* Bundler mode */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,

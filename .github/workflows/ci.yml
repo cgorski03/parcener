@@ -1,0 +1,146 @@
+name: CI
+
+on:
+  push:
+    branches: [main, staging]
+  pull_request:
+    branches: [main, staging]
+  workflow_dispatch:
+    inputs:
+      run_e2e:
+        description: 'Run E2E tests'
+        required: false
+        default: 'false'
+        type: choice
+        options: ['true', 'false']
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ------------------------------------------------------------------
+  # TEST JOB (Unit, Lint, Type, E2E)
+  # ------------------------------------------------------------------
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: colin
+          POSTGRES_PASSWORD: secure_password
+          POSTGRES_DB: split_test
+        ports: [5433:5432]
+        options: >-
+          --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+    steps:
+      # Setup Environment
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 10 }
+      - uses: actions/setup-node@v4
+        with: { node-version: '22', cache: 'pnpm' }
+      - run: pnpm install
+
+      - name: Create Env Files
+        run: |
+          cat > .env.local << EOF
+          GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}
+          GOOGLE_CLIENT_ID=SHOULDNT_MATTER
+          GOOGLE_CLIENT_SECRET=SHOULDNT_MATTER
+          BETTER_AUTH_SECRET=${{ secrets.BETTER_AUTH_SECRET }}
+          SENTRY_DSN=${{ secrets.SENTRY_DSN }}
+          NODE_ENV=test
+          VITE_NODE_ENV=test
+          VITE_BASE_URL=${{ vars.VITE_BASE_URL }}
+          BASE_URL=${{ vars.VITE_BASE_URL }}
+          VITE_SENTRY_DSN=${{ secrets.SENTRY_DSN }}
+          DATABASE_URL=postgres://colin:secure_password@localhost:5433/split_test
+          EOF
+          cp .env.local .dev.vars
+
+      - name: Generate CF Types
+        run: pnpm wrangler types
+
+      - name: Prepare Database
+        env:
+          DATABASE_URL: postgres://colin:secure_password@localhost:5433/split_test
+        run: |
+          sudo apt-get install -y postgresql-client
+          until pg_isready -h localhost -p 5433 -U colin; do sleep 1; done
+          pnpm exec drizzle-kit push
+
+      # Fast Checks
+      - name: Unit Tests
+        env:
+          DEBUG: miniflare:*,wrangler:*
+        run: pnpm run test -- --reporter verbose
+
+      - name: Type Check
+        run: pnpm exec tsc
+
+      - name: Lint
+        run: pnpm run lint
+
+      # Heavy Checks (Conditional)
+      - name: Install Playwright
+        if: |
+          (github.event_name != 'pull_request' || github.base_ref == 'main') ||
+          (github.event_name == 'workflow_dispatch' && inputs.run_e2e == 'true')
+        run: pnpm exec playwright install --with-deps
+
+      - name: Run E2E tests
+        if: |
+          (github.event_name != 'pull_request' || github.base_ref == 'main') ||
+          (github.event_name == 'workflow_dispatch' && inputs.run_e2e == 'true')
+        run: pnpm test:e2e:ci
+        env:
+          CI: true
+          DATABASE_URL: postgres://colin:secure_password@localhost:5433/split_test
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+  # ------------------------------------------------------------------
+  # DEPLOY JOB
+  # ------------------------------------------------------------------
+  deploy:
+    needs: tests
+    # Only deploy on main or staging
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging'
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}
+      url: ${{ github.ref == 'refs/heads/main' && 'https://parcener.app' || 'https://staging.parcener.app' }}
+    permissions:
+      contents: read
+      deployments: write
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 10 }
+      - uses: actions/setup-node@v4
+        with: { node-version: '22', cache: 'pnpm' }
+      - run: pnpm install
+
+      - name: Deploy to Cloudflare Workers
+        run: |
+          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+            pnpm run deploy
+          else
+            pnpm deploy:staging
+          fi
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          VITE_SENTRY_DSN: ${{ vars.SENTRY_DSN }}
+          VITE_NODE_ENV: ${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}
