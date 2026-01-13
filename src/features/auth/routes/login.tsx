@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ChevronDown, ChevronUp, ExternalLink } from 'lucide-react';
+import { Link } from '@tanstack/react-router'; // Assuming TanStack Router usage
 import { cn } from '@/shared/lib/utils';
 import { authClient } from '@/shared/lib/auth-client';
 import { Button } from '@/shared/components/ui/button';
@@ -32,13 +33,35 @@ export function LoginPage({ redirectUrl }: LoginPageProps) {
           <div className="text-center space-y-2">
             <h1 className="text-2xl font-bold">Welcome Back</h1>
             <p className="text-sm text-muted-foreground">
-              Sign in to continue to your receipt
+              {redirectUrl
+                ? 'Sign in to continue to your destination'
+                : 'Sign in to continue to Parcener'}
             </p>
           </div>
 
-          <Button className="h-12 w-full" onClick={signIn}>
-            Sign in with Google
-          </Button>
+          <div className="space-y-4">
+            <Button className="h-12 w-full" onClick={signIn}>
+              Sign in with Google
+            </Button>
+
+            <p className="text-xs text-center text-muted-foreground px-4 leading-relaxed">
+              By clicking above, you agree to our{' '}
+              <Link
+                to="/terms"
+                className="underline underline-offset-2 hover:text-foreground transition-colors"
+              >
+                Terms of Service
+              </Link>{' '}
+              and{' '}
+              <Link
+                to="/privacy"
+                className="underline underline-offset-2 hover:text-foreground transition-colors"
+              >
+                Privacy Policy
+              </Link>
+              .
+            </p>
+          </div>
 
           {redirectUrl && (
             <div className="rounded-lg border bg-muted/20 p-4 transition-all duration-300">

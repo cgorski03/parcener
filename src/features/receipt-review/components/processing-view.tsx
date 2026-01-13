@@ -8,7 +8,7 @@ export function ProcessingReceiptView({
   isPolling,
 }: ProcessingReceiptViewProps) {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
+    <div className="flex-1 h-full flex items-center justify-center bg-background p-4">
       <div className="flex w-full max-w-sm flex-col items-center gap-6 rounded-xl border border-border bg-card p-8 shadow-sm">
         <Loader2
           className={`h-10 w-10 animate-spin text-primary transition-opacity duration-500 ${

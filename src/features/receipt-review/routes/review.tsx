@@ -23,25 +23,26 @@ export function ReceiptReviewPage({
   receipt,
   isFetching,
 }: ReceiptReviewPageProps) {
-  if (isProcessing(receipt)) {
+  if (!isProcessing(receipt) && !isFailed(receipt)) {
     return (
-      <>
-        <AppHeader />
+      <ReceiptEditorView key={receipt.receiptId} initialReceipt={receipt} />
+    );
+  }
+
+  // 2. Status Views: Handle Processing and Error states in a shared layout
+  return (
+    <div className="flex flex-col h-screen w-full overflow-hidden">
+      <AppHeader />
+
+      {isProcessing(receipt) ? (
         <ProcessingReceiptView isPolling={isFetching} />
-      </>
-    );
-  }
-
-  if (isFailed(receipt)) {
-    return (
-      <>
-        <AppHeader />
-        <ErrorReceiptView attempts={receipt.attempts} />
-      </>
-    );
-  }
-
-  return <ReceiptEditorView key={receipt.receiptId} initialReceipt={receipt} />;
+      ) : (
+        <div className="flex-1 h-full">
+          <ErrorReceiptView attempts={receipt.attempts} />
+        </div>
+      )}
+    </div>
+  );
 }
 
 export function ReceiptReviewLoading({ isFetching }: { isFetching: boolean }) {

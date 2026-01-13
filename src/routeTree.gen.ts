@@ -8,6 +8,8 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
+import { createFileRoute } from '@tanstack/react-router'
+
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthedRouteRouteImport } from './routes/_authed/route'
@@ -20,6 +22,19 @@ import { Route as ReceiptParceRoomIdRouteImport } from './routes/receipt/parce/$
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AuthedReceiptReviewReceiptIdRouteImport } from './routes/_authed/receipt.review.$receiptId'
 
+const TermsLazyRouteImport = createFileRoute('/terms')()
+const PrivacyLazyRouteImport = createFileRoute('/privacy')()
+
+const TermsLazyRoute = TermsLazyRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/terms.lazy').then((d) => d.Route))
+const PrivacyLazyRoute = PrivacyLazyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/privacy.lazy').then((d) => d.Route))
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -74,6 +89,8 @@ const AuthedReceiptReviewReceiptIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/privacy': typeof PrivacyLazyRoute
+  '/terms': typeof TermsLazyRoute
   '/receipt/parce': typeof ReceiptParceRouteRouteWithChildren
   '/acceptInvite': typeof AuthedAcceptInviteRoute
   '/account': typeof AuthedAccountRoute
@@ -85,6 +102,8 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/privacy': typeof PrivacyLazyRoute
+  '/terms': typeof TermsLazyRoute
   '/receipt/parce': typeof ReceiptParceRouteRouteWithChildren
   '/acceptInvite': typeof AuthedAcceptInviteRoute
   '/account': typeof AuthedAccountRoute
@@ -98,6 +117,8 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authed': typeof AuthedRouteRouteWithChildren
   '/login': typeof LoginRoute
+  '/privacy': typeof PrivacyLazyRoute
+  '/terms': typeof TermsLazyRoute
   '/receipt/parce': typeof ReceiptParceRouteRouteWithChildren
   '/_authed/acceptInvite': typeof AuthedAcceptInviteRoute
   '/_authed/account': typeof AuthedAccountRoute
@@ -111,6 +132,8 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/login'
+    | '/privacy'
+    | '/terms'
     | '/receipt/parce'
     | '/acceptInvite'
     | '/account'
@@ -122,6 +145,8 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/login'
+    | '/privacy'
+    | '/terms'
     | '/receipt/parce'
     | '/acceptInvite'
     | '/account'
@@ -134,6 +159,8 @@ export interface FileRouteTypes {
     | '/'
     | '/_authed'
     | '/login'
+    | '/privacy'
+    | '/terms'
     | '/receipt/parce'
     | '/_authed/acceptInvite'
     | '/_authed/account'
@@ -147,12 +174,28 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthedRouteRoute: typeof AuthedRouteRouteWithChildren
   LoginRoute: typeof LoginRoute
+  PrivacyLazyRoute: typeof PrivacyLazyRoute
+  TermsLazyRoute: typeof TermsLazyRoute
   ReceiptParceRouteRoute: typeof ReceiptParceRouteRouteWithChildren
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsLazyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyLazyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -259,6 +302,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthedRouteRoute: AuthedRouteRouteWithChildren,
   LoginRoute: LoginRoute,
+  PrivacyLazyRoute: PrivacyLazyRoute,
+  TermsLazyRoute: TermsLazyRoute,
   ReceiptParceRouteRoute: ReceiptParceRouteRouteWithChildren,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
