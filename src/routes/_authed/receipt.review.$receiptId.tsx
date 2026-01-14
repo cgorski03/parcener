@@ -6,7 +6,6 @@ import {
   ReceiptReviewPage,
 } from '@/features/receipt-review/routes/review';
 import { ReviewNotFound } from '@/shared/components/layout/not-found';
-import { paymentMethodsOptions } from '@/features/payment-methods/hooks/use-payment-methods';
 
 export const Route = createFileRoute('/_authed/receipt/review/$receiptId')({
   head: () => ({
@@ -15,12 +14,6 @@ export const Route = createFileRoute('/_authed/receipt/review/$receiptId')({
       { property: 'og:title', content: `Review Receipt | Parcener` },
     ],
   }),
-  loader: async ({ params, context }) => {
-    // Preload payment methods in parallel with receipt data to prevent
-    // race conditions on unstable mobile networks (fixes PARCENER-19)
-    await context.queryClient.ensureQueryData(paymentMethodsOptions());
-    return { receiptId: params.receiptId };
-  },
   component: RouteComponent,
   notFoundComponent: ReviewNotFound,
 });

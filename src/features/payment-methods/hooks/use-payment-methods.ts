@@ -2,6 +2,7 @@ import {
   queryOptions,
   useMutation,
   useQueryClient,
+  useQuery,
   useSuspenseQuery,
 } from '@tanstack/react-query';
 import {
@@ -35,8 +36,10 @@ export const paymentMethodsOptions = (enabled?: boolean) =>
     refetchOnWindowFocus: false,
     enabled: enabled ?? true,
   });
+
 /**
  * Hook to fetch all payment methods for the current user
+ * Uses suspense (blocking) for pages that require payment methods to render
  */
 export const usePaymentMethodsSuspense = () => {
   const { data, ...rest } = useSuspenseQuery(paymentMethodsOptions());
@@ -51,20 +54,28 @@ export const usePaymentMethodsSuspense = () => {
   };
 };
 
+/**
+ * Hook to fetch default payment method without suspense (non-blocking)
+ * Returns null while loading, allowing UI to render gracefully
+ * Use this for optional features like the Create Room sheet
+ */
 export const useDefaultPaymentMethod = () => {
-  const { data: paymentMethods, ...rest } = useSuspenseQuery(
-    paymentMethodsOptions(),
-  );
+  const { data: paymentMethods, ...rest } = useQuery(paymentMethodsOptions());
+
   const defaultPaymentMethod =
-    paymentMethods.length === 0
-      ? null
-      : paymentMethods.find((pm) => pm.isDefault) || paymentMethods[0];
+    paymentMethods && paymentMethods.length > 0
+      ? paymentMethods.find((pm) => pm.isDefault) || paymentMethods[0]
+      : null;
 
   return {
     defaultPaymentMethod,
+    hasPaymentMethods: (paymentMethods?.length ?? 0) > 0,
+    isLoading: rest.isLoading,
+    error: rest.error,
     ...rest,
   };
 };
+
 /**
  * Hook to create a new payment method
  */

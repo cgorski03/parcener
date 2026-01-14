@@ -36,7 +36,7 @@ export function CreateRoomSheet({
   isCreating,
   receiptTip,
 }: CreateRoomSheetProps) {
-  const { defaultPaymentMethod } = useDefaultPaymentMethod();
+  const { defaultPaymentMethod, isLoading: isLoadingPaymentMethods } = useDefaultPaymentMethod();
   const [sharePayment, setSharePayment] = useState(true);
   const hasMethod = !!defaultPaymentMethod;
 
@@ -80,23 +80,28 @@ export function CreateRoomSheet({
               <div className="flex-1 space-y-0.5">
                 <div className="flex items-center gap-2">
                   <h4 className="font-medium text-sm">Share Payment Method</h4>
-                  {defaultPaymentMethod && (
+                  {defaultPaymentMethod && !isLoadingPaymentMethods && (
                     <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-md bg-muted text-muted-foreground capitalize border">
                       {defaultPaymentMethod.type}
                     </span>
                   )}
+                  {isLoadingPaymentMethods && (
+                    <Loader2 className="size-3 animate-spin text-muted-foreground" />
+                  )}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {defaultPaymentMethod
+                  {defaultPaymentMethod && !isLoadingPaymentMethods
                     ? 'Link guests directly to your account.'
-                    : "You haven't linked a payment account yet."}
+                    : isLoadingPaymentMethods
+                      ? 'Loading payment methods...'
+                      : "You haven't linked a payment account yet."}
                 </p>
               </div>
               <Switch
                 className="scale-150 data-[state=checked]:bg-[#3d95ce]"
-                checked={sharePayment && hasMethod}
+                checked={sharePayment && hasMethod && !isLoadingPaymentMethods}
                 onCheckedChange={setSharePayment}
-                disabled={!hasMethod}
+                disabled={!hasMethod || isLoadingPaymentMethods}
               />
             </div>
 
@@ -104,12 +109,17 @@ export function CreateRoomSheet({
 
             <div
               className={`px-4 py-3 text-xs transition-colors duration-200 ${
-                sharePayment && defaultPaymentMethod
+                sharePayment && defaultPaymentMethod && !isLoadingPaymentMethods
                   ? 'bg-primary/5 text-foreground/80'
                   : 'bg-muted/40 text-muted-foreground'
               }`}
             >
-              {defaultPaymentMethod ? (
+              {isLoadingPaymentMethods ? (
+                <div className="flex gap-3 items-center h-8">
+                  <Loader2 className="size-4 animate-spin text-muted-foreground" />
+                  <span>Loading payment options...</span>
+                </div>
+              ) : defaultPaymentMethod ? (
                 <div className="flex gap-3 items-center h-8">
                   {sharePayment ? (
                     <>
@@ -152,8 +162,8 @@ export function CreateRoomSheet({
 
         <SheetFooter className="flex-row gap-3 mt-4">
           <Button
-            onClick={() => onConfirm(sharePayment && hasMethod)}
-            disabled={isCreating}
+            onClick={() => onConfirm(sharePayment && hasMethod && !isLoadingPaymentMethods)}
+            disabled={isCreating || isLoadingPaymentMethods}
             className="h-12 flex-[2] text-white bg-primary hover:bg-primary/90"
           >
             {isCreating ? (
