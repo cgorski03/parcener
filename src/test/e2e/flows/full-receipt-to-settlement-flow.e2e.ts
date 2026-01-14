@@ -166,4 +166,105 @@ test.describe('Full Receipt to Settlement Flow', () => {
     await expect(page.locator('text=/\\$20\\.00/').first()).toBeVisible();
     await expect(page.locator('text=/\\$28\\.70/').first()).toBeVisible();
   });
+
+  test('shows unclaimed warning when not all items are claimed', async ({
+    page,
+    authenticateAsUploader,
+    authenticateAs,
+  }) => {
+    // SETUP: Create receipt with 3 items
+    const { user: uploader } = await authenticateAsUploader();
+
+    await e2eDb.insert(paymentMethod).values({
+      userId: uploader.id,
+      type: 'venmo',
+      handle: '@uploader-venmo',
+      isDefault: true,
+    });
+
+    await page.goto('/upload');
+
+    const fileInput = page.locator('#receipt');
+    const testImagePath = path.join(
+      process.cwd(),
+      'public/test-images/valid-receipt.jpg',
+    );
+    await fileInput.setInputFiles(testImagePath);
+
+    await expect(page.getByText('valid-receipt.jpg')).toBeVisible();
+
+    const uploadButton = page.getByRole('button', {
+      name: 'Process Receipt',
+    });
+    await uploadButton.click();
+
+    // Create receipt with 3 items
+    const items = [
+      { interpretedText: 'Burger', price: 15.0, quantity: 1 },
+      { interpretedText: 'Fries', price: 5.0, quantity: 1 },
+      { interpretedText: 'Soda', price: 3.0, quantity: 1 },
+    ];
+
+    await setupReceiptForReviewSuccess({ items, db: e2eDb, page });
+
+    await expect(page.getByText('Burger')).toBeVisible({ timeout: 10000 });
+
+    // Add tip
+    await page.getByRole('heading', { name: 'Receipt Totals' }).click();
+    await expect(page.getByText('Edit Totals')).toBeVisible();
+    const tipInput = page.locator('input[type="number"]').nth(1);
+    await tipInput.fill('10');
+    const saveButton = page.getByRole('button', { name: 'Save' });
+    await saveButton.click();
+
+    // Create room
+    const createRoomButton = page.getByRole('button', {
+      name: 'Create Room',
+    });
+    await createRoomButton.click();
+    await page.getByRole('button', { name: 'Create Room' }).click();
+
+    await expect(page).toHaveURL(/\/receipt\/parce\/[a-f0-9-]+/);
+    const roomUrlMatch = page.url().match(/\/receipt\/parce\/([a-f0-9-]+)/);
+    const roomId = roomUrlMatch ? roomUrlMatch[1] : null;
+    expect(roomId).toBeTruthy();
+    if (!roomId) throw new Error('Could not extract roomId from URL');
+
+    // Add second user
+    const user2Response = await authenticateAs({
+      name: 'User 2',
+    });
+    await e2eDb.insert(paymentMethod).values({
+      userId: user2Response.user.id,
+      type: 'venmo',
+      handle: '@user2-venmo',
+      isDefault: true,
+    });
+
+    await page.goto(`/receipt/parce/${roomId}`);
+    const joinRoomButton = page.getByRole('button', { name: /join.*Split/i });
+    await expect(joinRoomButton).toBeVisible({ timeout: 5000 });
+    await joinRoomButton.click();
+
+    // ACT: Claim only 2 of 3 items (Fries and Soda = $8)
+    await page.getByText('Fries').first().click();
+    await page.getByText('Soda').first().click();
+
+    // Go to settlement and verify warning shows
+    await page.getByRole('button', { name: /Settle/i }).click();
+    await expect(page.getByText('Settlement')).toBeVisible();
+    await expect(page.getByText('Unclaimed Amount')).toBeVisible();
+    await expect(
+      page.getByText('Total claims are less than the receipt bill.'),
+    ).toBeVisible();
+
+    // Go back and claim remaining item
+    await page.getByRole('button', { name: 'Go Back' }).click();
+    await page.getByText('Burger').first().click();
+
+    // Go back to settlement and verify warning is gone
+    await page.getByRole('button', { name: /Settle/i }).click();
+    await expect(page.getByText('Unclaimed Amount')).not.toBeVisible();
+    await expect(page.getByText('Overclaimed Amount')).not.toBeVisible();
+  });
 });
