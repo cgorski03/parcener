@@ -50,7 +50,7 @@ export function SettlementView({
   const isHost = room.createdBy === currentMember.userId;
 
   const calculatedTotal = settlements.reduce((acc, s) => acc + s.totalOwed, 0);
-  const hasDiscrepancy = moneyValuesEqual(
+  const valuesMatch = moneyValuesEqual(
     room.receipt.grandTotal,
     calculatedTotal,
   );
@@ -77,6 +77,7 @@ export function SettlementView({
               size="icon"
               onClick={onBack}
               className="-ml-2"
+              aria-label="Go back"
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
@@ -108,7 +109,7 @@ export function SettlementView({
         />
       )}
 
-      {hasDiscrepancy && (
+      {!valuesMatch && (
         <SettlementWarning
           discrepancy={room.receipt.grandTotal - calculatedTotal}
           className="mb-4"
