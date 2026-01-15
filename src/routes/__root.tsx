@@ -6,6 +6,7 @@ import {
 import appCss from '../styles.css?url';
 import type { QueryClient } from '@tanstack/react-query';
 import { GeneralNotFound } from '@/shared/components/layout/not-found';
+import { RouteErrorComponent } from '@/shared/components/layout/error-boundary';
 
 interface RouterContext {
   queryClient: QueryClient;
@@ -67,6 +68,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
   }),
   shellComponent: RootDocument,
   notFoundComponent: GeneralNotFound,
+  errorComponent: RouteErrorComponent,
 });
 
 function RootDocument({ children }: { children: React.ReactNode }) {

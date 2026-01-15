@@ -3,8 +3,9 @@ import { Suspense } from 'react';
 import { RestrictedUploadView } from '@/features/upload-receipt/components/restricted-upload-view';
 import { UploadComponent } from '@/features/upload-receipt/components/upload-component';
 import { useUploadRateLimitSuspense } from '@/features/upload-receipt/hooks/use-upload-rate-limit';
-import { BrandedPageShell } from '@/shared/components/layout/branded-page-shell';
 import { Card, CardContent, CardHeader } from '@/shared/components/ui/card';
+import { AppPageShell } from '@/shared/components/layout/app-page-shell';
+import { AppHeader } from '@/shared/components/layout/app-header';
 
 export const Route = createFileRoute('/_authed/upload')({
   head: () => ({
@@ -19,16 +20,17 @@ export const Route = createFileRoute('/_authed/upload')({
 function UploadPageComponent() {
   const { user } = Route.useRouteContext();
 
-  // Check user permission first (no suspense needed)
-  if (!user.canUpload) {
-    return <RestrictedUploadView hasNoAccess={true} />;
-  }
-
   // User has access - check rate limit with suspense
   return (
-    <Suspense fallback={<UploadSkeleton />}>
-      <UploadWithRateLimit />
-    </Suspense>
+    <AppPageShell centered header={<AppHeader title="Upload" />}>
+      {!user.canUpload ? (
+        <RestrictedUploadView hasNoAccess={true} />
+      ) : (
+        <Suspense fallback={<UploadSkeleton />}>
+          <UploadWithRateLimit />
+        </Suspense>
+      )}
+    </AppPageShell>
   );
 }
 
@@ -44,16 +46,14 @@ function UploadWithRateLimit() {
 
 function UploadSkeleton() {
   return (
-    <BrandedPageShell>
-      <Card className="w-full max-w-md animate-pulse">
-        <CardHeader className="space-y-2">
-          <div className="h-6 w-1/2 bg-muted rounded" />
-          <div className="h-4 w-3/4 bg-muted rounded" />
-        </CardHeader>
-        <CardContent>
-          <div className="h-80 bg-muted rounded-xl" />
-        </CardContent>
-      </Card>
-    </BrandedPageShell>
+    <Card className="w-full max-w-md animate-pulse">
+      <CardHeader className="space-y-2">
+        <div className="h-6 w-1/2 bg-muted rounded" />
+        <div className="h-4 w-3/4 bg-muted rounded" />
+      </CardHeader>
+      <CardContent>
+        <div className="h-80 bg-muted rounded-xl" />
+      </CardContent>
+    </Card>
   );
 }

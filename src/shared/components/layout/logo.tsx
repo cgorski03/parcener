@@ -21,9 +21,10 @@ export function Logo({
         alt="Parcener Logo"
         width={size}
         height={size}
-        // Aspect ratio prevents layout shift during load
-        style={{ aspectRatio: '1/1' }}
-        className="rounded-lg"
+        style={{
+          aspectRatio: '1/1',
+          borderRadius: size * 0.3,
+        }}
       />
       {showText && (
         <span

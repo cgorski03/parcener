@@ -11,12 +11,12 @@ import type { InviteStatus } from '../server/invitation-service';
 import { Button } from '@/shared/components/ui/button';
 import {
   Card,
-  CardContent,
   CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
 } from '@/shared/components/ui/card';
+import { BrandedPageShell } from '@/shared/components/layout/branded-page-shell';
 
 type AcceptInvitePageProps = {
   status: InviteStatus;
@@ -27,7 +27,7 @@ export function AcceptInvitePage({ status }: AcceptInvitePageProps) {
   const Icon = config.icon;
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-muted/40 p-4">
+    <BrandedPageShell>
       <Card className="w-full max-w-md shadow-lg border-border/50">
         <CardHeader className="text-center pb-2">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
@@ -38,7 +38,6 @@ export function AcceptInvitePage({ status }: AcceptInvitePageProps) {
             {config.description}
           </CardDescription>
         </CardHeader>
-        <CardContent></CardContent>
         <CardFooter className="flex justify-center pb-8">
           <Button
             asChild
@@ -54,7 +53,7 @@ export function AcceptInvitePage({ status }: AcceptInvitePageProps) {
           </Button>
         </CardFooter>
       </Card>
-    </div>
+    </BrandedPageShell>
   );
 }
 

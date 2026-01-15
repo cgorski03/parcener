@@ -1,13 +1,7 @@
-import {
-  ArrowLeft,
-  FileQuestion,
-  Home,
-  Plus,
-  Receipt,
-  Users,
-} from 'lucide-react';
+import { ArrowLeft, FileQuestion, Home, Plus, Receipt, Users } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 import { Button } from '../ui/button';
+import { BrandedPageShell } from './branded-page-shell';
 import type { ReactNode } from 'react';
 
 interface NotFoundShellProps {
@@ -24,17 +18,7 @@ export function NotFoundShell({
   actions,
 }: NotFoundShellProps) {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-muted/40 to-background flex flex-col items-center justify-center p-4 relative overflow-hidden">
-      {/* Background Decoration */}
-      <div className="absolute top-[-10%] right-[-5%] w-96 h-96 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-[-10%] left-[-5%] w-96 h-96 bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
-
-      {/* Branding */}
-      <div className="absolute top-8 flex items-center gap-2 text-foreground/80">
-        <Receipt className="h-6 w-6 text-primary" />
-        <span className="text-xl font-bold tracking-tight">Parcener</span>
-      </div>
-
+    <BrandedPageShell>
       <div className="w-full max-w-md text-center space-y-6">
         {/* Icon */}
         <div className="flex justify-center">
@@ -52,11 +36,7 @@ export function NotFoundShell({
         {/* Actions */}
         {actions && <div className="pt-4">{actions}</div>}
       </div>
-
-      <div className="absolute bottom-8 text-[10px] text-muted-foreground/40">
-        © {new Date().getFullYear()} Parcener. Built for friends.
-      </div>
-    </div>
+    </BrandedPageShell>
   );
 }
 
