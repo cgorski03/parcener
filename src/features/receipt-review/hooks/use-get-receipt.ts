@@ -16,15 +16,18 @@ export const ReceiptQueryKeys = {
   valid: (id: string) => [...ReceiptQueryKeys.validation, id] as const,
 };
 
+export const receiptOptions = (receiptId: string) => ({
+  queryKey: ReceiptQueryKeys.detail(receiptId),
+  queryFn: () => getReceiptRpc({ data: receiptId }),
+  staleTime: 1000,
+});
+
 export function useGetReceiptReview(
   receiptId: string,
   options: { enabled?: boolean; initialData?: ReceiptWithRoom } = {},
 ) {
   return useQuery({
-    // Use your constants for consistency
-    queryKey: ReceiptQueryKeys.detail(receiptId),
-    queryFn: () => getReceiptRpc({ data: receiptId }),
-    // If data is "processing", poll every 2 seconds. Otherwise stop.
+    ...receiptOptions(receiptId),
     refetchInterval: (query) => {
       const data = query.state.data;
       if (data && isProcessing(data)) {
@@ -32,7 +35,7 @@ export function useGetReceiptReview(
       }
       return false;
     },
-    staleTime: 1000,
+
     ...options,
   });
 }
