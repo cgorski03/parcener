@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router';
-import { Button } from '@/shared/components/ui/button';
 import { RefreshCw } from 'lucide-react';
+import { Button } from '@/shared/components/ui/button';
 
 export function ErrorReceiptView(props: { attempts: number }) {
   return (

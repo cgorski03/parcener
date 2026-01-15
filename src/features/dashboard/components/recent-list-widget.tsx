@@ -1,4 +1,5 @@
 import { Link } from '@tanstack/react-router';
+import { WidgetBody, WidgetShell } from '@/shared/components/layout/widget-shell';
 import { Button } from '@/shared/components/ui/button';
 
 interface RecentListProps<T> {
@@ -28,17 +29,27 @@ export function RecentList<T>({
   renderItem,
   addButton,
 }: RecentListProps<T>) {
+  const actionButton = addButton ? (
+    <Link to={addButton.link}>
+      <Button
+        variant="link"
+        size="sm"
+        className="px-3 rounded-full text-primary hover:bg-primary/10 hover:border-primary/30 border-dashed text-xs font-medium"
+      >
+        {addButton.icon}
+        {addButton.text}
+      </Button>
+    </Link>
+  ) : undefined;
+
   // Loading State
   if (isLoading) {
     return (
-      <div className="space-y-2">
-        <div className="flex items-center justify-between pl-1">
-          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-            {title}
-          </h3>
-          <div className="h-3 w-16 bg-muted rounded animate-pulse" />
-        </div>
-        <div className="bg-background rounded-xl border shadow-sm divide-y">
+      <WidgetShell
+        title={title}
+        action={<div className="h-3 w-16 bg-muted rounded animate-pulse" />}
+      >
+        <WidgetBody divided>
           {[...Array(5)].map((_, i) => (
             <div key={i} className="flex items-center p-3 animate-pulse">
               <div className="h-8 w-8 rounded-full bg-muted" />
@@ -48,60 +59,43 @@ export function RecentList<T>({
               </div>
             </div>
           ))}
-        </div>
-      </div>
+        </WidgetBody>
+      </WidgetShell>
     );
   }
 
   // Empty State
   if (!data?.length) {
     return (
-      <div className="bg-background rounded-xl border shadow-sm p-6 text-center space-y-4">
-        {emptyState.icon}
-        <div>
-          <p className="text-sm font-medium text-foreground mb-1">
-            {emptyState.title}
-          </p>
-          <p className="text-xs text-muted-foreground mb-4">
-            {emptyState.description}
-          </p>
-        </div>
-        {emptyState.ctaLink && emptyState.cta && (
-          <Link to={emptyState.ctaLink} className="block">
-            <Button className="w-full bg-primary text-primary-foreground shadow-md hover:bg-primary/90">
-              {emptyState.cta}
-            </Button>
-          </Link>
-        )}
-      </div>
+      <WidgetShell title={title}>
+        <WidgetBody>
+          <div className="p-6 text-center space-y-4">
+            {emptyState.icon}
+            <div>
+              <p className="text-sm font-medium text-foreground mb-1">
+                {emptyState.title}
+              </p>
+              <p className="text-xs text-muted-foreground mb-4">
+                {emptyState.description}
+              </p>
+            </div>
+            {emptyState.ctaLink && emptyState.cta && (
+              <Link to={emptyState.ctaLink} className="block">
+                <Button className="w-full bg-primary text-primary-foreground shadow-md hover:bg-primary/90">
+                  {emptyState.cta}
+                </Button>
+              </Link>
+            )}
+          </div>
+        </WidgetBody>
+      </WidgetShell>
     );
   }
 
   // Success State
   return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between pl-1">
-        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-          {title}
-        </h3>
-
-        {addButton && (
-          <Link to={addButton.link}>
-            <Button
-              variant="link"
-              size="sm"
-              className="px-3 rounded-full text-primary hover:bg-primary/10 hover:border-primary/30 border-dashed text-xs font-medium"
-            >
-              {addButton.icon}
-              {addButton.text}
-            </Button>
-          </Link>
-        )}
-      </div>
-
-      <div className="bg-background rounded-xl border shadow-sm divide-y">
-        {data.map(renderItem)}
-      </div>
-    </div>
+    <WidgetShell title={title} action={actionButton}>
+      <WidgetBody divided>{data.map(renderItem)}</WidgetBody>
+    </WidgetShell>
   );
 }
