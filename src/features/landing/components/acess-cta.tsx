@@ -49,7 +49,7 @@ export function AccessCTA() {
                 size="lg"
                 className="h-12 px-8 rounded-full text-base font-semibold shadow-lg shadow-primary/20 hover:shadow-primary/30  transition-all w-full"
               >
-                Sign In to Join Waitlist
+                Join Waitlist
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>

@@ -195,7 +195,7 @@ export function ReceiptEditorView({ initialReceipt }: ReceiptEditorProps) {
         Add Custom Item
       </Button>
 
-      <div className="relative group mt-6 pb-20">
+      <div className="relative group mt-6 ">
         <PriceBreakdown
           subtotal={parseFloat(subtotal)}
           tax={receipt.tax}

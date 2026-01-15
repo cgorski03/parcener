@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router';
-import { ArrowRight, Lock, Receipt, ScanLine, Shield, Zap } from 'lucide-react';
+import { ArrowRight, Lock, ScanLine, Shield, Zap } from 'lucide-react';
 import { Button } from '@/shared/components/ui/button';
 import { Badge } from '@/shared/components/ui/badge';
 import GitHubIcon from '@/shared/components/icons/github';
@@ -12,7 +12,7 @@ import { VimConfigCard } from '@/features/landing/components/vim-config-card';
 import { InteractiveDemo } from '@/features/landing/components/interactive-demo';
 import { RealtimeSimulation } from '@/features/landing/components/realtime-simulation';
 import { AccessCTA } from '@/features/landing/components/acess-cta';
-import { Logo } from '@/shared/components/layout/logo';
+import { BrandTitle } from '@/shared/components/layout/app-header';
 
 export function LandingPage() {
   const { data: session } = authClient.useSession();
@@ -56,8 +56,7 @@ export function LandingPage() {
         {/* Navigation */}
         <nav className="relative z-50 flex items-center justify-between px-6 py-6 max-w-7xl mx-auto">
           <div className="flex items-center gap-2.5">
-            <Logo />
-            <span className="font-bold text-lg tracking-tight">Parcener</span>
+            <BrandTitle />
           </div>
           <div className="flex items-center gap-6">
             <a
@@ -261,8 +260,7 @@ export function LandingPage() {
         <footer className="py-12 border-t border-border/40 bg-background">
           <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
             <div className="flex items-center gap-2 text-sm font-semibold text-foreground/80">
-              <Receipt className="h-4 w-4" />
-              <span>Parcener</span>
+              <BrandTitle />
             </div>
             <p className="text-[10px] text-muted-foreground">
               © {new Date().getFullYear()} Parcener. Open Source MIT License.
