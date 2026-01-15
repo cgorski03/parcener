@@ -22,6 +22,11 @@ export const Route = createRootRouteWithContext<RouterContext>()({
         content: 'width=device-width, initial-scale=1',
       },
       { title: 'Parcener' },
+      {
+        name: 'description',
+        content:
+          'The open source, collaborative, receipt splitting tool. Split bills, not friends.',
+      },
       // Open Graph / Facebook / Discord
       { property: 'og:type', content: 'website' },
       { property: 'og:site_name', content: 'Parcener' },
@@ -41,6 +46,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       { name: 'twitter:image', content: 'https://parcener.app/og-image.png' },
     ],
     links: [
+      { rel: 'canonical', href: 'https://parcener.app' },
       { rel: 'stylesheet', href: appCss },
       // Favicons and Icons
       { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
@@ -76,4 +82,3 @@ function RootDocument({ children }: { children: React.ReactNode }) {
     </html>
   );
 }
-export const NotFoundComponent = GeneralNotFound;

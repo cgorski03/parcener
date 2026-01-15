@@ -48,7 +48,7 @@ test.describe('Full Receipt to Settlement Flow', () => {
     const fileInput = page.locator('#receipt');
     const testImagePath = path.join(
       process.cwd(),
-      'public/test-images/valid-receipt.jpg',
+      'src/test/fixtures/valid-receipt.jpg',
     );
     await fileInput.setInputFiles(testImagePath);
 
@@ -187,7 +187,7 @@ test.describe('Full Receipt to Settlement Flow', () => {
     const fileInput = page.locator('#receipt');
     const testImagePath = path.join(
       process.cwd(),
-      'public/test-images/valid-receipt.jpg',
+      'src/test/fixtures/valid-receipt.jpg',
     );
     await fileInput.setInputFiles(testImagePath);
 

@@ -16,8 +16,17 @@ export const Route = createFileRoute('/login')({
   head: () => ({
     meta: [
       { title: 'Login | Parcener' },
+      {
+        name: 'description',
+        content: 'Sign in to Parcener to start splitting bills with friends.',
+      },
       { property: 'og:title', content: `Login | Parcener` },
+      {
+        property: 'og:description',
+        content: 'Sign in to your Parcener account',
+      },
     ],
+    links: [{ rel: 'canonical', href: 'https://parcener.app/login' }],
   }),
   pendingComponent: LoginPendingView,
   beforeLoad: async ({ search }) => {

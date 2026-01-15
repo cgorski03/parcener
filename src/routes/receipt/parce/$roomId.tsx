@@ -20,7 +20,6 @@ export const Route = createFileRoute('/receipt/parce/$roomId')({
       throw notFound();
     }
     const { room, membership, user, canMergeGuestToMember } = response;
-    // Upgrade guest to user if needed (side effect in loader)
     if (canMergeGuestToMember) {
       const newMembership = await upgradeGuestToUser({
         data: { roomId: params.roomId },
@@ -29,7 +28,7 @@ export const Route = createFileRoute('/receipt/parce/$roomId')({
     }
     return { room, membership, user };
   },
-  head: () => ({
+  head: ({ params }) => ({
     meta: [
       { title: 'Room | Parcener' },
       { property: 'og:title', content: `Join Room | Parcener` },
@@ -37,6 +36,12 @@ export const Route = createFileRoute('/receipt/parce/$roomId')({
         property: 'og:description',
         content:
           'Join room to share on expenses with your friends in real-time',
+      },
+    ],
+    links: [
+      {
+        rel: 'canonical',
+        href: `https://parcener.app/receipt/parce/${params.roomId}`,
       },
     ],
   }),

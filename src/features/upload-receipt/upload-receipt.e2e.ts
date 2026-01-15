@@ -35,7 +35,7 @@ test.describe('Upload Receipt - Basic States', () => {
     const fileInput = page.locator('#receipt');
     const testImagePath = path.join(
       process.cwd(),
-      'public/test-images/valid-receipt.jpg',
+      'src/test/fixtures/valid-receipt.jpg',
     );
     await fileInput.setInputFiles(testImagePath);
 
@@ -72,7 +72,7 @@ test.describe('Upload Receipt - Basic States', () => {
     const fileInput = page.locator('#receipt');
     const testImagePath = path.join(
       process.cwd(),
-      'public/test-images/valid-receipt.jpg',
+      'src/test/fixtures/valid-receipt.jpg',
     );
     await fileInput.setInputFiles(testImagePath);
 
