@@ -35,14 +35,16 @@ export const paymentMethodsOptions = (enabled?: boolean) =>
     refetchOnWindowFocus: false,
     enabled: enabled ?? true,
   });
+
 /**
  * Hook to fetch all payment methods for the current user
+ * Uses suspense (blocking) for pages that require payment methods to render
  */
 export const usePaymentMethodsSuspense = () => {
   const { data, ...rest } = useSuspenseQuery(paymentMethodsOptions());
 
-  // Since data is guaranteed defined, logic is cleaner
-  const defaultPaymentMethod = data.find((pm) => pm.isDefault) || data[0];
+  const defaultPaymentMethod =
+    data.length > 0 ? data.find((pm) => pm.isDefault) || data[0] : null;
 
   return {
     data,
@@ -51,20 +53,6 @@ export const usePaymentMethodsSuspense = () => {
   };
 };
 
-export const useDefaultPaymentMethod = () => {
-  const { data: paymentMethods, ...rest } = useSuspenseQuery(
-    paymentMethodsOptions(),
-  );
-  const defaultPaymentMethod =
-    paymentMethods.length === 0
-      ? null
-      : paymentMethods.find((pm) => pm.isDefault) || paymentMethods[0];
-
-  return {
-    defaultPaymentMethod,
-    ...rest,
-  };
-};
 /**
  * Hook to create a new payment method
  */

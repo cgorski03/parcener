@@ -12,7 +12,7 @@ export function ProcessingReceiptView({
       <div className="flex w-full max-w-sm flex-col items-center gap-6 rounded-xl border border-border bg-card p-8 shadow-sm">
         <Loader2
           className={`h-10 w-10 animate-spin text-primary transition-opacity duration-500 ${
-            isPolling ? 'opacity-90' : 'opacity-70'
+            isPolling ? 'opacity-90' : 'opacity-50'
           }`}
         />
 
