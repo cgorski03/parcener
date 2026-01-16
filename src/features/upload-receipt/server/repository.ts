@@ -1,5 +1,5 @@
 import { eq } from 'drizzle-orm';
-import type { ParsedReceipt } from './types';
+import type { GoogleThinkingLevel, ModelParsedReceiptType } from './types';
 import type { DbType, NewReceiptItem } from '@/shared/server/db';
 import {
   receipt,
@@ -8,14 +8,21 @@ import {
 } from '@/shared/server/db';
 
 // Returns what is effectively the processing run ID
-export async function createProcessingStub(db: DbType, id: string) {
+export async function createProcessingStub(request: {
+  db: DbType;
+  receiptId: string;
+  thinkingLevel: GoogleThinkingLevel;
+}) {
+  const { db, receiptId, thinkingLevel } = request;
+
   const startTime = new Date();
   const [insertedRecord] = await db
     .insert(receiptProcessingInformation)
     .values({
-      receiptId: id,
+      receiptId,
       startedAt: startTime,
       processingStatus: 'processing',
+      thinkingLevel,
     })
     .returning();
   return insertedRecord.id;
@@ -64,7 +71,7 @@ export async function createProcessingError(
 
 type SaveReceiptRequest = {
   id: string;
-  parsedReceipt: ParsedReceipt;
+  parsedReceipt: ModelParsedReceiptType;
 };
 export async function saveReceiptInformation(
   db: DbType,

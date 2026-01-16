@@ -1,0 +1,1 @@
+ALTER TABLE "receipt_processing_information" ADD COLUMN "thinking_level" text;

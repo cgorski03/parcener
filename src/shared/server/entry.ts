@@ -73,7 +73,7 @@ const handler = {
             },
             async () => {
               try {
-                await processingQueueMessageHandler(db, message, env, ctx);
+                await processingQueueMessageHandler({ db, message, env, ctx });
               } catch (error) {
                 Sentry.captureException(error, {
                   tags: { source: 'queue_processor' },

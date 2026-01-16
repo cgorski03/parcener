@@ -7,7 +7,6 @@ import {
   parseProviderMetadata,
   parseStructuredReceiptResponse,
 } from './utils/parse-json';
-import { ParsedReceiptSchema } from './types';
 import {
   createProcessingError,
   createProcessingStub,
@@ -15,22 +14,35 @@ import {
   saveReceiptInformation,
 } from './repository';
 import { google } from './llm';
+import { modelParsedReceiptSchema } from './types';
+import type {
+  GoogleGenerativeAIModelId,
+  GoogleThinkingLevel,
+  ReceiptJob,
+} from './types';
 import type { UsageMetadata } from './utils/parse-json';
-import type { ReceiptJob } from './types';
 import type { DbType } from '@/shared/server/db';
-import type { GoogleGenerativeAIProvider } from '@ai-sdk/google';
+import type {
+  GoogleGenerativeAIProvider,
+  GoogleGenerativeAIProviderOptions,
+} from '@ai-sdk/google';
 import { receipt } from '@/shared/server/db';
 import { logger } from '@/shared/observability/logger';
 import { SENTRY_EVENTS } from '@/shared/observability/sentry-events';
 
-const RECEIPT_PROCESSING_MODEL = 'gemini-3-flash-preview';
+const RECEIPT_PROCESSING_MODEL: GoogleGenerativeAIModelId =
+  'gemini-3-flash-preview';
 
-export async function processUploadAndEnqueue(
-  db: DbType,
-  env: Env,
-  file: File,
-  userId: string,
-) {
+type EnqueueReceiptRequest = {
+  db: DbType;
+  env: Env;
+  file: File;
+  userId: string;
+  thinkingLevel: GoogleThinkingLevel;
+};
+
+export async function processUploadAndEnqueue(request: EnqueueReceiptRequest) {
+  const { db, env, file, userId, thinkingLevel } = request;
   const receiptId = crypto.randomUUID();
 
   await env.parcener_receipt_images.put(receiptId, file.stream(), {
@@ -57,6 +69,7 @@ export async function processUploadAndEnqueue(
     receiptId,
     __sentry_baggage: baggageHeader,
     __sentry_trace: traceHeader,
+    thinkingLevel,
   };
 
   await env.RECEIPT_QUEUE.send(job);
@@ -64,13 +77,16 @@ export async function processUploadAndEnqueue(
   return { receiptId };
 }
 
-export async function processReceipt(
-  db: DbType,
-  receiptId: string,
-  imageSource: R2Bucket,
-) {
+type ProcessReceiptRequest = {
+  db: DbType;
+  receiptId: string;
+  imageSource: R2Bucket;
+  thinkingLevel: GoogleThinkingLevel;
+};
+export async function processReceipt(request: ProcessReceiptRequest) {
+  const { db, receiptId, imageSource, thinkingLevel } = request;
   const ai = google();
-  const runId = await createProcessingStub(db, receiptId);
+  const runId = await createProcessingStub({ db, receiptId, thinkingLevel });
 
   // Shared state for error handling block
   let metadata: UsageMetadata | null = null;
@@ -92,11 +108,11 @@ export async function processReceipt(
       return;
     }
 
-    const imageObj = await image.arrayBuffer();
+    const imageBuffer = await image.arrayBuffer();
 
     const { text, providerMetadata } = await Sentry.startSpan(
       { name: 'ai.generate_text', op: 'ai.inference' },
-      () => requestAiProcessingHelper(ai, imageObj),
+      () => requestAiProcessingHelper({ ai, imageBuffer, thinkingLevel }),
     );
 
     rawResponse = text;
@@ -110,7 +126,7 @@ export async function processReceipt(
     // 3. Parsing & Validation
     const parsedReceipt = parseStructuredReceiptResponse(
       text,
-      ParsedReceiptSchema,
+      modelParsedReceiptSchema,
     );
 
     // 4. Persistence
@@ -168,12 +184,22 @@ export async function processReceipt(
   }
 }
 
-const requestAiProcessingHelper = async (
-  ai: GoogleGenerativeAIProvider,
-  imageBuffer: ArrayBuffer,
-) => {
+const requestAiProcessingHelper = async (request: {
+  ai: GoogleGenerativeAIProvider;
+  imageBuffer: ArrayBuffer;
+  thinkingLevel: GoogleThinkingLevel;
+}) => {
+  const { ai, imageBuffer, thinkingLevel } = request;
+
   const { text, providerMetadata } = await generateText({
     model: ai(RECEIPT_PROCESSING_MODEL),
+    providerOptions: {
+      google: {
+        thinkingConfig: {
+          thinkingLevel,
+        },
+      } satisfies GoogleGenerativeAIProviderOptions,
+    },
     temperature: 0.3,
     system: RECEIPT_PARSE_PROMPT,
     messages: [
@@ -191,13 +217,20 @@ const requestAiProcessingHelper = async (
   return { text, providerMetadata };
 };
 
-export async function processingQueueMessageHandler(
-  db: DbType,
-  message: Message<ReceiptJob>,
-  env: Env,
-  _: ExecutionContext,
-) {
-  await processReceipt(db, message.body.receiptId, env.parcener_receipt_images);
+export async function processingQueueMessageHandler(request: {
+  db: DbType;
+  message: Message<ReceiptJob>;
+  env: Env;
+  ctx: ExecutionContext;
+}) {
+  const { db, message, env } = request;
+  const { receiptId, thinkingLevel } = message.body;
+  await processReceipt({
+    db,
+    receiptId,
+    imageSource: env.parcener_receipt_images,
+    thinkingLevel,
+  });
   message.ack();
 }
 

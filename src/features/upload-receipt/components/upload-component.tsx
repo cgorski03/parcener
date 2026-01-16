@@ -1,8 +1,13 @@
 import { useRef, useState } from 'react';
 import { AlertCircle, FileText, Trash2, Upload } from 'lucide-react';
 import { useRouter } from '@tanstack/react-router';
+
 import { useUploadReceipt } from '../hooks/use-upload-receipt';
 import { useObjectURL } from '../hooks/use-object-url';
+import { ThinkingEffortSlider } from './thinking-effort-slider';
+
+import type { GoogleThinkingLevel } from '../server/types';
+
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import {
@@ -32,6 +37,9 @@ export function UploadComponent() {
   const [file, setFile] = useState<File | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [thinkingLevel, setThinkingLevel] =
+    useState<GoogleThinkingLevel>('medium');
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const {
@@ -89,10 +97,11 @@ export function UploadComponent() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!file) return;
-    const formData = new FormData();
-    formData.append('file', file);
     try {
-      const result = await uploadReceipt(formData);
+      const result = await uploadReceipt({
+        file,
+        thinkingLevel,
+      });
       router.navigate({ to: `/receipt/review/${result.receiptId}` });
     } catch (err) {
       logger.error(err, SENTRY_EVENTS.RECEIPT.UPLOAD);
@@ -114,12 +123,11 @@ export function UploadComponent() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Main Interaction Area - Fixed Height */}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* File Upload Area */}
           <div
             className={cn(
               'relative w-full h-80 rounded-xl border-2 overflow-hidden transition-all',
-              // Colors based on state
               dragActive
                 ? 'border-primary bg-primary/5'
                 : 'border-dashed border-muted-foreground/25',
@@ -141,7 +149,6 @@ export function UploadComponent() {
               className="hidden"
             />
 
-            {/* State 1: Empty (Upload Prompt) */}
             {!file && (
               <div
                 className="h-full flex flex-col items-center justify-center text-center cursor-pointer p-6"
@@ -168,12 +175,10 @@ export function UploadComponent() {
               </div>
             )}
 
-            {/* State 2: File Selected (Split View) */}
             {file && previewUrl && (
               <div className="h-full flex flex-col">
                 <div className="flex-1 relative w-full min-h-0">
                   {file.type === 'image/heic' || file.type === 'image/heif' ? (
-                    // For HEIC, just show file info centered
                     <div className="h-full flex flex-col items-center justify-center p-6 text-center">
                       <div className="bg-primary/10 p-6 rounded-full mb-4">
                         <FileText className="h-12 w-12 text-primary" />
@@ -184,12 +189,8 @@ export function UploadComponent() {
                       <p className="text-xs text-muted-foreground mt-1">
                         {formatFileSize(file.size)}
                       </p>
-                      <p className="text-xs text-muted-foreground mt-2">
-                        Preview not supported in this browser
-                      </p>
                     </div>
                   ) : (
-                    // For supported formats, show the image
                     <img
                       src={previewUrl}
                       alt="Receipt preview"
@@ -197,13 +198,10 @@ export function UploadComponent() {
                     />
                   )}
                 </div>
-
-                {/* Bottom: File Info Bar */}
                 <div className="h-16 flex-none bg-background border-t px-4 flex items-center gap-3">
                   <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center flex-none text-primary">
                     <FileText className="h-5 w-5" />
                   </div>
-
                   <div className="flex-1 min-w-0">
                     <p
                       className="text-sm font-medium truncate"
@@ -215,7 +213,6 @@ export function UploadComponent() {
                       {formatFileSize(file.size)}
                     </p>
                   </div>
-
                   <Button
                     type="button"
                     variant="ghost"
@@ -230,7 +227,12 @@ export function UploadComponent() {
             )}
           </div>
 
-          {/* Errors */}
+          <ThinkingEffortSlider
+            value={thinkingLevel}
+            onChange={setThinkingLevel}
+            disabled={isPending}
+          />
+
           {(validationError || uploadError) && (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />

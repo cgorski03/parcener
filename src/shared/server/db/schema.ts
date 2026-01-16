@@ -55,6 +55,7 @@ export const receiptProcessingInformation = pgTable(
     rawResponse: text('raw_parsing_response'),
     model: varchar('model', { length: 30 }),
     processingTokens: integer('processing_tokens'),
+    thinkingLevel: text('thinking_level'),
   },
 );
 

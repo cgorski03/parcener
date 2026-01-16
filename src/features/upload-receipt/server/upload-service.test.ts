@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { eq } from 'drizzle-orm';
 import { env } from 'cloudflare:test';
+import type { ReceiptJob } from './types';
 import { createTestUser } from '@/test/factories';
 import { receipt } from '@/shared/server/db';
 import {
@@ -25,7 +26,13 @@ describe('processUploadAndEnqueue', () => {
       type: 'image/jpeg',
     });
 
-    const result = await processUploadAndEnqueue(testDb, env, file, user.id);
+    const result = await processUploadAndEnqueue({
+      db: testDb,
+      env,
+      file,
+      userId: user.id,
+      thinkingLevel: 'medium',
+    });
 
     // Verify receipt was created in database
     const receiptRecord = await testDb.query.receipt.findFirst({
@@ -43,7 +50,13 @@ describe('processUploadAndEnqueue', () => {
     const user = await createTestUser(testDb, { canUpload: true });
     const file = new File(['test'], 'receipt.jpg', { type: 'image/jpeg' });
 
-    const result = await processUploadAndEnqueue(testDb, env, file, user.id);
+    const result = await processUploadAndEnqueue({
+      db: testDb,
+      env,
+      file,
+      userId: user.id,
+      thinkingLevel: 'medium',
+    });
 
     expect(result.receiptId).toBeDefined();
     expect(typeof result.receiptId).toBe('string');
@@ -56,7 +69,13 @@ describe('processUploadAndEnqueue', () => {
       type: 'image/png',
     });
 
-    const result = await processUploadAndEnqueue(testDb, env, file, user.id);
+    const result = await processUploadAndEnqueue({
+      db: testDb,
+      env,
+      file,
+      userId: user.id,
+      thinkingLevel: 'medium',
+    });
 
     const storedImage = await env.parcener_receipt_images.get(result.receiptId);
     expect(storedImage).not.toBeNull();
@@ -76,17 +95,17 @@ describe('processingQueueMessageHandler', () => {
 
     const ackSpy = vi.fn();
     const mockMessage = {
-      body: { receiptId },
+      body: { receiptId, thinkingLevel: 'medium' },
       ack: ackSpy,
-    } as unknown as Message<{ receiptId: string }>;
+    } as unknown as Message<ReceiptJob>;
 
     await expect(
-      processingQueueMessageHandler(
-        testDb,
-        mockMessage,
+      processingQueueMessageHandler({
+        db: testDb,
+        message: mockMessage,
         env,
-        {} as ExecutionContext,
-      ),
+        ctx: {} as ExecutionContext,
+      }),
     ).rejects.toThrow();
 
     // Should NOT ack - let outer wrapper retry
