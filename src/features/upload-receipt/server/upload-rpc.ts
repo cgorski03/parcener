@@ -1,8 +1,8 @@
 import { createServerFn } from '@tanstack/react-start';
 import { env } from 'cloudflare:workers';
-import { processUploadAndEnqueue } from './processing-service';
 import { getUserUploadRateLimit } from './upload-rate-limit-service';
 import { uploadReceiptSchema } from './types';
+import { processUploadAndEnqueue } from './handlers/upload';
 import {
   canUploadMiddleware,
   protectedFunctionMiddleware,

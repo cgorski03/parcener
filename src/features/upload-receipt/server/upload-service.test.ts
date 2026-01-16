@@ -1,13 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
 import { eq } from 'drizzle-orm';
 import { env } from 'cloudflare:test';
+import { processUploadAndEnqueue } from './handlers/upload';
+import { processingQueueMessageHandler } from './handlers/queue';
 import type { ReceiptJob } from './types';
 import { createTestUser } from '@/test/factories';
 import { receipt } from '@/shared/server/db';
-import {
-  processUploadAndEnqueue,
-  processingQueueMessageHandler,
-} from '@/features/upload-receipt/server/processing-service';
 import { testDb } from '@/test/setup';
 
 /**
