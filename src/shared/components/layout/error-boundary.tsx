@@ -1,4 +1,3 @@
-import * as Sentry from '@sentry/tanstackstart-react';
 import { Link, useRouter } from '@tanstack/react-router';
 import { AlertTriangle, Check, Copy, Home, RefreshCw } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -14,8 +13,10 @@ export function RouteErrorComponent({ error, reset }: ErrorComponentProps) {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    const id = Sentry.captureException(error);
-    setEventId(id);
+    import('@sentry/tanstackstart-react').then((Sentry) => {
+      const id = Sentry.captureException(error);
+      setEventId(id);
+    });
   }, [error]);
 
   const handleCopy = async () => {

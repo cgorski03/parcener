@@ -49,7 +49,7 @@ export async function createProcessingError(
   db: DbType,
   request: {
     runId: string;
-    model?: string;
+    modelUsed?: string;
     processingTokens?: number;
     rawModelResponse?: string;
   },
@@ -60,7 +60,7 @@ export async function createProcessingError(
     .set({
       endedAt: new Date(),
       processingStatus: 'failed',
-      model: request.model,
+      model: request.modelUsed,
       processingTokens: request.processingTokens,
       rawResponse: request.rawModelResponse,
       errorMessage: err instanceof Error ? err.message : 'Unknown error',

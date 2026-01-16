@@ -7,15 +7,12 @@ import {
   finishReceiptProcessingRunSuccess,
   saveReceiptInformation,
 } from './repository';
-import { google } from './llm';
 import { scanReceiptImage } from './lib/receipt-scanner';
-import type { GoogleGenerativeAIModelId, GoogleThinkingLevel } from './types';
+import { google } from './lib/llm';
+import type { GoogleThinkingLevel } from './types';
 import type { DbType } from '@/shared/server/db';
 import { logger } from '@/shared/observability/logger';
 import { SENTRY_EVENTS } from '@/shared/observability/sentry-events';
-
-const RECEIPT_PROCESSING_MODEL: GoogleGenerativeAIModelId =
-  'gemini-3-flash-preview';
 
 type ProcessReceiptRequest = {
   db: DbType;
@@ -35,7 +32,8 @@ export async function processReceipt(request: ProcessReceiptRequest) {
   const executionState: {
     rawResponse: string | null;
     tokenUsage: number | null;
-  } = { rawResponse: null, tokenUsage: null };
+    modelUsed: string | null;
+  } = { rawResponse: null, tokenUsage: null, modelUsed: null };
 
   try {
     // A. Fetch Image
@@ -47,30 +45,32 @@ export async function processReceipt(request: ProcessReceiptRequest) {
     );
 
     // B. AI Execution (Wrapped in Sentry Span)
-    const { data, rawText, providerMetadata } = await Sentry.startSpan(
-      { name: 'ai.generate_text', op: 'ai.inference' },
-      async () =>
-        await scanReceiptImage({
-          ai: google(),
-          imageBuffer,
-          thinkingLevel,
-        }),
-    );
+    const { data, rawText, providerMetadata, modelUsed } =
+      await Sentry.startSpan(
+        { name: 'ai.generate_text', op: 'ai.inference' },
+        async () =>
+          await scanReceiptImage({
+            ai: google(),
+            imageBuffer,
+            thinkingLevel,
+          }),
+      );
 
     // C. Telemetry Processing
     executionState.rawResponse = rawText;
+    executionState.modelUsed = modelUsed;
     if (providerMetadata) {
       const meta = parseProviderMetadata(providerMetadata);
       executionState.tokenUsage = meta?.totalTokenCount ?? null;
       if (executionState.tokenUsage) {
-        recordAiTelemetry(executionState.tokenUsage);
+        recordAiTelemetry(executionState.tokenUsage, modelUsed);
       }
     }
 
     await saveReceiptInformation(db, { id: receiptId, parsedReceipt: data });
 
     await finishReceiptProcessingRunSuccess(db, runId, {
-      model: RECEIPT_PROCESSING_MODEL,
+      model: executionState.modelUsed,
       tokens: executionState.tokenUsage,
       rawModelResponse: rawText,
     });
@@ -126,11 +126,11 @@ async function retrieveReceiptImage(
 /**
  * Updates the active Sentry span with AI metrics
  */
-function recordAiTelemetry(tokenCount: number) {
+function recordAiTelemetry(tokenCount: number, model: string) {
   const span = Sentry.getActiveSpan();
   if (span) {
     span.setAttribute('ai.tokens', tokenCount);
-    span.setAttribute('ai.model', RECEIPT_PROCESSING_MODEL);
+    span.setAttribute('ai.model', model);
   }
 }
 
@@ -145,6 +145,7 @@ type ErrorHandlerParams = {
   receiptId: string;
   rawResponse: string | null;
   tokenUsage: number | null;
+  modelUsed: string | null;
 };
 
 async function handleProcessingFailure({
@@ -154,11 +155,12 @@ async function handleProcessingFailure({
   receiptId,
   rawResponse,
   tokenUsage,
+  modelUsed,
 }: ErrorHandlerParams) {
   // 1. Save error to Database
   const errorContext = {
     runId,
-    model: RECEIPT_PROCESSING_MODEL,
+    modelUsed: modelUsed ?? undefined,
     processingTokens: tokenUsage ?? undefined,
     rawModelResponse: rawResponse ?? undefined,
   };
