@@ -1,7 +1,8 @@
 import { createServerFn } from '@tanstack/react-start';
 import { env } from 'cloudflare:workers';
-import { processUploadAndEnqueue } from './processing-service';
 import { getUserUploadRateLimit } from './upload-rate-limit-service';
+import { uploadReceiptSchema } from './types';
+import { processUploadAndEnqueue } from './handlers/upload';
 import {
   canUploadMiddleware,
   protectedFunctionMiddleware,
@@ -14,17 +15,8 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
 export const uploadReceipt = createServerFn({ method: 'POST' })
   .middleware([canUploadMiddleware, nameTransaction('uploadReceipt')])
-  .inputValidator((data: FormData) => {
-    const file = data.get('file');
-    // Type Guard: Ensure it's a File and not a string or null
-    if (!file || typeof file === 'string') {
-      throw new Error('No file provided or invalid file format');
-    }
-
-    return { file };
-  })
-  .handler(async ({ data, context }) => {
-    const { file } = data;
+  .inputValidator(uploadReceiptSchema)
+  .handler(async ({ data: { file, thinkingLevel }, context }) => {
     try {
       if (file.size > MAX_FILE_SIZE) {
         logger.info(
@@ -38,12 +30,13 @@ export const uploadReceipt = createServerFn({ method: 'POST' })
         throw new Error(`File size exceeds maximum allowed size of 5MB`);
       }
 
-      const result = await processUploadAndEnqueue(
-        context.db,
+      const result = await processUploadAndEnqueue({
+        db: context.db,
         env,
         file,
-        context.user.id,
-      );
+        userId: context.user.id,
+        thinkingLevel,
+      });
 
       logger.info(
         'Receipt queued for processing',

@@ -8,7 +8,7 @@ import { getDb } from './db';
 import type { DbType } from './db';
 import type { ApplicationAuthClient } from '../auth/server';
 import type { ReceiptJob } from '@/features/upload-receipt/server/types';
-import { processingQueueMessageHandler } from '@/features/upload-receipt/server/processing-service';
+import { processingQueueMessageHandler } from '@/features/upload-receipt/server/handlers/queue';
 
 // 1. Augment the context type so TS knows about Cloudflare
 declare module '@tanstack/react-start' {
@@ -73,7 +73,7 @@ const handler = {
             },
             async () => {
               try {
-                await processingQueueMessageHandler(db, message, env, ctx);
+                await processingQueueMessageHandler({ db, message, env, ctx });
               } catch (error) {
                 Sentry.captureException(error, {
                   tags: { source: 'queue_processor' },

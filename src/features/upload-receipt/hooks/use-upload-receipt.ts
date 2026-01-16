@@ -4,6 +4,7 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 import { getUserUploadRateLimitRpc, uploadReceipt } from '../server/upload-rpc';
+import type { GoogleThinkingLevel } from '../server/types';
 
 export const UploadQueryKeys = {
   all: ['upload'] as const,
@@ -27,8 +28,15 @@ export function useUploadReceipt() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationKey: UploadQueryKeys.all,
-    mutationFn: async (data: FormData) => {
-      return await uploadReceipt({ data });
+    mutationFn: async (data: {
+      file: File;
+      thinkingLevel: GoogleThinkingLevel;
+    }) => {
+      const { file, thinkingLevel } = data;
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('thinkingLevel', thinkingLevel);
+      return await uploadReceipt({ data: formData });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({

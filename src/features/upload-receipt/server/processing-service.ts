@@ -1,213 +1,191 @@
-import { generateText } from 'ai';
 import * as Sentry from '@sentry/cloudflare';
 import z from 'zod';
-import { RECEIPT_PARSE_PROMPT } from './utils/prompts';
-import {
-  ParseError,
-  parseProviderMetadata,
-  parseStructuredReceiptResponse,
-} from './utils/parse-json';
-import { ParsedReceiptSchema } from './types';
+import { ParseError, parseProviderMetadata } from './utils/parse-json';
 import {
   createProcessingError,
   createProcessingStub,
   finishReceiptProcessingRunSuccess,
   saveReceiptInformation,
 } from './repository';
-import { google } from './llm';
-import type { UsageMetadata } from './utils/parse-json';
-import type { ReceiptJob } from './types';
+import { scanReceiptImage } from './lib/receipt-scanner';
+import { google } from './lib/llm';
+import type { GoogleThinkingLevel } from './types';
 import type { DbType } from '@/shared/server/db';
-import type { GoogleGenerativeAIProvider } from '@ai-sdk/google';
-import { receipt } from '@/shared/server/db';
 import { logger } from '@/shared/observability/logger';
 import { SENTRY_EVENTS } from '@/shared/observability/sentry-events';
 
-const RECEIPT_PROCESSING_MODEL = 'gemini-3-flash-preview';
+type ProcessReceiptRequest = {
+  db: DbType;
+  receiptId: string;
+  imageSource: R2Bucket;
+  thinkingLevel: GoogleThinkingLevel;
+};
 
-export async function processUploadAndEnqueue(
-  db: DbType,
-  env: Env,
-  file: File,
-  userId: string,
-) {
-  const receiptId = crypto.randomUUID();
+// 1. Main Orchestrator
+export async function processReceipt(request: ProcessReceiptRequest) {
+  const { db, receiptId, imageSource, thinkingLevel } = request;
 
-  await env.parcener_receipt_images.put(receiptId, file.stream(), {
-    httpMetadata: { contentType: file.type },
-  });
+  // Initialize run tracking
+  const runId = await createProcessingStub({ db, receiptId, thinkingLevel });
 
-  await createReceiptStub(db, receiptId, userId);
-
-  const activeSpan = Sentry.getActiveSpan();
-
-  if (activeSpan) {
-    activeSpan.setAttribute('receiptId', receiptId);
-    activeSpan.setAttribute('fileSize', file.size);
-  }
-
-  const traceHeader = activeSpan
-    ? Sentry.spanToTraceHeader(activeSpan)
-    : undefined;
-  const baggageHeader = activeSpan
-    ? Sentry.spanToBaggageHeader(activeSpan)
-    : undefined;
-
-  const job: ReceiptJob = {
-    receiptId,
-    __sentry_baggage: baggageHeader,
-    __sentry_trace: traceHeader,
-  };
-
-  await env.RECEIPT_QUEUE.send(job);
-
-  return { receiptId };
-}
-
-export async function processReceipt(
-  db: DbType,
-  receiptId: string,
-  imageSource: R2Bucket,
-) {
-  const ai = google();
-  const runId = await createProcessingStub(db, receiptId);
-
-  // Shared state for error handling block
-  let metadata: UsageMetadata | null = null;
-  let rawResponse: string | null = null;
+  // State tracking for error reporting
+  const executionState: {
+    rawResponse: string | null;
+    tokenUsage: number | null;
+    modelUsed: string | null;
+  } = { rawResponse: null, tokenUsage: null, modelUsed: null };
 
   try {
-    // 1. Image Retrieval
-    const image = await imageSource.get(receiptId);
+    // A. Fetch Image
+    const imageBuffer = await retrieveReceiptImage(
+      imageSource,
+      receiptId,
+      db,
+      runId,
+    );
 
-    if (!image) {
-      const msg = 'Image not found at source';
-      await createProcessingError(db, { runId }, msg);
-
-      logger.error(
-        new Error(msg),
-        SENTRY_EVENTS.RECEIPT.PROCESS_JOB.IMAGE_MISSING,
-        { receiptId },
+    // B. AI Execution (Wrapped in Sentry Span)
+    const { data, rawText, providerMetadata, modelUsed } =
+      await Sentry.startSpan(
+        { name: 'ai.generate_text', op: 'ai.inference' },
+        async () =>
+          await scanReceiptImage({
+            ai: google(),
+            imageBuffer,
+            thinkingLevel,
+          }),
       );
-      return;
-    }
 
-    const imageObj = await image.arrayBuffer();
-
-    const { text, providerMetadata } = await Sentry.startSpan(
-      { name: 'ai.generate_text', op: 'ai.inference' },
-      () => requestAiProcessingHelper(ai, imageObj),
-    );
-
-    rawResponse = text;
+    // C. Telemetry Processing
+    executionState.rawResponse = rawText;
+    executionState.modelUsed = modelUsed;
     if (providerMetadata) {
-      metadata = parseProviderMetadata(providerMetadata);
-      const span = Sentry.getActiveSpan();
-      span?.setAttribute('ai.tokens', metadata?.totalTokenCount);
-      span?.setAttribute('ai.model', RECEIPT_PROCESSING_MODEL);
+      const meta = parseProviderMetadata(providerMetadata);
+      executionState.tokenUsage = meta?.totalTokenCount ?? null;
+      if (executionState.tokenUsage) {
+        recordAiTelemetry(executionState.tokenUsage, modelUsed);
+      }
     }
 
-    // 3. Parsing & Validation
-    const parsedReceipt = parseStructuredReceiptResponse(
-      text,
-      ParsedReceiptSchema,
-    );
+    await saveReceiptInformation(db, { id: receiptId, parsedReceipt: data });
 
-    // 4. Persistence
-    await saveReceiptInformation(db, { id: receiptId, parsedReceipt });
     await finishReceiptProcessingRunSuccess(db, runId, {
-      model: RECEIPT_PROCESSING_MODEL,
-      tokens: metadata?.totalTokenCount ?? null,
-      rawModelResponse: rawResponse,
+      model: executionState.modelUsed,
+      tokens: executionState.tokenUsage,
+      rawModelResponse: rawText,
     });
 
     logger.info(
       'Receipt processed successfully',
       SENTRY_EVENTS.RECEIPT.PROCESS_JOB.SUCCESS,
-      {
-        receiptId,
-        tokens: metadata?.totalTokenCount,
-      },
+      { receiptId, tokens: executionState.tokenUsage },
     );
 
     return { receiptId };
   } catch (error) {
-    const errorContext = {
+    // E. Centralized Error Handling
+    await handleProcessingFailure({
+      error,
+      db,
       runId,
-      model: RECEIPT_PROCESSING_MODEL,
-      processingTokens: metadata?.totalTokenCount,
-      rawModelResponse: rawResponse ?? undefined,
-    };
-    await createProcessingError(db, errorContext, error);
-
-    // 2. Log to Sentry & Re-throw
-    if (error instanceof ParseError) {
-      logger.error(error, SENTRY_EVENTS.RECEIPT.PROCESS_JOB.PARSE_AI_JSON, {
-        receiptId,
-      });
-      throw new Error('Failed to parse receipt structure.');
-    }
-
-    if (error instanceof z.ZodError) {
-      // Log WHICH fields failed, but not the values
-      const failedFields = error.issues.map((i) => i.path.join('.'));
-      logger.error(
-        error,
-        SENTRY_EVENTS.RECEIPT.PROCESS_JOB.ZOD_VALIDATION_FAIL,
-        {
-          receiptId,
-          failedFields,
-        },
-      );
-      throw new Error('Receipt data incomplete.');
-    }
-    logger.error(error, SENTRY_EVENTS.RECEIPT.PROCESS_JOB.OTHER_ERROR, {
       receiptId,
+      ...executionState,
     });
-    throw error;
   }
 }
 
-const requestAiProcessingHelper = async (
-  ai: GoogleGenerativeAIProvider,
-  imageBuffer: ArrayBuffer,
-) => {
-  const { text, providerMetadata } = await generateText({
-    model: ai(RECEIPT_PROCESSING_MODEL),
-    temperature: 0.3,
-    system: RECEIPT_PARSE_PROMPT,
-    messages: [
-      {
-        role: 'user',
-        content: [
-          {
-            type: 'image' as const,
-            image: imageBuffer,
-          },
-        ],
-      },
-    ],
-  });
-  return { text, providerMetadata };
-};
+// --------------------------------------------------------------------------
+// Helper Functions
+// --------------------------------------------------------------------------
 
-export async function processingQueueMessageHandler(
+/**
+ * Handles R2 retrieval and throws a specific error if missing to stop flow immediately
+ */
+async function retrieveReceiptImage(
+  bucket: R2Bucket,
+  receiptId: string,
   db: DbType,
-  message: Message<ReceiptJob>,
-  env: Env,
-  _: ExecutionContext,
-) {
-  await processReceipt(db, message.body.receiptId, env.parcener_receipt_images);
-  message.ack();
+  runId: string,
+): Promise<ArrayBuffer> {
+  const image = await bucket.get(receiptId);
+
+  if (!image) {
+    const msg = 'Image not found at source';
+    await createProcessingError(db, { runId }, msg);
+    logger.error(
+      new Error(msg),
+      SENTRY_EVENTS.RECEIPT.PROCESS_JOB.IMAGE_MISSING,
+      { receiptId },
+    );
+    throw new Error(msg);
+  }
+
+  return image.arrayBuffer();
 }
 
-async function createReceiptStub(
-  db: DbType,
-  receiptId: string,
-  userId: string,
-) {
-  await db.insert(receipt).values({
-    id: receiptId,
-    userId,
+/**
+ * Updates the active Sentry span with AI metrics
+ */
+function recordAiTelemetry(tokenCount: number, model: string) {
+  const span = Sentry.getActiveSpan();
+  if (span) {
+    span.setAttribute('ai.tokens', tokenCount);
+    span.setAttribute('ai.model', model);
+  }
+}
+
+/**
+ * Centralized error handler to keep the main logic clean.
+ * Handles Database logging, Sentry logging, and re-throwing safe errors.
+ */
+type ErrorHandlerParams = {
+  error: unknown;
+  db: DbType;
+  runId: string;
+  receiptId: string;
+  rawResponse: string | null;
+  tokenUsage: number | null;
+  modelUsed: string | null;
+};
+
+async function handleProcessingFailure({
+  error,
+  db,
+  runId,
+  receiptId,
+  rawResponse,
+  tokenUsage,
+  modelUsed,
+}: ErrorHandlerParams) {
+  // 1. Save error to Database
+  const errorContext = {
+    runId,
+    modelUsed: modelUsed ?? undefined,
+    processingTokens: tokenUsage ?? undefined,
+    rawModelResponse: rawResponse ?? undefined,
+  };
+  await createProcessingError(db, errorContext, error);
+
+  // 2. Log to Sentry & Throw Public Error
+  if (error instanceof ParseError) {
+    logger.error(error, SENTRY_EVENTS.RECEIPT.PROCESS_JOB.PARSE_AI_JSON, {
+      receiptId,
+    });
+    throw new Error('Failed to parse receipt structure.');
+  }
+
+  if (error instanceof z.ZodError) {
+    const failedFields = error.issues.map((i) => i.path.join('.'));
+    logger.error(error, SENTRY_EVENTS.RECEIPT.PROCESS_JOB.ZOD_VALIDATION_FAIL, {
+      receiptId,
+      failedFields,
+    });
+    throw new Error('Receipt data incomplete.');
+  }
+
+  // 3. Fallback for unknown errors
+  logger.error(error, SENTRY_EVENTS.RECEIPT.PROCESS_JOB.OTHER_ERROR, {
+    receiptId,
   });
+  throw error;
 }
