@@ -127,7 +127,7 @@ export function UploadComponent() {
           {/* File Upload Area */}
           <div
             className={cn(
-              'relative w-full h-48 sm:h-64 rounded-xl border-2 overflow-hidden transition-all',
+              'relative w-full h-56 sm:h-64 rounded-xl border-2 overflow-hidden transition-all',
               dragActive
                 ? 'border-primary bg-primary/5'
                 : 'border-dashed border-muted-foreground/25',
