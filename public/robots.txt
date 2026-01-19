@@ -4,3 +4,6 @@ Allow: /
 Disallow: /account
 Disallow: /upload
 Disallow: /api/
+Disallow: /receipt/review/
+
+Sitemap: https://parcener.app/sitemap.xml

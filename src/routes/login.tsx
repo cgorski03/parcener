@@ -25,6 +25,7 @@ export const Route = createFileRoute('/login')({
         property: 'og:description',
         content: 'Sign in to your Parcener account',
       },
+      { property: 'og:url', content: 'https://parcener.app/login' },
     ],
     links: [{ rel: 'canonical', href: 'https://parcener.app/login' }],
   }),

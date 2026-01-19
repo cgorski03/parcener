@@ -36,6 +36,7 @@ export function AppPageShell({
       {header}
 
       <main
+        id="main-content"
         className={cn(
           'flex-1',
           centered

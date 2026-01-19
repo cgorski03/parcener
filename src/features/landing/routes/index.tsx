@@ -91,7 +91,7 @@ export function LandingPage() {
           </div>
         </nav>
 
-        <main className="relative z-10 pt-20 pb-24">
+        <main id="main-content" className="relative z-10 pt-20 pb-24">
           {/* --- HERO SECTION --- */}
           <div className="max-w-7xl mx-auto px-6 text-center space-y-8 mb-24">
             <div className="space-y-6">
@@ -262,9 +262,25 @@ export function LandingPage() {
             <div className="flex items-center gap-2 text-sm font-semibold text-foreground/80">
               <BrandTitle />
             </div>
-            <p className="text-[10px] text-muted-foreground">
-              © {new Date().getFullYear()} Parcener. Open Source MIT License.
-            </p>
+            <div className="flex items-center gap-4 text-xs text-muted-foreground">
+              <Link
+                to="/terms"
+                className="hover:text-foreground transition-colors"
+              >
+                Terms
+              </Link>
+              <span>·</span>
+              <Link
+                to="/privacy"
+                className="hover:text-foreground transition-colors"
+              >
+                Privacy
+              </Link>
+              <span>·</span>
+              <span>
+                © {new Date().getFullYear()} Parcener. MIT License.
+              </span>
+            </div>
             <div className="flex items-center gap-4">
               <a
                 href="https://github.com/cgorski03/parcener"
