@@ -12,6 +12,7 @@ import type {
   ReceiptDto,
   ReceiptItemDto,
 } from './types';
+import type { GetFullRoomInfoResponseType } from '@/features/room/server/room-service';
 
 // Helper Function
 export const parseNullable = (v: string | null): number | null =>
@@ -47,7 +48,9 @@ export const receiptWithItemsToDto = (
   return receiptDtoSchema.parse(transformed);
 };
 
-export function mapDbRoomToDto(roomData: any): FullRoomInfoDto | null {
+export function mapDbRoomToDto(
+  roomData: GetFullRoomInfoResponseType,
+): FullRoomInfoDto | null {
   if (!roomData) return null;
 
   const receipt = receiptWithItemsToDto(roomData.receipt);
@@ -56,6 +59,7 @@ export function mapDbRoomToDto(roomData: any): FullRoomInfoDto | null {
 
   return {
     roomId: roomData.id,
+    status: roomData.status,
     title: roomData.title,
     receiptId: roomData.receiptId,
     createdAt: roomData.createdAt,

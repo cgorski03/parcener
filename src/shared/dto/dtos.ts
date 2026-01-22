@@ -1,5 +1,8 @@
 import { z } from 'zod';
-import { paymentMethodTypeEnum } from '@/shared/server/db/schema';
+import {
+  paymentMethodTypeEnum,
+  roomStatusEnum,
+} from '@/shared/server/db/schema';
 
 // ----- RECEIPT ITEM SCHEMA
 export const receiptItemIdSchema = z.uuid({ version: 'v4' });
@@ -71,6 +74,7 @@ export const paymentMethodDtoSchema = createPaymentMethodRequest.extend(
 export const roomIdSchema = z.uuid({ version: 'v4' });
 export const roomMemberIdSchema = z.uuid({ version: 'v4' });
 export const userIdSchema = z.string().length(32);
+export const roomStatusSchema = z.enum(roomStatusEnum.enumValues);
 
 export const roomObjSchema = z.object({
   roomId: roomIdSchema,
@@ -92,6 +96,7 @@ export const roomSchema = roomObjSchema.extend({
   createdAt: z.date(),
   updatedAt: z.date(),
   hostPaymentInformation: paymentMethodToPaySchema.nullable(),
+  status: roomStatusSchema,
 });
 
 export const baseRoomMemberSchema = z.object({

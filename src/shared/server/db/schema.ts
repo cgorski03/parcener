@@ -20,6 +20,8 @@ export const receiptProcessingEnum = pgEnum('processing_status', [
   'success',
 ]);
 
+export const roomStatusEnum = pgEnum('room_status', ['active', 'locked']);
+
 export const paymentMethodTypeEnum = pgEnum('payment_method_type', ['venmo']);
 
 export const receipt = pgTable('receipt', {
@@ -83,12 +85,14 @@ export const room = pgTable('room', {
   createdBy: text('created_by')
     .notNull()
     .references(() => user.id, { onDelete: 'cascade' }),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
   hostPaymentMethodId: uuid('host_payment_method_id').references(
     () => paymentMethod.id,
     { onDelete: 'set null' },
   ),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  status: roomStatusEnum('room_status').default('active').notNull(),
+  lockedAt: timestamp('locked_at'),
 });
 
 export const roomMember = pgTable('room_member', {
@@ -243,3 +247,5 @@ export type Invite = typeof invite.$inferSelect;
 export type ReceiptEntityWithItems = Receipt & {
   items: Array<ReceiptItem>;
 };
+
+export type RoomStatus = typeof roomStatusEnum;
