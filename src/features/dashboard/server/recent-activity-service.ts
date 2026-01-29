@@ -43,6 +43,7 @@ export async function getRecentRooms(
       createdBy: room.createdBy,
       createdAt: room.createdAt,
       updatedAt: room.updatedAt,
+      status: room.status,
       hostPaymentInformation: room.hostPaymentMethod
         ? {
             type: room.hostPaymentMethod.type,

@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router';
 import { AppHeader, BrandTitle } from './app-header';
 import { CardFooter } from '@/shared/components/ui/card';
 import GitHubIcon from '@/shared/components/icons/github';
@@ -33,7 +34,10 @@ export function BrandedPageShell({
       <AppHeader hideNav centerTitle title={<BrandTitle size={28} />} />
 
       {/* Main content - centered, no scroll */}
-      <main className="flex-1 flex flex-col items-center justify-center w-full p-4 overflow-hidden">
+      <main
+        id="main-content"
+        className="flex-1 flex flex-col items-center justify-center w-full p-4 overflow-hidden"
+      >
         <div className="w-full max-w-md">{children}</div>
       </main>
 
@@ -47,8 +51,22 @@ export function BrandedPageShell({
               <span>Completely free & open source</span>
             </div>
           </CardFooter>
-          <div className="mt-4">
-            © {new Date().getFullYear()} Parcener. Built for friends.
+          <div className="mt-4 flex items-center justify-center gap-2">
+            <Link
+              to="/terms"
+              className="hover:text-muted-foreground transition-colors"
+            >
+              Terms
+            </Link>
+            <span>·</span>
+            <Link
+              to="/privacy"
+              className="hover:text-muted-foreground transition-colors"
+            >
+              Privacy
+            </Link>
+            <span>·</span>
+            <span>© {new Date().getFullYear()} Parcener</span>
           </div>
         </div>
       </footer>

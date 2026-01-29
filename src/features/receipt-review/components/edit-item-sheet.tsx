@@ -29,8 +29,9 @@ function ReceiptItemSheet(props: {
     initialQuantity > 0 ? initialPrice / initialQuantity : 0;
 
   const [priceMode, setPriceMode] = useState<'unit' | 'total'>('total');
-  const [quantity, setQuantity] = useState(initialQuantity);
+  const [quantityInput, setQuantityInput] = useState(String(initialQuantity));
   const [totalPrice, setTotalPrice] = useState(initialPrice);
+  const quantity = parseFloat(quantityInput) || 0;
   const unitPrice = quantity > 0 ? totalPrice / quantity : 0;
   const [priceInput, setPriceInput] = useState(
     (priceMode === 'unit' ? initialUnitPrice : initialPrice).toFixed(2),
@@ -69,10 +70,11 @@ function ReceiptItemSheet(props: {
     }
   };
 
-  const handleQuantityInputChange = (value: number) => {
-    setQuantity(value);
+  const handleQuantityInputChange = (value: string) => {
+    setQuantityInput(value);
     if (priceMode === 'unit') {
-      setTotalPrice(Number(priceInput) * value);
+      const parsedQuantity = parseFloat(value) || 0;
+      setTotalPrice(Number(priceInput) * parsedQuantity);
     }
   };
 
@@ -180,9 +182,9 @@ function ReceiptItemSheet(props: {
                   inputMode="decimal"
                   step="0.01"
                   min="0.00"
-                  value={quantity}
+                  value={quantityInput}
                   onChange={(e) =>
-                    handleQuantityInputChange(parseFloat(e.target.value))
+                    handleQuantityInputChange(e.target.value)
                   }
                   className="text-lg h-11 px-4"
                   placeholder="1"

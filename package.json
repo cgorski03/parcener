@@ -24,7 +24,7 @@
     "db:generate": "pnpm dotenv -e .env.local drizzle-kit generate",
     "db:migrate": "pnpm dotenv -e .env.local -- drizzle-kit migrate",
     "db:migrate:prod": "pnpm dotenv -e .env.prod -- drizzle-kit migrate",
-    "db:migrate:dev": "pnpm dotenv -e .env.dev -- drizzle-kit migrate",
+    "db:migrate:stag": "pnpm dotenv -e .env.staging -- drizzle-kit migrate",
     "db:migrate:test": "DATABASE_URL=postgres://colin:secure_password@localhost:5433/split_test?sslmode=disable drizzle-kit migrate"
   },
   "dependencies": {

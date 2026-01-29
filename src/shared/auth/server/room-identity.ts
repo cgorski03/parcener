@@ -39,7 +39,7 @@ export const roomContextMiddleware = createMiddleware({ type: 'function' })
 
     // 1. Resolve Identity (User ID + Guest Cookie)
     const session = await getServerSession(request, context.auth);
-    const identity = await parseRoomIdentity(request, roomId, session?.user);
+    const identity = parseRoomIdentity(request, roomId, session?.user);
 
     // 2. Resolve Membership (Are they already in the DB?)
     const { membership, canMerge } = await resolveMembershipState(

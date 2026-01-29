@@ -10,6 +10,19 @@ type LoginPageProps = {
   redirectUrl?: string;
 };
 
+const loginJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  name: 'Login - Parcener',
+  description: 'Sign in to Parcener to start splitting bills with friends.',
+  url: 'https://parcener.app/login',
+  isPartOf: {
+    '@type': 'WebApplication',
+    name: 'Parcener',
+    url: 'https://parcener.app',
+  },
+};
+
 export function LoginPage({ redirectUrl }: LoginPageProps) {
   const [showFullUrl, setShowFullUrl] = useState(false);
 
@@ -28,6 +41,10 @@ export function LoginPage({ redirectUrl }: LoginPageProps) {
 
   return (
     <BrandedPageShell>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(loginJsonLd) }}
+      />
       <div className="flex-1 flex flex-col items-center pt-[15vh] p-4 min-h-[550px]">
         <div className="w-full max-w-md space-y-6">
           <div className="text-center space-y-2">

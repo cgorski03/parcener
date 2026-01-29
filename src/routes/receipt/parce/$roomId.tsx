@@ -37,6 +37,10 @@ export const Route = createFileRoute('/receipt/parce/$roomId')({
         content:
           'Join room to share on expenses with your friends in real-time',
       },
+      {
+        property: 'og:url',
+        content: `https://parcener.app/receipt/parce/${params.roomId}`,
+      },
     ],
     links: [
       {

@@ -37,6 +37,8 @@ export const Route = createRootRouteWithContext<RouterContext>()({
         content: 'The open source, collaborative, receipt splitting tool',
       },
       { property: 'og:image', content: 'https://parcener.app/og-image.png' },
+      { property: 'og:url', content: 'https://parcener.app' },
+      { property: 'og:locale', content: 'en_US' },
       // Twitter
       { name: 'twitter:card', content: 'summary_large_image' },
       { name: 'twitter:title', content: 'Parcener - Split Bills, Not Friends' },
@@ -54,10 +56,15 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       {
         rel: 'icon',
         type: 'image/png',
+        sizes: '48x48',
+        href: '/favicon-48x48.png',
+      },
+      {
+        rel: 'icon',
+        type: 'image/png',
         sizes: '96x96',
         href: '/favicon-96x96.png',
       },
-      { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
       {
         rel: 'apple-touch-icon',
         sizes: '180x180',
@@ -78,6 +85,12 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-background focus:text-foreground focus:border focus:rounded-md"
+        >
+          Skip to main content
+        </a>
         {children}
         <Scripts />
       </body>
