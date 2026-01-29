@@ -134,9 +134,11 @@ export function RealtimeSimulation() {
     <div className="w-full max-w-sm bg-background  z-10 overflow-hidden [&>*]:rounded-t-[inherit] rounded-lg shadow-sm select-none">
       {/* Header showing active members */}
       <CollaborativeRoomHeader
+        roomId="demo"
         receiptId="demo"
         title="Sunday Brunch"
         isHost={true}
+        status="active"
         onSelectFilter={() => {}}
         activeFilterId={null}
         members={[

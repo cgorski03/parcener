@@ -137,5 +137,13 @@ export const useEnrichedClaimItems = (
     });
   }, [room.receipt.items, currentClaims, memberMap, myMembership.roomMemberId]);
 
-  return { itemsWithClaims };
+  const allItemsClaimed = useMemo(() => {
+    return itemsWithClaims.every((itemData) => {
+      const totalClaimed =
+        (itemData.myClaim?.quantity ?? 0) + itemData.otherClaimedQty;
+      return totalClaimed >= itemData.item.quantity;
+    });
+  }, [itemsWithClaims]);
+
+  return { itemsWithClaims, allItemsClaimed };
 };

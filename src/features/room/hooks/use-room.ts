@@ -4,6 +4,8 @@ import {
   createRoomRpc,
   getRoomPulseRpc,
   joinRoomRpc,
+  lockRoom,
+  unlockRoom,
   updateRoomHostPaymentMethod,
 } from '../server/room-rpc';
 import type {
@@ -171,6 +173,78 @@ export const useUpdateRoomPaymentMethod = (roomId: string) => {
 
     onSettled: () => {
       // 5. Always refetch after error or success to ensure we are in sync with the server
+      queryClient.invalidateQueries({ queryKey: RoomQueryKeys.detail(roomId) });
+    },
+  });
+};
+
+export const useLockRoom = (roomId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      return await lockRoom({ data: { roomId } });
+    },
+    onMutate: async () => {
+      const queryKey = RoomQueryKeys.detail(roomId);
+      await queryClient.cancelQueries({ queryKey });
+      const previousRoom = queryClient.getQueryData<FullRoomInfoDto>(queryKey);
+
+      if (previousRoom) {
+        queryClient.setQueryData<FullRoomInfoDto>(queryKey, {
+          ...previousRoom,
+          status: 'locked',
+        });
+      }
+
+      return { previousRoom };
+    },
+    onError: (error, _, context) => {
+      if (context?.previousRoom) {
+        queryClient.setQueryData(
+          RoomQueryKeys.detail(roomId),
+          context.previousRoom,
+        );
+      }
+      logger.error(error, SENTRY_EVENTS.ROOM.LOCK, { roomId });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: RoomQueryKeys.detail(roomId) });
+    },
+  });
+};
+
+export const useUnlockRoom = (roomId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      return await unlockRoom({ data: { roomId } });
+    },
+    onMutate: async () => {
+      const queryKey = RoomQueryKeys.detail(roomId);
+      await queryClient.cancelQueries({ queryKey });
+      const previousRoom = queryClient.getQueryData<FullRoomInfoDto>(queryKey);
+
+      if (previousRoom) {
+        queryClient.setQueryData<FullRoomInfoDto>(queryKey, {
+          ...previousRoom,
+          status: 'active',
+        });
+      }
+
+      return { previousRoom };
+    },
+    onError: (error, _, context) => {
+      if (context?.previousRoom) {
+        queryClient.setQueryData(
+          RoomQueryKeys.detail(roomId),
+          context.previousRoom,
+        );
+      }
+      logger.error(error, SENTRY_EVENTS.ROOM.UNLOCK, { roomId });
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: RoomQueryKeys.detail(roomId) });
     },
   });

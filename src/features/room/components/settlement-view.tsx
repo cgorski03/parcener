@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
-import { ArrowLeft } from 'lucide-react';
-import { useGetRoomPulse } from '../hooks/use-room';
+import { ArrowLeft, Lock } from 'lucide-react';
+import { useGetRoomPulse, useLockRoom } from '../hooks/use-room';
+import { useEnrichedClaimItems } from '../hooks/use-claims';
 import { SettlementWarning } from './settlement-warning';
 import { SettlementPaymentCard } from './settlement-payment-card';
 import type { RoomMembership } from '@/shared/dto/types';
@@ -48,6 +49,9 @@ export function SettlementView({
   );
 
   const isHost = room.createdBy === currentMember.userId;
+  const { allItemsClaimed } = useEnrichedClaimItems(room, currentMember);
+  const { mutate: lockRoom, isPending: isLocking } = useLockRoom(roomId);
+  const isLocked = room.status === 'locked';
 
   const calculatedTotal = settlements.reduce((acc, s) => acc + s.totalOwed, 0);
   const valuesMatch = moneyValuesEqual(
@@ -155,6 +159,23 @@ export function SettlementView({
           </div>
         ))}
       </div>
+
+      {isHost && allItemsClaimed && !isLocked && (
+        <div className="pt-2 pb-6">
+          <Button
+            onClick={() => lockRoom()}
+            disabled={isLocking}
+            className="w-full"
+            variant="outline"
+          >
+            <Lock className="mr-2 h-4 w-4" />
+            {isLocking ? 'Locking...' : 'Lock Room'}
+          </Button>
+          <p className="text-xs text-muted-foreground text-center mt-2">
+            Locking prevents new claims and members from joining.
+          </p>
+        </div>
+      )}
     </ReceiptLayoutShell>
   );
 }
