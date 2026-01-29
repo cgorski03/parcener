@@ -58,7 +58,7 @@ export function ActiveRoomScreen({
   if (view === 'settlement') {
     return (
       <SettlementView
-        roomId={room.roomId}
+        initialRoom={room}
         currentMember={member}
         onBack={() => setView('items')}
       />

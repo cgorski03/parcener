@@ -193,7 +193,7 @@ export async function joinRoomAction(
     });
 
     if (!roomToJoin || roomToJoin.status === 'locked') {
-      return;
+      throw new Error('Room is locked or does not exist');
     }
 
     const newGuestUuid = identity.isAuthenticated
