@@ -23,13 +23,21 @@ export const getRouter = () => {
     queryClient,
   });
 
-  // Handle Sentry Tracing
+  // Client-side initialization
   if (!router.isServer) {
+    // Handle Sentry Tracing
     import('@/shared/observability/sentry-client')
       .then((m) => {
         m.initSentry(router);
       })
       .catch((err) => console.error('Sentry failed to load', err));
+
+    // Handle stale chunk reloads after deploys
+    import('@/shared/lib/chunk-reload-handler')
+      .then((m) => {
+        m.initChunkReloadHandler();
+      })
+      .catch((err) => console.error('Chunk reload handler failed to load', err));
   }
 
   return router;
