@@ -137,5 +137,27 @@ export const useEnrichedClaimItems = (
     });
   }, [room.receipt.items, currentClaims, memberMap, myMembership.roomMemberId]);
 
-  return { itemsWithClaims };
+  const claimStats = useMemo(() => {
+    let totalQty = 0;
+    let claimedQty = 0;
+    let unclaimedAmount = 0;
+
+    for (const itemData of itemsWithClaims) {
+      const { item, myClaim, otherClaimedQty } = itemData;
+      const totalClaimed = (myClaim?.quantity ?? 0) + otherClaimedQty;
+      const unclaimed = Math.max(0, item.quantity - totalClaimed);
+      const unitPrice = item.price / item.quantity;
+
+      totalQty += item.quantity;
+      claimedQty += Math.min(totalClaimed, item.quantity);
+      unclaimedAmount += unclaimed * unitPrice;
+    }
+
+    const allItemsClaimed = claimedQty >= totalQty;
+    const claimProgress = totalQty > 0 ? (claimedQty / totalQty) * 100 : 0;
+
+    return { allItemsClaimed, claimProgress, unclaimedAmount };
+  }, [itemsWithClaims]);
+
+  return { itemsWithClaims, ...claimStats };
 };

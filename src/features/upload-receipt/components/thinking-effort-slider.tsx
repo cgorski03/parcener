@@ -93,7 +93,7 @@ export function ThinkingEffortSlider({
   return (
     <div
       className={cn(
-        'w-full space-y-3 pt-2',
+        'w-full space-y-2 pt-1',
         disabled && 'pointer-events-none opacity-50',
       )}
     >
@@ -109,7 +109,7 @@ export function ThinkingEffortSlider({
       </div>
 
       {/* Slider */}
-      <div className="px-5 pb-6 pt-4">
+      <div className="px-5 pb-4 pt-3">
         <div
           ref={trackRef}
           onPointerDown={handlePointerDown}
@@ -149,7 +149,7 @@ export function ThinkingEffortSlider({
         </div>
 
         {/* Labels */}
-        <div className="relative mt-4 h-8 w-full select-none">
+        <div className="relative mt-3 h-7 w-full select-none">
           {LEVELS.map((level) => {
             const Icon = level.icon;
             const isSelected = value === level.value;
@@ -161,7 +161,7 @@ export function ThinkingEffortSlider({
                 disabled={disabled}
                 onClick={() => handleLabelClick(level)}
                 className={cn(
-                  'absolute flex -translate-x-1/2 cursor-pointer flex-col items-center gap-1.5 transition-colors duration-200 focus:outline-none',
+                  'absolute flex -translate-x-1/2 cursor-pointer flex-col items-center gap-1 transition-colors duration-200 focus:outline-none',
                   isSelected
                     ? 'text-primary'
                     : 'text-muted-foreground/60 hover:text-muted-foreground',

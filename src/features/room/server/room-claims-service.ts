@@ -14,8 +14,8 @@ type ItemClaimRequest = {
 
 export async function claimItem(db: DbType, request: ItemClaimRequest) {
   const { roomId, roomMemberId, receiptItemId, newQuantity } = request;
-  // Ensure the item belongs to the room
   return await db.transaction(async (tx) => {
+    // Ensure the item belongs to the room, and the room isn't locked
     const item = await tx.query.receiptItem.findFirst({
       where: (items, { exists }) =>
         and(
@@ -25,7 +25,11 @@ export async function claimItem(db: DbType, request: ItemClaimRequest) {
               .select()
               .from(room)
               .where(
-                and(eq(room.id, roomId), eq(room.receiptId, items.receiptId)),
+                and(
+                  eq(room.id, roomId),
+                  eq(room.status, 'active'),
+                  eq(room.receiptId, items.receiptId),
+                ),
               ),
           ),
         ),

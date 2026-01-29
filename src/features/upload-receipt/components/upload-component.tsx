@@ -123,11 +123,11 @@ export function UploadComponent() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-4">
           {/* File Upload Area */}
           <div
             className={cn(
-              'relative w-full h-80 rounded-xl border-2 overflow-hidden transition-all',
+              'relative w-full h-56 sm:h-64 rounded-xl border-2 overflow-hidden transition-all',
               dragActive
                 ? 'border-primary bg-primary/5'
                 : 'border-dashed border-muted-foreground/25',
@@ -156,13 +156,13 @@ export function UploadComponent() {
               >
                 <div
                   className={cn(
-                    'w-16 h-16 rounded-full flex items-center justify-center mb-4 transition-colors',
+                    'w-12 h-12 sm:w-16 sm:h-16 rounded-full flex items-center justify-center mb-3 transition-colors',
                     dragActive
                       ? 'bg-primary/10 text-primary'
                       : 'bg-muted text-muted-foreground',
                   )}
                 >
-                  <Upload className="h-8 w-8" />
+                  <Upload className="h-6 w-6 sm:h-8 sm:w-8" />
                 </div>
                 <p className="text-sm font-medium">
                   {dragActive

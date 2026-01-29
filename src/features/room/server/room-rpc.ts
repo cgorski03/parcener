@@ -5,6 +5,8 @@ import {
   GetRoomHeader,
   createRoom,
   joinRoomAction,
+  lockRoomId,
+  unlockRoomId,
   updateRoomPaymentInformation,
 } from './room-service';
 import { claimItem } from './room-claims-service';
@@ -100,6 +102,36 @@ export const createRoomRpc = createServerFn({ method: 'POST' })
     } catch (error) {
       logger.error(error, SENTRY_EVENTS.ROOM.CREATE, {
         userId: context.user.id,
+      });
+      throw error;
+    }
+  });
+
+export const lockRoom = createServerFn({ method: 'POST' })
+  .middleware([nameTransaction('lockRoom'), protectedFunctionMiddleware])
+  .inputValidator(roomObjSchema)
+  .handler(async ({ data: { roomId }, context }) => {
+    try {
+      return await lockRoomId(context.db, roomId, context.user.id);
+    } catch (error) {
+      logger.error(error, SENTRY_EVENTS.ROOM.LOCK, {
+        userId: context.user.id,
+        roomId: roomId,
+      });
+      throw error;
+    }
+  });
+
+export const unlockRoom = createServerFn({ method: 'POST' })
+  .middleware([nameTransaction('unlockRoom'), protectedFunctionMiddleware])
+  .inputValidator(roomObjSchema)
+  .handler(async ({ data: { roomId }, context }) => {
+    try {
+      return await unlockRoomId(context.db, roomId, context.user.id);
+    } catch (error) {
+      logger.error(error, SENTRY_EVENTS.ROOM.UNLOCK, {
+        userId: context.user.id,
+        roomId: roomId,
       });
       throw error;
     }

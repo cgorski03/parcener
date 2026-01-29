@@ -43,6 +43,8 @@ export function ActiveRoomScreen({
     () => room.createdBy === member.userId,
     [room.createdBy, member.userId],
   );
+  const isLocked = room.status === 'locked';
+
   const getReceiptErrorMessage = () => {
     if (room.receiptIsValid) {
       return undefined;
@@ -56,7 +58,7 @@ export function ActiveRoomScreen({
   if (view === 'settlement') {
     return (
       <SettlementView
-        roomId={room.roomId}
+        initialRoom={room}
         currentMember={member}
         onBack={() => setView('items')}
       />
@@ -67,11 +69,13 @@ export function ActiveRoomScreen({
     <ReceiptLayoutShell
       header={
         <CollaborativeRoomHeader
+          roomId={room.roomId}
           isHost={isHost}
           receiptId={room.receiptId}
           title={room.title ?? 'Untitled'}
           members={room.members}
           activeFilterId={null}
+          status={room.status}
           onSelectFilter={() => console.log('filter pressed')}
         />
       }
@@ -82,6 +86,7 @@ export function ActiveRoomScreen({
           data={data}
           roomId={room.roomId}
           memberId={member.roomMemberId}
+          disabled={isLocked}
         />
       ))}
       <PriceBreakdown

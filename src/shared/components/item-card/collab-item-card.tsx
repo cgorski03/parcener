@@ -8,10 +8,12 @@ export function CollabItemCard({
   data,
   roomId,
   memberId,
+  disabled = false,
 }: {
   data: ItemWithClaims;
   roomId: string;
   memberId: string;
+  disabled?: boolean;
 }) {
   const { item, myClaim, otherClaims, otherClaimedQty } = data;
 
@@ -26,13 +28,14 @@ export function CollabItemCard({
   const remaining = item.quantity - otherClaimedQty - quantity;
 
   const isFullyClaimed = remaining <= 0;
-  const isDimmed = isFullyClaimed && !isMine;
+  const isDimmed = (isFullyClaimed && !isMine) || disabled;
 
   return (
     <BaseReceiptItemCard
       item={item}
       variant={isMine ? 'active' : isDimmed ? 'dimmed' : 'default'}
       onClick={() => {
+        if (disabled) return;
         // Only allow click-to-toggle for single items
         // For multi-items, they must use the stepper controls
         if (item.quantity === 1) {
@@ -69,7 +72,8 @@ export function CollabItemCard({
       }
       // Render Quantity Controls
       footerElement={
-        item.quantity > 1 && (
+        item.quantity > 1 &&
+        !disabled && (
           <QuantityControl
             totalQuantity={item.quantity}
             myQuantity={quantity}

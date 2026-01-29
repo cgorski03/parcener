@@ -137,6 +137,9 @@ export async function GetFullRoomInfo(db: DbType, roomId: string) {
   }));
   return { ...result, members: processedMembers };
 }
+export type GetFullRoomInfoResponseType = Awaited<
+  ReturnType<typeof GetFullRoomInfo>
+>;
 
 export async function GetRoomHeader(db: DbType, roomId: string) {
   const [header] = await db
@@ -184,9 +187,19 @@ export async function joinRoomAction(
 
   // SCENARIO C: New Member (User or Guest)
   return await db.transaction(async (tx) => {
+    // Ensure the room is not locked
+    const roomToJoin = await tx.query.room.findFirst({
+      where: eq(room.id, roomId),
+    });
+
+    if (!roomToJoin || roomToJoin.status === 'locked') {
+      throw new Error('Room is locked or does not exist');
+    }
+
     const newGuestUuid = identity.isAuthenticated
       ? null
       : identity.guestUuid || crypto.randomUUID();
+
     const finalName =
       displayName ||
       identity.name ||
@@ -205,6 +218,38 @@ export async function joinRoomAction(
     await touchRoomId(tx, roomId);
 
     return { member: newMember, generatedUuid: newGuestUuid };
+  });
+}
+
+export async function unlockRoomId(db: DbType, roomId: string, userId: string) {
+  return await db.transaction(async (tx) => {
+    const updatedRows = await tx
+      .update(room)
+      .set({ status: 'active' })
+      .where(and(eq(room.id, roomId), eq(room.createdBy, userId)))
+      .returning();
+
+    if (updatedRows.length === 0) {
+      return;
+    }
+
+    await touchRoomId(tx, roomId);
+  });
+}
+
+export async function lockRoomId(db: DbType, roomId: string, userId: string) {
+  return await db.transaction(async (tx) => {
+    const updatedRows = await tx
+      .update(room)
+      .set({ lockedAt: new Date(), status: 'locked' })
+      .where(and(eq(room.id, roomId), eq(room.createdBy, userId)))
+      .returning();
+
+    if (updatedRows.length === 0) {
+      return;
+    }
+
+    await touchRoomId(tx, roomId);
   });
 }
 
