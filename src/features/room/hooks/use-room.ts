@@ -215,6 +215,7 @@ export const useRenameRoom = (roomId: string) => {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: RoomQueryKeys.detail(roomId) });
+      queryClient.invalidateQueries({ queryKey: RoomQueryKeys.recents() });
     },
   });
 };
@@ -252,6 +253,7 @@ export const useLockRoom = (roomId: string) => {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: RoomQueryKeys.detail(roomId) });
+      queryClient.invalidateQueries({ queryKey: RoomQueryKeys.recents() });
     },
   });
 };
@@ -289,6 +291,7 @@ export const useUnlockRoom = (roomId: string) => {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: RoomQueryKeys.detail(roomId) });
+      queryClient.invalidateQueries({ queryKey: RoomQueryKeys.recents() });
     },
   });
 };
