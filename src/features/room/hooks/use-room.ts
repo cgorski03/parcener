@@ -5,6 +5,7 @@ import {
   getRoomPulseRpc,
   joinRoomRpc,
   lockRoom,
+  renameRoomRpc,
   unlockRoom,
   updateRoomHostPaymentMethod,
 } from '../server/room-rpc';
@@ -24,7 +25,10 @@ import { paymentMethodsOptions } from '@/features/payment-methods/hooks/use-paym
 export const RoomQueryKeys = {
   all: ['room'] as const,
   joinRoom: ['joinRoom'] as const,
-  createRoom: ['createRoom'] as const,
+  createRoomMutationKey: ['createRoom'] as const,
+  renameRoomMutationKey: (id: string) => ['renameRoom', id] as const,
+  lockRoomMutationKey: (id: string) => ['lockRoom', id] as const,
+  unlockRoomMutationKey: (id: string) => ['unlockRoom', id] as const,
   detail: (id: string) => [...RoomQueryKeys.all, id] as const,
   recents: () => [...RoomQueryKeys.all, 'recents'] as const,
 };
@@ -178,6 +182,43 @@ export const useUpdateRoomPaymentMethod = (roomId: string) => {
   });
 };
 
+export const useRenameRoom = (roomId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (newTitle: string) => {
+      return await renameRoomRpc({ data: { roomId, newTitle } });
+    },
+    mutationKey: RoomQueryKeys.renameRoomMutationKey(roomId),
+    onMutate: async (newTitle) => {
+      const queryKey = RoomQueryKeys.detail(roomId);
+      await queryClient.cancelQueries({ queryKey });
+      const previousRoom = queryClient.getQueryData<FullRoomInfoDto>(queryKey);
+
+      if (previousRoom) {
+        queryClient.setQueryData<FullRoomInfoDto>(queryKey, {
+          ...previousRoom,
+          title: newTitle,
+        });
+      }
+
+      return { previousRoom };
+    },
+    onError: (error, _, context) => {
+      if (context?.previousRoom) {
+        queryClient.setQueryData(
+          RoomQueryKeys.detail(roomId),
+          context.previousRoom,
+        );
+      }
+      logger.error(error, SENTRY_EVENTS.ROOM.RENAME, { roomId });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: RoomQueryKeys.detail(roomId) });
+    },
+  });
+};
+
 export const useLockRoom = (roomId: string) => {
   const queryClient = useQueryClient();
 
@@ -185,6 +226,7 @@ export const useLockRoom = (roomId: string) => {
     mutationFn: async () => {
       return await lockRoom({ data: { roomId } });
     },
+    mutationKey: RoomQueryKeys.lockRoomMutationKey(roomId),
     onMutate: async () => {
       const queryKey = RoomQueryKeys.detail(roomId);
       await queryClient.cancelQueries({ queryKey });
@@ -221,6 +263,7 @@ export const useUnlockRoom = (roomId: string) => {
     mutationFn: async () => {
       return await unlockRoom({ data: { roomId } });
     },
+    mutationKey: RoomQueryKeys.unlockRoomMutationKey(roomId),
     onMutate: async () => {
       const queryKey = RoomQueryKeys.detail(roomId);
       await queryClient.cancelQueries({ queryKey });
