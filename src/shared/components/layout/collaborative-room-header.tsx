@@ -98,6 +98,7 @@ export function CollaborativeRoomHeader({
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
+                  aria-label="more"
                   variant="ghost"
                   size="icon"
                   className="w-8 rounded-full"
