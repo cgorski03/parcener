@@ -13,6 +13,7 @@ import type { GoogleThinkingLevel } from './types';
 import type { DbType } from '@/shared/server/db';
 import { logger } from '@/shared/observability/logger';
 import { SENTRY_EVENTS } from '@/shared/observability/sentry-events';
+import { getReceiptState } from '@/features/receipt-review/server/get-receipt-service';
 
 type ProcessReceiptRequest = {
   db: DbType;

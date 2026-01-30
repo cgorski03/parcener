@@ -136,11 +136,7 @@ export async function finalizeReceiptTotals(
   // Get the current reciept information
   const receiptState = await getReceiptState(db, receiptId, userId);
 
-  if (
-    receiptState.status === 'processing' ||
-    receiptState.status === 'failed' ||
-    receiptState.status == 'not_found'
-  ) {
+  if (receiptState.processingStatus !== 'success') {
     return { success: false, error: 'invalid_receipt' };
   }
 
