@@ -119,6 +119,11 @@ export const joinRoomRequestSchema = z.object({
   displayName: z.union([z.string().max(63), z.null()]),
 });
 
+export const renameRoomRequestSchema = z.object({
+  roomId: roomIdSchema,
+  newTitle: z.string().max(255),
+});
+
 export const updateDisplayNameRoomRequestSchema = z.object({
   roomId: roomIdSchema,
   displayName: z.string().max(63),

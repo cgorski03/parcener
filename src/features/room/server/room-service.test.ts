@@ -5,6 +5,7 @@ import {
   GetRoomHeader,
   createRoom,
   joinRoomAction,
+  renameRoom,
   updateRoomPaymentInformation,
 } from './room-service';
 import type { CreateRoomResponseType } from './room-service';
@@ -366,6 +367,61 @@ describe('room-service', () => {
       expect(result.member.userId).toBeNull();
       expect(result.member.guestUuid).toBe(guestUuid);
       expect(result.member.displayName).toContain('Guest');
+    });
+  });
+
+  describe('renameRoom', () => {
+    it('renames room when user is the owner', async () => {
+      const user = await createTestUser(testDb);
+      const { receipt } = await createSuccessfulReceipt(
+        user.id,
+        [{ interpretedText: 'Item 1', price: 10 }],
+        testDb,
+      );
+      const room = await createTestRoom(testDb, receipt.id, user.id);
+
+      const result = await renameRoom({
+        db: testDb,
+        roomId: room.id,
+        userId: user.id,
+        newTitle: 'New Room Name',
+      });
+
+      expect(result).toBeDefined();
+      expect(result?.title).toBe('New Room Name');
+    });
+
+    it('returns null when non-owner tries to rename', async () => {
+      const owner = await createTestUser(testDb);
+      const otherUser = await createTestUser(testDb);
+      const { receipt } = await createSuccessfulReceipt(
+        owner.id,
+        [{ interpretedText: 'Item 1', price: 10 }],
+        testDb,
+      );
+      const room = await createTestRoom(testDb, receipt.id, owner.id);
+
+      const result = await renameRoom({
+        db: testDb,
+        roomId: room.id,
+        userId: otherUser.id,
+        newTitle: 'Attempted Rename',
+      });
+
+      expect(result).toBeNull();
+    });
+
+    it('returns null for non-existent room', async () => {
+      const user = await createTestUser(testDb);
+
+      const result = await renameRoom({
+        db: testDb,
+        roomId: crypto.randomUUID(),
+        userId: user.id,
+        newTitle: 'New Name',
+      });
+
+      expect(result).toBeNull();
     });
   });
 });

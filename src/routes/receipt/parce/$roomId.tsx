@@ -28,27 +28,29 @@ export const Route = createFileRoute('/receipt/parce/$roomId')({
     }
     return { room, membership, user };
   },
-  head: ({ params }) => ({
-    meta: [
-      { title: 'Room | Parcener' },
-      { property: 'og:title', content: `Join Room | Parcener` },
-      {
-        property: 'og:description',
-        content:
-          'Join room to share on expenses with your friends in real-time',
-      },
-      {
-        property: 'og:url',
-        content: `https://parcener.app/receipt/parce/${params.roomId}`,
-      },
-    ],
-    links: [
-      {
-        rel: 'canonical',
-        href: `https://parcener.app/receipt/parce/${params.roomId}`,
-      },
-    ],
-  }),
+  head: ({ params, loaderData }) => {
+    const roomName = loaderData?.room.title ?? 'Room';
+    return {
+      meta: [
+        { title: `${roomName} | Parcener` },
+        { property: 'og:title', content: `${roomName} | Parcener` },
+        {
+          property: 'og:description',
+          content: `Join "${roomName}" to share expenses with your friends in real-time`,
+        },
+        {
+          property: 'og:url',
+          content: `https://parcener.app/receipt/parce/${params.roomId}`,
+        },
+      ],
+      links: [
+        {
+          rel: 'canonical',
+          href: `https://parcener.app/receipt/parce/${params.roomId}`,
+        },
+      ],
+    };
+  },
   validateSearch: (search: Record<string, unknown>): RoomSearch => ({
     view: search.view === 'settlement' ? 'settlement' : 'items',
   }),

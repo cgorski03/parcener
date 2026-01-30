@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import {
   Lock,
   MoreHorizontal,
   Pencil,
   Share2,
+  Type,
   Unlock,
   Users,
 } from 'lucide-react';
@@ -21,6 +23,7 @@ import {
 import { ScrollArea, ScrollBar } from '@/shared/components/ui/scroll-area';
 import { Button } from '@/shared/components/ui/button';
 import { RoomMemberAvatar } from '@/features/room/components/room-member-avatar';
+import { RenameRoomDialog } from '@/features/room/components/rename-room-dialog';
 import { useLockRoom, useUnlockRoom } from '@/features/room/hooks/use-room';
 
 interface CollaborativeRoomHeaderProps {
@@ -46,6 +49,7 @@ export function CollaborativeRoomHeader({
 }: CollaborativeRoomHeaderProps) {
   const location = useLocation();
   const shareUrl = location.url;
+  const [renameOpen, setRenameOpen] = useState(false);
 
   const { mutate: lock, isPending: isLocking } = useLockRoom(roomId);
   const { mutate: unlock, isPending: isUnlocking } = useUnlockRoom(roomId);
@@ -94,6 +98,7 @@ export function CollaborativeRoomHeader({
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
+                  aria-label="more"
                   variant="ghost"
                   size="icon"
                   className="w-8 rounded-full"
@@ -103,6 +108,11 @@ export function CollaborativeRoomHeader({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel>Room Options</DropdownMenuLabel>
+
+                <DropdownMenuItem onClick={() => setRenameOpen(true)}>
+                  <Type className="mr-2 h-4 w-4" />
+                  <span>Rename Room</span>
+                </DropdownMenuItem>
 
                 <DropdownMenuItem asChild>
                   <Link
@@ -133,6 +143,13 @@ export function CollaborativeRoomHeader({
               </DropdownMenuContent>
             </DropdownMenu>
           )}
+
+          <RenameRoomDialog
+            roomId={roomId}
+            currentTitle={title}
+            open={renameOpen}
+            onOpenChange={setRenameOpen}
+          />
         </>
       }
       // Bottom Slot: Filter Pills

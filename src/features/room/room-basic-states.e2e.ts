@@ -160,3 +160,162 @@ test.describe('Room - Authenticated User Flow', () => {
     ).toBeVisible();
   });
 });
+
+test.describe('Room - Host Actions', () => {
+  test('host can navigate to edit receipt from dropdown', async ({
+    page,
+    authenticateAsUploader,
+  }) => {
+    const { user } = await authenticateAsUploader();
+
+    const { receipt } = await createSuccessfulReceipt(
+      user.id,
+      [{ interpretedText: 'Burger', price: 15.0, quantity: 1 }],
+      e2eDb,
+    );
+    const testRoom = await createTestRoom(e2eDb, receipt.id, user.id, {
+      title: 'Edit Receipt Test',
+    });
+    await createTestRoomMember(e2eDb, testRoom.id, { userId: user.id });
+
+    await page.goto(`/receipt/parce/${testRoom.id}`);
+    await expect(page.getByText('Burger')).toBeVisible({ timeout: 5000 });
+
+    // Open dropdown menu
+    await page.getByRole('button', { name: /more/i }).click();
+
+    // Click edit receipt
+    await page.getByRole('menuitem', { name: /edit receipt/i }).click();
+
+    // Should navigate to receipt review page
+    await expect(page).toHaveURL(new RegExp(`/receipt/review/${receipt.id}`));
+  });
+
+  test('host can rename room from dropdown', async ({
+    page,
+    authenticateAsUploader,
+  }) => {
+    const { user } = await authenticateAsUploader();
+
+    const { receipt } = await createSuccessfulReceipt(
+      user.id,
+      [{ interpretedText: 'Pizza', price: 20.0, quantity: 1 }],
+      e2eDb,
+    );
+    const testRoom = await createTestRoom(e2eDb, receipt.id, user.id, {
+      title: 'Original Title',
+    });
+    await createTestRoomMember(e2eDb, testRoom.id, { userId: user.id });
+
+    await page.goto(`/receipt/parce/${testRoom.id}`);
+    await expect(page.getByText('Pizza')).toBeVisible({ timeout: 5000 });
+
+    // Verify original title is shown
+    await expect(page.getByText('Original Title')).toBeVisible();
+
+    // Open dropdown menu
+    await page.getByRole('button', { name: /more/i }).click();
+
+    // Click rename room
+    await page.getByRole('menuitem', { name: /rename room/i }).click();
+
+    // Dialog should open
+    await expect(
+      page.getByRole('heading', { name: /rename room/i }),
+    ).toBeVisible();
+
+    // Clear and type new title
+    const input = page.getByRole('textbox');
+    await input.clear();
+    await input.fill('New Room Title');
+
+    // Save
+    await page.getByRole('button', { name: /save/i }).click();
+
+    // Dialog should close and new title should be visible
+    await expect(
+      page.getByRole('heading', { name: /rename room/i }),
+    ).not.toBeVisible();
+    await expect(page.getByText('New Room Title')).toBeVisible();
+
+    // Reload to verify persistence (not just optimistic update)
+    await page.reload();
+    await expect(page.getByText('New Room Title')).toBeVisible();
+  });
+
+  test('host can lock room from dropdown', async ({
+    page,
+    authenticateAsUploader,
+  }) => {
+    const { user } = await authenticateAsUploader();
+
+    const { receipt } = await createSuccessfulReceipt(
+      user.id,
+      [{ interpretedText: 'Salad', price: 12.0, quantity: 1 }],
+      e2eDb,
+    );
+    const testRoom = await createTestRoom(e2eDb, receipt.id, user.id, {
+      title: 'Lock Test Room',
+    });
+    await createTestRoomMember(e2eDb, testRoom.id, { userId: user.id });
+
+    await page.goto(`/receipt/parce/${testRoom.id}`);
+    await expect(page.getByText('Salad')).toBeVisible({ timeout: 5000 });
+
+    // Should see Invite button (room is unlocked)
+    await expect(page.getByRole('button', { name: /invite/i })).toBeVisible();
+
+    // Open dropdown menu
+    await page.getByRole('button', { name: /more/i }).click();
+
+    // Click lock room
+    await page.getByRole('menuitem', { name: /lock room/i }).click();
+
+    // Invite button should be replaced with Locked indicator
+    await expect(page.getByText(/locked/i)).toBeVisible();
+    await expect(
+      page.getByRole('button', { name: /invite/i }),
+    ).not.toBeVisible();
+
+    // Reload to verify persistence (not just optimistic update)
+    await page.reload();
+    await expect(page.getByText(/locked/i)).toBeVisible();
+  });
+
+  test('host can unlock room from dropdown', async ({
+    page,
+    authenticateAsUploader,
+  }) => {
+    const { user } = await authenticateAsUploader();
+
+    const { receipt } = await createSuccessfulReceipt(
+      user.id,
+      [{ interpretedText: 'Soup', price: 8.0, quantity: 1 }],
+      e2eDb,
+    );
+    const testRoom = await createTestRoom(e2eDb, receipt.id, user.id, {
+      title: 'Unlock Test Room',
+      status: 'locked',
+    });
+    await createTestRoomMember(e2eDb, testRoom.id, { userId: user.id });
+
+    await page.goto(`/receipt/parce/${testRoom.id}`);
+    await expect(page.getByText('Soup')).toBeVisible({ timeout: 5000 });
+
+    // Should see Locked indicator (room is locked)
+    await expect(page.getByText(/locked/i)).toBeVisible();
+
+    // Open dropdown menu
+    await page.getByRole('button', { name: /more/i }).click();
+
+    // Click unlock room
+    await page.getByRole('menuitem', { name: /unlock room/i }).click();
+
+    // Invite button should reappear
+    await expect(page.getByRole('button', { name: /invite/i })).toBeVisible();
+
+    // Reload to verify persistence (not just optimistic update)
+    await page.reload();
+    await expect(page.getByRole('button', { name: /invite/i })).toBeVisible();
+  });
+});

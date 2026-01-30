@@ -15,6 +15,7 @@ export async function createTestRoom(
       receiptId,
       createdBy,
       title: overrides.title ?? 'Test Room',
+      status: overrides.status ?? 'active',
       hostPaymentMethodId: overrides.hostPaymentMethodId ?? null,
     })
     .returning();
