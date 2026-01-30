@@ -333,22 +333,21 @@ describe('finalizeReceiptTotals', () => {
     );
   });
 
-  it('returns invalid_receipt for non-existent receipt', async () => {
+  it('throws for when trying to finalize a non-existent receipt', async () => {
     const user = await createTestUser(testDb);
-
-    const result = await finalizeReceiptTotals(
-      testDb,
-      {
-        receiptId: '00000000-0000-0000-0000-000000000000',
-        subtotal: 10,
-        tax: 0,
-        tip: 0,
-        grandTotal: 10,
-      },
-      user.id,
-    );
-
-    expect(result).toEqual({ success: false, error: 'invalid_receipt' });
+    await expect(
+      finalizeReceiptTotals(
+        testDb,
+        {
+          receiptId: '00000000-0000-0000-0000-000000000000',
+          subtotal: 10,
+          tax: 0,
+          tip: 0,
+          grandTotal: 10,
+        },
+        user.id,
+      ),
+    ).rejects.toThrow();
   });
 
   it('returns invalid_receipt for processing receipt', async () => {

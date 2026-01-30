@@ -2,7 +2,11 @@ import { and, eq } from 'drizzle-orm';
 import { isFailed, isProcessing, receiptNotFound } from '../lib/receipt-utils';
 import { RECEIPT_PROCESSING, RECEIPT_PROCESSING_FAILED } from './responses';
 import type { GetReceiptResponse } from './responses';
-import type { DbType } from '@/shared/server/db';
+import type {
+  DbType,
+  ReceiptProcessingState,
+  ReceiptValidityState,
+} from '@/shared/server/db';
 import type { ReceiptDto } from '@/shared/dto/types';
 import { receipt } from '@/shared/server/db';
 import { receiptWithItemsToDto } from '@/shared/dto/mappers';
@@ -57,22 +61,34 @@ export async function getReceiptWithItems(
   };
 }
 
-export type ReceiptState =
-  | { status: 'valid'; receipt: ReceiptDto }
-  | { status: 'not_found' }
-  | { status: 'processing' }
-  | { status: 'failed'; attempts: number }
+// Derived validity state with detailed mismatch information
+type ValidityState =
+  | { status: Extract<ReceiptValidityState, 'valid'> }
   | {
-      status: 'subtotal_mismatch';
-      receipt: ReceiptDto;
+      status: Extract<ReceiptValidityState, 'subtotal_mismatch'>;
       clientSubtotal: number;
       serverSubtotal: number;
     }
   | {
-      status: 'grandtotal_mismatch';
-      receipt: ReceiptDto;
+      status: Extract<ReceiptValidityState, 'grandtotal_mismatch'>;
       clientGrandTotal: number;
       serverGrandTotal: number;
+    };
+
+export type ReceiptState =
+  | {
+      processingStatus: Extract<ReceiptProcessingState, 'processing'>;
+      validity: null;
+    }
+  | {
+      processingStatus: Extract<ReceiptProcessingState, 'failed'>;
+      attempts: number;
+      validity: null;
+    }
+  | {
+      processingStatus: Extract<ReceiptProcessingState, 'success'>;
+      validity: ValidityState;
+      receipt: ReceiptDto;
     };
 
 export async function getReceiptState(
@@ -83,13 +99,22 @@ export async function getReceiptState(
   const foundReceipt = await getReceiptWithItems(db, receiptId, userId);
 
   if (receiptNotFound(foundReceipt)) {
-    return { status: 'not_found' };
+    throw new Error('Receipt does not exist');
   }
+
   if (isFailed(foundReceipt)) {
-    return { status: 'failed', attempts: foundReceipt.attempts };
+    return {
+      processingStatus: 'failed',
+      attempts: foundReceipt.attempts,
+      validity: null,
+    };
   }
+
   if (isProcessing(foundReceipt)) {
-    return { status: 'processing' };
+    return {
+      processingStatus: 'processing',
+      validity: null,
+    };
   }
 
   const validation = validateReceiptCalculations(foundReceipt);
@@ -98,21 +123,31 @@ export async function getReceiptState(
     const { error } = validation;
     if (error.code === 'SUBTOTAL_MISMATCH') {
       return {
-        status: 'subtotal_mismatch',
+        processingStatus: 'success',
+        validity: {
+          status: 'subtotal_mismatch',
+          clientSubtotal: error.clientSubtotal,
+          serverSubtotal: error.serverSubtotal,
+        },
         receipt: foundReceipt,
-        clientSubtotal: error.clientSubtotal,
-        serverSubtotal: error.serverSubtotal,
       };
     }
     return {
-      status: 'grandtotal_mismatch',
+      processingStatus: 'success',
+      validity: {
+        status: 'grandtotal_mismatch',
+        clientGrandTotal: error.clientGrandTotal,
+        serverGrandTotal: error.serverGrandTotal,
+      },
       receipt: foundReceipt,
-      clientGrandTotal: error.clientGrandTotal,
-      serverGrandTotal: error.serverGrandTotal,
     };
   }
 
-  return { status: 'valid', receipt: foundReceipt };
+  return {
+    processingStatus: 'success',
+    validity: { status: 'valid' },
+    receipt: foundReceipt,
+  };
 }
 
 async function getReceiptWithRelationsHelper(

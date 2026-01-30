@@ -45,7 +45,10 @@ export const useReceiptIsValid = (receiptId: string) =>
     queryKey: ReceiptQueryKeys.valid(receiptId),
     queryFn: async () => {
       const response = await getReceiptIsValidRpc({ data: receiptId });
-      if (response.status === 'valid') {
+      if (
+        response.processingStatus === 'success' &&
+        response.validity.status === 'valid'
+      ) {
         return response.receipt;
       }
       // TODO REFACTOR
