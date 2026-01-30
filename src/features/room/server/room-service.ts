@@ -110,6 +110,31 @@ export async function updateRoomPaymentInformation(
   });
 }
 
+export async function renameRoom(request: {
+  db: DbType;
+  roomId: string;
+  userId: string;
+  newTitle: string;
+}) {
+  const { db, roomId, userId, newTitle } = request;
+  return await db.transaction(async (tx) => {
+    const updatedRooms = await tx
+      .update(room)
+      .set({
+        title: newTitle,
+      })
+      .where(and(eq(room.id, roomId), eq(room.createdBy, userId)))
+      .returning();
+
+    if (updatedRooms.length == 0) {
+      return null;
+    }
+    await touchRoomId(tx, roomId);
+
+    return updatedRooms[0];
+  });
+}
+
 export async function GetFullRoomInfo(db: DbType, roomId: string) {
   const result = await db.query.room.findFirst({
     where: eq(room.id, roomId),

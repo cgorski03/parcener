@@ -6,6 +6,7 @@ import {
   createRoom,
   joinRoomAction,
   lockRoomId,
+  renameRoom,
   unlockRoomId,
   updateRoomPaymentInformation,
 } from './room-service';
@@ -20,6 +21,7 @@ import {
   createRoomRequestSchema,
   getRoomPulseSchema,
   joinRoomRequestSchema,
+  renameRoomRequestSchema,
   roomObjSchema,
   updateDisplayNameRoomRequestSchema,
 } from '@/shared/dto/dtos';
@@ -156,6 +158,27 @@ export const updateRoomHostPaymentMethod = createServerFn({ method: 'POST' })
         userId: context.user.id,
         roomId: request.roomId,
         paymentMethodId: request.paymentMethodId,
+      });
+      throw error;
+    }
+  });
+
+export const renameRoomRpc = createServerFn({ method: 'POST' })
+  .middleware([nameTransaction('renameRoom'), protectedFunctionMiddleware])
+  .inputValidator(renameRoomRequestSchema)
+  .handler(async ({ data: request, context }) => {
+    try {
+      return await renameRoom({
+        db: context.db,
+        roomId: request.roomId,
+        userId: context.user.id,
+        newTitle: request.newTitle,
+      });
+    } catch (error) {
+      logger.error(error, SENTRY_EVENTS.ROOM.RENAME, {
+        userId: context.user.id,
+        roomId: request.roomId,
+        newTitle: request.newTitle,
       });
       throw error;
     }

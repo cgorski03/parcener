@@ -31,6 +31,7 @@ export const SENTRY_EVENTS = {
   },
   ROOM: {
     CREATE: 'room.create',
+    RENAME: 'room.rename',
     LOCK: 'room.lock',
     UNLOCK: 'room.unlock',
     GET_DETAILS: 'room.get_details',
