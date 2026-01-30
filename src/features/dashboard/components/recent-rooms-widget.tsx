@@ -1,4 +1,4 @@
-import { ChevronRight, Users } from 'lucide-react';
+import { ChevronRight, Lock, Users } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 import { useRecentRooms } from '../hooks/use-recents';
 import { RecentList } from './recent-list-widget';
@@ -25,24 +25,35 @@ export function RecentRooms() {
           to="/receipt/parce/$roomId"
           search={{ view: 'items' }}
           params={{ roomId: room.roomId }}
-          className="flex items-center p-3 hover:bg-muted/50 transition-colors group"
+          className="group flex items-center p-3 transition-colors hover:bg-muted/50"
         >
-          <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center shrink-0 border">
-            <Users className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border bg-muted">
+            <Users className="h-4 w-4 text-muted-foreground transition-colors group-hover:text-foreground" />
           </div>
 
-          <div className="ml-3 flex-1 min-w-0 flex items-center justify-between gap-4">
+          <div className="ml-3 flex min-w-0 flex-1 items-center justify-between gap-4">
             <div className="min-w-0">
-              <h4 className="text-sm font-medium truncate text-foreground">
-                {room.title || 'Untitled Room'}
-              </h4>
-              <div className="flex items-center text-[10px] text-muted-foreground mt-0.5">
+              <div className="flex items-center gap-2">
+                <h4 className="truncate text-sm font-medium text-foreground">
+                  {room.title || 'Untitled Room'}
+                </h4>
+                {room.status === 'locked' && (
+                  <Lock className="h-3 w-3 text-amber-500/80" />
+                )}
+              </div>
+              <div className="mt-0.5 flex items-center text-[10px] text-muted-foreground">
                 <span>Joined {new Date(joinedAt).toLocaleDateString()}</span>
+                {room.status === 'locked' && (
+                  <>
+                    <span className="mx-1">•</span>
+                    <span className="text-amber-600/80">Locked</span>
+                  </>
+                )}
               </div>
             </div>
           </div>
 
-          <ChevronRight className="h-4 w-4 text-muted-foreground/30 ml-2 shrink-0 group-hover:text-muted-foreground transition-colors" />
+          <ChevronRight className="ml-2 h-4 w-4 shrink-0 text-muted-foreground/30 transition-colors group-hover:text-muted-foreground" />
         </Link>
       )}
     />
