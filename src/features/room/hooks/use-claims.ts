@@ -75,7 +75,7 @@ export function useClaimItem(myMembershipId: string) {
           };
         },
       );
-      claimItemRpc({ data: { roomId, receiptItemId, quantity } });
+      await claimItemRpc({ data: { roomId, receiptItemId, quantity } });
       return { previousRoom };
     },
     onError: (_, newTodo, onMutateResult) => {
