@@ -1,4 +1,3 @@
-import { fail } from 'node:assert';
 import { describe, expect, it } from 'vitest';
 import { eq } from 'drizzle-orm';
 import { getReceiptState, getReceiptWithItems } from './get-receipt-service';
@@ -13,7 +12,7 @@ import {
   createTestReceipt,
 } from '@/test/factories/receipt';
 import { NOT_FOUND, RECEIPT_PROCESSING } from '@/shared/server/response-types';
-import { validateReceiptCalculations } from '@/shared/lib/money-math';
+import { computeReceiptValidity } from '@/shared/lib/receipt-validity';
 import { receipt } from '@/shared/server/db';
 
 function assertReceiptSuccess(
@@ -363,8 +362,8 @@ describe('get-receipt-service', () => {
       assertReceiptSuccess(result);
 
       // 2. Run logic
-      const validation = validateReceiptCalculations(result);
-      expect(validation.isValid).toBe(true);
+      const validation = computeReceiptValidity(result);
+      expect(validation.status).toBe('valid');
     });
   });
 });

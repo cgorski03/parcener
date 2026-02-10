@@ -1,6 +1,10 @@
 import { eq } from 'drizzle-orm';
 import type { GoogleThinkingLevel, ModelParsedReceiptType } from './types';
-import type { DbType, NewReceiptItem } from '@/shared/server/db';
+import type {
+  DbType,
+  NewReceiptItem,
+  ReceiptValidityState,
+} from '@/shared/server/db';
 import {
   receipt,
   receiptItem,
@@ -31,7 +35,12 @@ export async function createProcessingStub(request: {
 export async function finishReceiptProcessingRunSuccess(
   db: DbType,
   runId: string,
-  request: { model: string; tokens: number | null; rawModelResponse: string },
+  request: {
+    model: string;
+    tokens: number | null;
+    rawModelResponse: string;
+    initialValidityStatus: ReceiptValidityState;
+  },
 ) {
   await db
     .update(receiptProcessingInformation)
@@ -41,6 +50,7 @@ export async function finishReceiptProcessingRunSuccess(
       model: request.model,
       processingTokens: request.tokens,
       rawResponse: request.rawModelResponse,
+      initialValidityStatus: request.initialValidityStatus,
     })
     .where(eq(receiptProcessingInformation.id, runId));
 }

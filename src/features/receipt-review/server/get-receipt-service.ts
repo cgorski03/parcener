@@ -2,16 +2,13 @@ import { and, eq } from 'drizzle-orm';
 import { isFailed, isProcessing, receiptNotFound } from '../lib/receipt-utils';
 import { RECEIPT_PROCESSING, RECEIPT_PROCESSING_FAILED } from './responses';
 import type { GetReceiptResponse } from './responses';
-import type {
-  DbType,
-  ReceiptProcessingState,
-  ReceiptValidityState,
-} from '@/shared/server/db';
+import type { DbType, ReceiptProcessingState } from '@/shared/server/db';
 import type { ReceiptDto } from '@/shared/dto/types';
+import type { ValidityState } from '@/shared/lib/receipt-validity';
+import { computeReceiptValidity } from '@/shared/lib/receipt-validity';
 import { receipt } from '@/shared/server/db';
 import { receiptWithItemsToDto } from '@/shared/dto/mappers';
 import { NOT_FOUND } from '@/shared/server/response-types';
-import { validateReceiptCalculations } from '@/shared/lib/money-math';
 
 export type ReceiptWithRoom = ReceiptDto & { roomId?: string };
 
@@ -61,20 +58,6 @@ export async function getReceiptWithItems(
   };
 }
 
-// Derived validity state with detailed mismatch information
-type ValidityState =
-  | { status: Extract<ReceiptValidityState, 'valid'> }
-  | {
-      status: Extract<ReceiptValidityState, 'subtotal_mismatch'>;
-      clientSubtotal: number;
-      serverSubtotal: number;
-    }
-  | {
-      status: Extract<ReceiptValidityState, 'grandtotal_mismatch'>;
-      clientGrandTotal: number;
-      serverGrandTotal: number;
-    };
-
 export type ReceiptState =
   | {
       processingStatus: Extract<ReceiptProcessingState, 'processing'>;
@@ -117,35 +100,9 @@ export async function getReceiptState(
     };
   }
 
-  const validation = validateReceiptCalculations(foundReceipt);
-
-  if (!validation.isValid) {
-    const { error } = validation;
-    if (error.code === 'SUBTOTAL_MISMATCH') {
-      return {
-        processingStatus: 'success',
-        validity: {
-          status: 'subtotal_mismatch',
-          clientSubtotal: error.clientSubtotal,
-          serverSubtotal: error.serverSubtotal,
-        },
-        receipt: foundReceipt,
-      };
-    }
-    return {
-      processingStatus: 'success',
-      validity: {
-        status: 'grandtotal_mismatch',
-        clientGrandTotal: error.clientGrandTotal,
-        serverGrandTotal: error.serverGrandTotal,
-      },
-      receipt: foundReceipt,
-    };
-  }
-
   return {
     processingStatus: 'success',
-    validity: { status: 'valid' },
+    validity: computeReceiptValidity(foundReceipt),
     receipt: foundReceipt,
   };
 }

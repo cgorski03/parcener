@@ -13,7 +13,7 @@ import type { GoogleThinkingLevel } from './types';
 import type { DbType } from '@/shared/server/db';
 import { logger } from '@/shared/observability/logger';
 import { SENTRY_EVENTS } from '@/shared/observability/sentry-events';
-import { getReceiptState } from '@/features/receipt-review/server/get-receipt-service';
+import { computeReceiptValidity } from '@/shared/lib/receipt-validity';
 
 type ProcessReceiptRequest = {
   db: DbType;
@@ -70,10 +70,20 @@ export async function processReceipt(request: ProcessReceiptRequest) {
 
     await saveReceiptInformation(db, { id: receiptId, parsedReceipt: data });
 
+    // Track whether the model got the receipt validity correct on the first try
+    const validity = computeReceiptValidity({
+      items: data.items,
+      subtotal: data.subtotal,
+      tax: data.tax,
+      tip: data.tip,
+      grandTotal: data.total,
+    });
+
     await finishReceiptProcessingRunSuccess(db, runId, {
       model: executionState.modelUsed,
       tokens: executionState.tokenUsage,
       rawModelResponse: rawText,
+      initialValidityStatus: validity.status,
     });
 
     logger.info(
