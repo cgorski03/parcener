@@ -19,9 +19,14 @@ export const receiptProcessingEnum = pgEnum('processing_status', [
   'failed',
   'success',
 ]);
+export const receiptValidityState = pgEnum('validity_state', [
+  'valid',
+  'grandtotal_mismatch',
+  'subtotal_mismatch',
+]);
 
 export const roomStatusEnum = pgEnum('room_status', ['active', 'locked']);
-
+export const receiptStateEnum = pgEnum('receipt_state', ['active', 'locked']);
 export const paymentMethodTypeEnum = pgEnum('payment_method_type', ['venmo']);
 
 export const receipt = pgTable('receipt', {
@@ -49,6 +54,7 @@ export const receiptProcessingInformation = pgTable(
       .notNull()
       .references(() => receipt.id, { onDelete: 'cascade' }),
     processingStatus: receiptProcessingEnum('processing_status').notNull(),
+    initialValidityStatus: receiptValidityState('initial_validity_status'),
     startedAt: timestamp('started_at').defaultNow(),
     endedAt: timestamp('ended_at').defaultNow(),
     // Information for error if exists
@@ -249,3 +255,8 @@ export type ReceiptEntityWithItems = Receipt & {
 };
 
 export type RoomStatus = typeof roomStatusEnum;
+
+export type ReceiptProcessingState =
+  (typeof receiptProcessingEnum.enumValues)[number];
+export type ReceiptValidityState =
+  (typeof receiptValidityState.enumValues)[number];

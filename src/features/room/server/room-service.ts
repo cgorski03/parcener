@@ -27,7 +27,7 @@ export async function createRoom(
   userId: string,
 ): Promise<CreateRoomResponseType> {
   const response = await getReceiptState(db, receiptId, userId);
-  if (response.status !== 'valid') {
+  if (response.validity === null || response.validity.status !== 'valid') {
     return { success: false, error: 'receipt_not_valid' };
   }
 

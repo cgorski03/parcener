@@ -50,7 +50,7 @@ export function useGetRoomPulse(roomId: string, initialData?: FullRoomInfoDto) {
   return useQuery({
     queryKey: RoomQueryKeys.detail(roomId),
     initialData: initialData,
-    refetchInterval: 3000,
+    refetchInterval: 1750,
     queryFn: async () => {
       const currentCache = queryClient.getQueryData<FullRoomInfoDto>(
         RoomQueryKeys.detail(roomId),

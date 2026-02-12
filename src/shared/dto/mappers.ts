@@ -1,4 +1,4 @@
-import { validateReceiptCalculations } from '../lib/money-math';
+import { computeReceiptValidity } from '../lib/receipt-validity';
 import { receiptDtoSchema } from './dtos';
 import type {
   PaymentMethod,
@@ -55,7 +55,7 @@ export function mapDbRoomToDto(
 
   const receipt = receiptWithItemsToDto(roomData.receipt);
 
-  const receiptValidResponse = validateReceiptCalculations(receipt);
+  const receiptValidResponse = computeReceiptValidity(receipt);
 
   return {
     roomId: roomData.id,
@@ -68,7 +68,7 @@ export function mapDbRoomToDto(
     members: roomData.members,
     claims: roomData.claims,
     receipt,
-    receiptIsValid: receiptValidResponse.isValid,
+    receiptIsValid: receiptValidResponse.status === 'valid',
     hostPaymentInformation: roomData.hostPaymentMethod
       ? mapPaymentMethodToPayToDto(roomData.hostPaymentMethod)
       : null,

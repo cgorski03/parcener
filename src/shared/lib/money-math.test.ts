@@ -1,9 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  calculateItemTotal,
-  moneyValuesEqual,
-  validateReceiptCalculations,
-} from './money-math';
+import { calculateItemTotal, moneyValuesEqual } from './money-math';
 
 describe('money-math', () => {
   describe('calculateItemTotal', () => {
@@ -53,107 +49,6 @@ describe('money-math', () => {
       const result = moneyValuesEqual(0, 0.001);
 
       expect(result).toBe(true);
-    });
-  });
-
-  describe('validateReceiptCalculations', () => {
-    it('returns valid for correct calculations', () => {
-      const receipt = {
-        receiptId: '00000000-0000-0000-0000-000000000000',
-        title: null,
-        createdAt: null,
-        items: [{ price: 10 } as any, { price: 5 } as any],
-        subtotal: 15,
-        tax: 1.5,
-        tip: 3,
-        grandTotal: 19.5,
-      };
-
-      const result = validateReceiptCalculations(receipt);
-
-      expect(result).toEqual({ isValid: true });
-    });
-
-    it('returns subtotal mismatch when calculated subtotal differs', () => {
-      const receipt = {
-        receiptId: '00000000-0000-0000-0000-000000000000',
-        title: null,
-        createdAt: null,
-        items: [{ price: 10 } as any, { price: 5 } as any],
-        subtotal: 20,
-        tax: 1.5,
-        tip: 3,
-        grandTotal: 24.5,
-      };
-
-      const result = validateReceiptCalculations(receipt);
-
-      expect(result).toEqual({
-        isValid: false,
-        error: {
-          code: 'SUBTOTAL_MISMATCH',
-          clientSubtotal: 15,
-          serverSubtotal: 20,
-        },
-      });
-    });
-
-    it('returns grand total mismatch when calculated total differs', () => {
-      const receipt = {
-        receiptId: '00000000-0000-0000-0000-000000000000',
-        title: null,
-        createdAt: null,
-        items: [{ price: 10 } as any, { price: 5 } as any],
-        subtotal: 15,
-        tax: 1.5,
-        tip: 3,
-        grandTotal: 25,
-      };
-
-      const result = validateReceiptCalculations(receipt);
-
-      expect(result).toEqual({
-        isValid: false,
-        error: {
-          code: 'GRANDTOTAL_MISMATCH',
-          clientGrandTotal: 19.5,
-          serverGrandTotal: 25,
-        },
-      });
-    });
-
-    it('handles zero tax and tip', () => {
-      const receipt = {
-        receiptId: '00000000-0000-0000-0000-000000000000',
-        title: null,
-        createdAt: null,
-        items: [{ price: 10 } as any],
-        subtotal: 10,
-        tax: 0,
-        tip: 0,
-        grandTotal: 10,
-      };
-
-      const result = validateReceiptCalculations(receipt);
-
-      expect(result).toEqual({ isValid: true });
-    });
-
-    it('handles decimal precision', () => {
-      const receipt = {
-        receiptId: '00000000-0000-0000-0000-000000000000',
-        title: null,
-        createdAt: null,
-        items: [{ price: 10.99 } as any, { price: 5.49 } as any],
-        subtotal: 16.48,
-        tax: 1.48,
-        tip: 3.3,
-        grandTotal: 21.26,
-      };
-
-      const result = validateReceiptCalculations(receipt);
-
-      expect(result).toEqual({ isValid: true });
     });
   });
 });
