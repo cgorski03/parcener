@@ -31,7 +31,7 @@ export function useGetReceiptReview(
     refetchInterval: (query) => {
       const data = query.state.data;
       if (data && isProcessing(data)) {
-        return 2000;
+        return 1500;
       }
       return false;
     },
