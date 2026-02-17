@@ -8,30 +8,33 @@
   "r2_buckets": [
     {
       "bucket_name": "parcener-receipt-images",
-      "binding": "parcener_receipt_images",
-    },
+      "binding": "parcener_receipt_images"
+    }
   ],
   "queues": {
     "producers": [
       {
         "binding": "RECEIPT_QUEUE",
-        "queue": "parcener-receipt-queue",
-      },
+        "queue": "parcener-receipt-queue"
+      }
     ],
     "consumers": [
       {
         "queue": "parcener-receipt-queue",
         "max_batch_size": 1,
-        "max_retries": 3,
-      },
-    ],
+        "max_retries": 3
+      }
+    ]
+  },
+  "vars": {
+    "NODE_ENV": "production"
   },
   "hyperdrive": [
     {
       "binding": "HYPERDRIVE",
       "id": "2c12d08424e7403b9cdc2b5825af13d5",
-      "localConnectionString": "postgres://colin:secure_password@localhost:5432/split?sslmode=disable",
-    },
+      "localConnectionString": "postgres://colin:secure_password@localhost:5432/split?sslmode=disable"
+    }
   ],
   "observability": {
     "enabled": true,
@@ -39,18 +42,18 @@
       "enabled": true,
       "head_sampling_rate": 1,
       "invocation_logs": true,
-      "persist": true,
-    },
+      "persist": true
+    }
   },
   "routes": [
     {
       "pattern": "parcener.app",
-      "custom_domain": true,
+      "custom_domain": true
     },
     {
       "pattern": "www.parcener.app",
-      "custom_domain": true,
-    },
+      "custom_domain": true
+    }
   ],
   "env": {
     "test": {
@@ -58,69 +61,72 @@
       "r2_buckets": [
         {
           "bucket_name": "parcener-receipt-images-test",
-          "binding": "parcener_receipt_images",
-        },
+          "binding": "parcener_receipt_images"
+        }
       ],
       "vars": {
-        "NODE_ENV": "test",
+        "NODE_ENV": "test"
       },
       "queues": {
         "producers": [
           {
             "binding": "RECEIPT_QUEUE",
-            "queue": "parcener-receipt-queue-test",
-          },
-        ],
+            "queue": "parcener-receipt-queue-test"
+          }
+        ]
       },
       "hyperdrive": [
         {
           "binding": "HYPERDRIVE",
           "id": "test-hyperdrive",
-          "localConnectionString": "postgres://colin:secure_password@localhost:5433/split_test?sslmode=disable",
-        },
-      ],
+          "localConnectionString": "postgres://colin:secure_password@localhost:5433/split_test?sslmode=disable"
+        }
+      ]
     },
     "staging": {
       "workers_dev": false,
       "main": "./dist/server/index.js",
       "assets": {
         "directory": "./dist/client",
-        "binding": "ASSETS",
+        "binding": "ASSETS"
       },
       "r2_buckets": [
         {
           "bucket_name": "parcener-receipt-images-staging",
-          "binding": "parcener_receipt_images",
-        },
+          "binding": "parcener_receipt_images"
+        }
       ],
+      "vars": {
+        "NODE_ENV": "staging"
+      },
       "queues": {
         "producers": [
           {
             "binding": "RECEIPT_QUEUE",
-            "queue": "parcener-receipt-queue-staging",
-          },
+            "queue": "parcener-receipt-queue-staging"
+          }
         ],
         "consumers": [
           {
             "queue": "parcener-receipt-queue-staging",
             "max_batch_size": 1,
-            "max_retries": 3,
-          },
-        ],
+            "max_retries": 3
+          }
+        ]
       },
       "hyperdrive": [
         {
           "binding": "HYPERDRIVE",
           "id": "5ce88dd038144aceb48b746cf281f22e",
-          "localConnectionString": "postgres://colin:secure_password@localhost:5432/split?sslmode=disable",
-        },
+          "localConnectionString": "postgres://colin:secure_password@localhost:5432/split?sslmode=disable"
+        }
       ],
       "routes": [
         {
           "pattern": "staging.parcener.app",
-          "custom_domain": true,
-        },
-      ],
-    },
-  },
+          "custom_domain": true
+        }
+      ]
+    }
+  }
 }
