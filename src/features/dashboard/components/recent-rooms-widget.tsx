@@ -23,6 +23,7 @@ export function RecentRooms() {
         <Link
           key={room.roomId}
           to="/receipt/parce/$roomId"
+          preload="viewport"
           search={{ view: 'items' }}
           params={{ roomId: room.roomId }}
           className="group flex items-center p-3 transition-colors hover:bg-muted/50"

@@ -12,7 +12,7 @@ import {
   createTestReceipt,
 } from '@/test/factories/receipt';
 import { NOT_FOUND, RECEIPT_PROCESSING } from '@/shared/server/response-types';
-import { validateReceiptCalculations } from '@/shared/lib/money-math';
+import { computeReceiptValidity } from '@/shared/lib/receipt-validity';
 import { receipt } from '@/shared/server/db';
 
 function assertReceiptSuccess(
@@ -24,38 +24,71 @@ function assertReceiptSuccess(
   }
 }
 /**
- * Narrows ReceiptState to 'valid'
+ * Asserts ReceiptState is success with validity 'valid'
  */
-function assertValid(
-  state: ReceiptState,
-): asserts state is Extract<ReceiptState, { status: 'valid' }> {
-  if (state.status !== 'valid') {
-    throw new Error(`Expected status 'valid', got '${state.status}'`);
-  }
-}
-
-/**
- * Narrows ReceiptState to 'subtotal_mismatch'
- */
-function assertSubtotalMismatch(
-  state: ReceiptState,
-): asserts state is Extract<ReceiptState, { status: 'subtotal_mismatch' }> {
-  if (state.status !== 'subtotal_mismatch') {
+function assertValid(state: ReceiptState): asserts state is ReceiptState & {
+  processingStatus: 'success';
+  validity: { status: 'valid' };
+  receipt: { receiptId: string; items: Array<unknown> };
+} {
+  if (state.processingStatus !== 'success') {
     throw new Error(
-      `Expected status 'subtotal_mismatch', got '${state.status}'`,
+      `Expected processing status 'success', got '${state.processingStatus}'`,
+    );
+  }
+  if (state.validity.status !== 'valid') {
+    throw new Error(
+      `Expected validity status 'valid', got '${state.validity.status}'`,
     );
   }
 }
 
 /**
- * Narrows ReceiptState to 'grandtotal_mismatch'
+ * Asserts ReceiptState is success with validity 'subtotal_mismatch'
+ */
+function assertSubtotalMismatch(
+  state: ReceiptState,
+): asserts state is ReceiptState & {
+  processingStatus: 'success';
+  validity: {
+    status: 'subtotal_mismatch';
+    clientSubtotal: number;
+    serverSubtotal: number;
+  };
+} {
+  if (state.processingStatus !== 'success') {
+    throw new Error(
+      `Expected processing status 'success', got '${state.processingStatus}'`,
+    );
+  }
+  if (state.validity.status !== 'subtotal_mismatch') {
+    throw new Error(
+      `Expected validity status 'subtotal_mismatch', got '${state.validity.status}'`,
+    );
+  }
+}
+
+/**
+ * Asserts ReceiptState is success with validity 'grandtotal_mismatch'
  */
 function assertGrandTotalMismatch(
   state: ReceiptState,
-): asserts state is Extract<ReceiptState, { status: 'grandtotal_mismatch' }> {
-  if (state.status !== 'grandtotal_mismatch') {
+): asserts state is ReceiptState & {
+  processingStatus: 'success';
+  validity: {
+    status: 'grandtotal_mismatch';
+    clientGrandTotal: number;
+    serverGrandTotal: number;
+  };
+} {
+  if (state.processingStatus !== 'success') {
     throw new Error(
-      `Expected status 'grandtotal_mismatch', got '${state.status}'`,
+      `Expected processing status 'success', got '${state.processingStatus}'`,
+    );
+  }
+  if (state.validity.status !== 'grandtotal_mismatch') {
+    throw new Error(
+      `Expected validity status 'grandtotal_mismatch', got '${state.validity.status}'`,
     );
   }
 }
@@ -191,15 +224,11 @@ describe('get-receipt-service', () => {
   });
 
   describe('getReceiptState', () => {
-    it('returns not_found for non-existent receipt', async () => {
+    it('throws not_found error for non-existent receipt', async () => {
       const nonExistentReceiptId = crypto.randomUUID();
-      const result = await getReceiptState(
-        testDb,
-        nonExistentReceiptId,
-        'user-id',
-      );
-
-      expect(result.status).toEqual('not_found');
+      await expect(
+        getReceiptState(testDb, nonExistentReceiptId, 'user-id'),
+      ).rejects.toThrow();
     });
 
     it('returns processing for processing receipt', async () => {
@@ -216,7 +245,7 @@ describe('get-receipt-service', () => {
         user.id,
       );
 
-      expect(result.status).toEqual('processing');
+      expect(result.processingStatus).toEqual('processing');
     });
 
     it('returns failed receipt response', async () => {
@@ -228,7 +257,7 @@ describe('get-receipt-service', () => {
 
       const result = await getReceiptState(testDb, failedReceipt.id, user.id);
 
-      expect(result.status).toEqual('failed');
+      expect(result.processingStatus).toEqual('failed');
       expect('attempts' in result).toBe(true);
 
       if ('attempts' in result) {
@@ -249,13 +278,10 @@ describe('get-receipt-service', () => {
 
       const result = await getReceiptState(testDb, seededReceipt.id, user.id);
 
-      // 1. Validate the state
-      expect(result.status).toBe('valid');
-
-      // 2. Narrow the type
+      // 1. Validate and narrow the state
       assertValid(result);
 
-      // 3. Access properties safely
+      // 2. Access properties (type is narrowed by assertion)
       expect(result.receipt.receiptId).toBe(seededReceipt.id);
       expect(result.receipt.items).toHaveLength(2);
     });
@@ -278,11 +304,11 @@ describe('get-receipt-service', () => {
       // 2. Narrow the type
       assertSubtotalMismatch(result);
 
-      // 3. Access properties
+      // 3. Access properties through validity
       // The server subtotal should be 5
-      expect(result.serverSubtotal).toBe(5);
+      expect(result.validity.serverSubtotal).toBe(5);
       // Client is the one that is the calculated one based on the items
-      expect(result.clientSubtotal).toBe(10);
+      expect(result.validity.clientSubtotal).toBe(10);
     });
 
     it('returns grand total mismatch error', async () => {
@@ -311,7 +337,7 @@ describe('get-receipt-service', () => {
 
       assertGrandTotalMismatch(result);
 
-      expect(result.serverGrandTotal).toBe(wrongGrandTotal);
+      expect(result.validity.serverGrandTotal).toBe(wrongGrandTotal);
     });
 
     it('validates receipt calculations correctly', async () => {
@@ -336,8 +362,8 @@ describe('get-receipt-service', () => {
       assertReceiptSuccess(result);
 
       // 2. Run logic
-      const validation = validateReceiptCalculations(result);
-      expect(validation.isValid).toBe(true);
+      const validation = computeReceiptValidity(result);
+      expect(validation.status).toBe('valid');
     });
   });
 });
