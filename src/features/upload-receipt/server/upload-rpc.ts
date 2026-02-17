@@ -10,6 +10,7 @@ import {
 import { nameTransaction } from '@/shared/observability/server/sentry-middleware';
 import { logger } from '@/shared/observability/logger';
 import { SENTRY_EVENTS } from '@/shared/observability/sentry-events';
+import { throwRpcError } from '@/shared/server/utils/rpc-errors';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
@@ -27,7 +28,7 @@ export const uploadReceipt = createServerFn({ method: 'POST' })
             userId: context.user.id,
           },
         );
-        throw new Error(`File size exceeds maximum allowed size of 5MB`);
+        throwRpcError('File size exceeds maximum allowed size of 5MB');
       }
 
       const result = await processUploadAndEnqueue({
@@ -48,7 +49,7 @@ export const uploadReceipt = createServerFn({ method: 'POST' })
 
       return { receiptId: result.receiptId, created: true };
     } catch (error) {
-      const msg = (error as Error).message;
+      const msg = error instanceof Error ? error.message : '';
       if (msg !== 'No file provided' && !msg.includes('exceeds maximum')) {
         logger.error(error, SENTRY_EVENTS.RECEIPT.UPLOAD, {
           userId: context.user.id,
@@ -56,8 +57,13 @@ export const uploadReceipt = createServerFn({ method: 'POST' })
           fileSize: file.size,
         });
       }
-
-      throw error;
+      if (
+        msg === 'No file provided' ||
+        msg === 'File size exceeds maximum allowed size of 5MB'
+      ) {
+        throwRpcError(msg);
+      }
+      throwRpcError('Failed to upload receipt');
     }
   });
 
@@ -71,6 +77,6 @@ export const getUserUploadRateLimitRpc = createServerFn({ method: 'GET' })
       return await getUserUploadRateLimit(context.db, context.user);
     } catch (error) {
       logger.error(error, SENTRY_EVENTS.ACCOUNT.CHECK_UPLOAD_LIMITS);
-      throw error;
+      throwRpcError('Failed to load upload limits');
     }
   });

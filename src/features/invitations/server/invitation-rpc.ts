@@ -14,6 +14,7 @@ import { nameTransaction } from '@/shared/observability/server/sentry-middleware
 import { logger } from '@/shared/observability/logger';
 import { SENTRY_EVENTS } from '@/shared/observability/sentry-events';
 import { RateLimitError } from '@/shared/server/responses/errors';
+import { throwRpcError } from '@/shared/server/utils/rpc-errors';
 
 export const getUserInviteRateLimitRpc = createServerFn({ method: 'GET' })
   .middleware([
@@ -25,7 +26,7 @@ export const getUserInviteRateLimitRpc = createServerFn({ method: 'GET' })
       return await getUserInviteRateLimit(context.db, context.user);
     } catch (error) {
       logger.error(error, SENTRY_EVENTS.ACCOUNT.CHECK_INVITE_LIMITS);
-      throw error;
+      throwRpcError('Failed to load invite limits');
     }
   });
 
@@ -43,12 +44,12 @@ export const createInviteRpc = createServerFn({ method: 'POST' })
             userId: context.user.id,
           },
         );
-        throw error;
+        throwRpcError(error.message);
       }
       logger.error(error, SENTRY_EVENTS.ACCOUNT.CREATE_INVITATION, {
         userId: context.user.id,
       });
-      throw error;
+      throwRpcError('Failed to create invitation');
     }
   });
 
@@ -73,13 +74,13 @@ export const acceptInviteRpc = createServerFn({ method: 'POST' })
             inviteId: data.token,
           },
         );
-        throw error;
+        throwRpcError(error.message);
       }
 
       // 2. System Error
       logger.error(error, SENTRY_EVENTS.ACCOUNT.ACCEPT_INVITATION, {
         inviteId: data.token,
       });
-      throw error;
+      throwRpcError('Failed to accept invitation');
     }
   });

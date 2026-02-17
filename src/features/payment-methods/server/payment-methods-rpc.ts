@@ -12,6 +12,7 @@ import {
   createPaymentMethodRequest,
   paymentMethodIdSchema,
 } from '@/shared/dto/dtos';
+import { throwRpcError } from '@/shared/server/utils/rpc-errors';
 
 export const createPaymentMethod = createServerFn({ method: 'POST' })
   .middleware([
@@ -26,7 +27,7 @@ export const createPaymentMethod = createServerFn({ method: 'POST' })
       logger.error(error, SENTRY_EVENTS.ACCOUNT.PAYMENT_METHOD.CREATE, {
         userId: context.user.id,
       });
-      throw error;
+      throwRpcError('Failed to create payment method');
     }
   });
 
@@ -42,7 +43,7 @@ export const getPaymentMethods = createServerFn({ method: 'GET' })
       logger.error(error, SENTRY_EVENTS.ACCOUNT.PAYMENT_METHOD.GET, {
         userId: context.user.id,
       });
-      throw error;
+      throwRpcError('Failed to load payment methods');
     }
   });
 
@@ -63,6 +64,6 @@ export const deletePaymentMethod = createServerFn({ method: 'POST' })
       logger.error(error, SENTRY_EVENTS.ACCOUNT.PAYMENT_METHOD.DELETE, {
         userId: context.user.id,
       });
-      throw error;
+      throwRpcError('Failed to delete payment method');
     }
   });

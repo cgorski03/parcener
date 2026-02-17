@@ -35,6 +35,7 @@ import {
   parseRoomIdentity,
   roomContextMiddleware,
 } from '@/shared/auth/server/room-identity';
+import { throwRpcError } from '@/shared/server/utils/rpc-errors';
 
 export const getRoomAndMembership = createServerFn({ method: 'GET' })
   .middleware([nameTransaction('getRoomAndMembership'), roomContextMiddleware])
@@ -55,7 +56,7 @@ export const getRoomAndMembership = createServerFn({ method: 'GET' })
       };
     } catch (error) {
       logger.error(error, SENTRY_EVENTS.ROOM.GET_DETAILS, { roomId });
-      throw error;
+      throwRpcError('Failed to load room details');
     }
   });
 
@@ -86,7 +87,7 @@ export const getRoomPulseRpc = createServerFn({ method: 'GET' })
       logger.error(error, SENTRY_EVENTS.ROOM.GET_PULSE, {
         roomId: data.roomId,
       });
-      throw error;
+      throwRpcError('Failed to load room updates');
     }
   });
 
@@ -105,7 +106,7 @@ export const createRoomRpc = createServerFn({ method: 'POST' })
       logger.error(error, SENTRY_EVENTS.ROOM.CREATE, {
         userId: context.user.id,
       });
-      throw error;
+      throwRpcError('Failed to create room');
     }
   });
 
@@ -120,7 +121,7 @@ export const lockRoom = createServerFn({ method: 'POST' })
         userId: context.user.id,
         roomId: roomId,
       });
-      throw error;
+      throwRpcError('Failed to lock room');
     }
   });
 
@@ -135,7 +136,7 @@ export const unlockRoom = createServerFn({ method: 'POST' })
         userId: context.user.id,
         roomId: roomId,
       });
-      throw error;
+      throwRpcError('Failed to unlock room');
     }
   });
 
@@ -159,7 +160,7 @@ export const updateRoomHostPaymentMethod = createServerFn({ method: 'POST' })
         roomId: request.roomId,
         paymentMethodId: request.paymentMethodId,
       });
-      throw error;
+      throwRpcError('Failed to update payment method');
     }
   });
 
@@ -180,7 +181,7 @@ export const renameRoomRpc = createServerFn({ method: 'POST' })
         roomId: request.roomId,
         newTitle: request.newTitle,
       });
-      throw error;
+      throwRpcError('Failed to rename room');
     }
   });
 
@@ -227,7 +228,7 @@ export const upgradeGuestToUser = createServerFn({ method: 'POST' })
         userId: identity.userId,
         guestUuid: identity.guestUuid,
       });
-      throw error;
+      throwRpcError('Failed to upgrade member');
     }
   });
 
@@ -235,20 +236,27 @@ export const updateRoomDisplayNameRpc = createServerFn({ method: 'POST' })
   .middleware([nameTransaction('updateRoomDisplayNameRpc')])
   .inputValidator(updateDisplayNameRoomRequestSchema)
   .handler(async ({ data, context }) => {
-    const { roomId, displayName } = data;
-    const request = getRequest();
-    const session = await getServerSession(request, context.auth);
-    const identity = parseRoomIdentity(request, roomId, session?.user);
+    try {
+      const { roomId, displayName } = data;
+      const request = getRequest();
+      const session = await getServerSession(request, context.auth);
+      const identity = parseRoomIdentity(request, roomId, session?.user);
 
-    if (!identity.guestUuid && !identity.userId) {
-      return null;
+      if (!identity.guestUuid && !identity.userId) {
+        return null;
+      }
+      return await editRoomMemberDisplayName(
+        context.db,
+        identity,
+        roomId,
+        displayName,
+      );
+    } catch (error) {
+      logger.error(error, SENTRY_EVENTS.ROOM.UPDATE_NAME, {
+        roomId: data.roomId,
+      });
+      throwRpcError('Failed to update display name');
     }
-    return await editRoomMemberDisplayName(
-      context.db,
-      identity,
-      roomId,
-      displayName,
-    );
   });
 
 export const joinRoomRpc = createServerFn({ method: 'POST' })
@@ -265,7 +273,7 @@ export const joinRoomRpc = createServerFn({ method: 'POST' })
       });
     } catch (error) {
       logger.error(error, SENTRY_EVENTS.ROOM.JOIN, { roomId: data.roomId });
-      throw error;
+      throwRpcError('Failed to join room');
     }
   });
 
@@ -291,6 +299,6 @@ export const claimItemRpc = createServerFn({ method: 'POST' })
         roomId: data.roomId,
         itemId: data.receiptItemId,
       });
-      throw error;
+      throwRpcError('Failed to claim item');
     }
   });

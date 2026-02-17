@@ -14,6 +14,7 @@ import {
 } from '@/shared/dto/dtos';
 import { logger } from '@/shared/observability/logger';
 import { SENTRY_EVENTS } from '@/shared/observability/sentry-events';
+import { throwRpcError } from '@/shared/server/utils/rpc-errors';
 
 export const editReceiptItemRpc = createServerFn({ method: 'POST' })
   .middleware([
@@ -29,7 +30,7 @@ export const editReceiptItemRpc = createServerFn({ method: 'POST' })
         itemId: item.receiptItemId,
         userId: context.user.id,
       });
-      throw error;
+      throwRpcError('Failed to update receipt item');
     }
   });
 
@@ -47,7 +48,7 @@ export const deleteReceiptItemRpc = createServerFn({ method: 'POST' })
         itemId: item.receiptItemId,
         userId: context.user.id,
       });
-      throw error;
+      throwRpcError('Failed to delete receipt item');
     }
   });
 
@@ -71,7 +72,7 @@ export const createReceiptItemRpc = createServerFn({ method: 'POST' })
         receiptId: data.receiptId,
         userId: context.user.id,
       });
-      throw error;
+      throwRpcError('Failed to create receipt item');
     }
   });
 
@@ -89,6 +90,6 @@ export const finalizeReceiptTotalsRpc = createServerFn({ method: 'POST' })
         receiptId: totals.receiptId,
         userId: context.user.id,
       });
-      throw error;
+      throwRpcError('Failed to finalize receipt totals');
     }
   });

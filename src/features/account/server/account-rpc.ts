@@ -5,6 +5,7 @@ import { protectedFunctionMiddleware } from '@/shared/auth/server/middleware';
 import { logger } from '@/shared/observability/logger';
 import { SENTRY_EVENTS } from '@/shared/observability/sentry-events';
 import { nameTransaction } from '@/shared/observability/server/sentry-middleware';
+import { throwRpcError } from '@/shared/server/utils/rpc-errors';
 
 // WE DONT PUT MIDDLEWARe here we want to control the redirect when this is called
 export const getUserRpc = createServerFn({ method: 'GET' })
@@ -16,7 +17,7 @@ export const getUserRpc = createServerFn({ method: 'GET' })
       return session?.user;
     } catch (error) {
       logger.error(error, SENTRY_EVENTS.AUTH.SESSION_CHECK);
-      throw error;
+      throwRpcError('Failed to load user');
     }
   });
 
@@ -26,5 +27,10 @@ export const getUserWithRedirect = createServerFn({ method: 'GET' })
     protectedFunctionMiddleware,
   ])
   .handler(({ context }) => {
-    return context.user;
+    try {
+      return context.user;
+    } catch (error) {
+      logger.error(error, SENTRY_EVENTS.ACCOUNT.GET_PROFILE);
+      throwRpcError('Failed to load user');
+    }
   });

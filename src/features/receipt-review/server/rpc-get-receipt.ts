@@ -5,6 +5,7 @@ import { protectedFunctionMiddleware } from '@/shared/auth/server/middleware';
 import { receiptIdSchema } from '@/shared/dto/dtos';
 import { logger } from '@/shared/observability/logger';
 import { SENTRY_EVENTS } from '@/shared/observability/sentry-events';
+import { throwRpcError } from '@/shared/server/utils/rpc-errors';
 
 export const getReceiptRpc = createServerFn({ method: 'GET' })
   .middleware([nameTransaction('getReceipt'), protectedFunctionMiddleware])
@@ -17,7 +18,7 @@ export const getReceiptRpc = createServerFn({ method: 'GET' })
         receiptId,
         userId: context.user.id,
       });
-      throw error;
+      throwRpcError('Failed to load receipt');
     }
   });
 
@@ -35,6 +36,6 @@ export const getReceiptIsValidRpc = createServerFn({ method: 'GET' })
         receiptId,
         userId: context.user.id,
       });
-      throw error;
+      throwRpcError('Failed to check receipt validity');
     }
   });
