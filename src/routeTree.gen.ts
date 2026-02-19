@@ -20,6 +20,8 @@ import { Route as AuthedAcceptInviteRouteImport } from './routes/_authed/acceptI
 import { Route as ReceiptParceRouteRouteImport } from './routes/receipt/parce/route'
 import { Route as ReceiptParceRoomIdRouteImport } from './routes/receipt/parce/$roomId'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as ApiReceiptImageRoomRoomIdRouteImport } from './routes/api/receipt-image/room/$roomId'
+import { Route as ApiReceiptImageReceiptReceiptIdRouteImport } from './routes/api/receipt-image/receipt/$receiptId'
 import { Route as AuthedReceiptReviewReceiptIdRouteImport } from './routes/_authed/receipt.review.$receiptId'
 
 const TermsRoute = TermsRouteImport.update({
@@ -76,6 +78,18 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiReceiptImageRoomRoomIdRoute =
+  ApiReceiptImageRoomRoomIdRouteImport.update({
+    id: '/api/receipt-image/room/$roomId',
+    path: '/api/receipt-image/room/$roomId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiReceiptImageReceiptReceiptIdRoute =
+  ApiReceiptImageReceiptReceiptIdRouteImport.update({
+    id: '/api/receipt-image/receipt/$receiptId',
+    path: '/api/receipt-image/receipt/$receiptId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthedReceiptReviewReceiptIdRoute =
   AuthedReceiptReviewReceiptIdRouteImport.update({
     id: '/receipt/review/$receiptId',
@@ -95,6 +109,8 @@ export interface FileRoutesByFullPath {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/receipt/parce/$roomId': typeof ReceiptParceRoomIdRoute
   '/receipt/review/$receiptId': typeof AuthedReceiptReviewReceiptIdRoute
+  '/api/receipt-image/receipt/$receiptId': typeof ApiReceiptImageReceiptReceiptIdRoute
+  '/api/receipt-image/room/$roomId': typeof ApiReceiptImageRoomRoomIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -108,6 +124,8 @@ export interface FileRoutesByTo {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/receipt/parce/$roomId': typeof ReceiptParceRoomIdRoute
   '/receipt/review/$receiptId': typeof AuthedReceiptReviewReceiptIdRoute
+  '/api/receipt-image/receipt/$receiptId': typeof ApiReceiptImageReceiptReceiptIdRoute
+  '/api/receipt-image/room/$roomId': typeof ApiReceiptImageRoomRoomIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -123,6 +141,8 @@ export interface FileRoutesById {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/receipt/parce/$roomId': typeof ReceiptParceRoomIdRoute
   '/_authed/receipt/review/$receiptId': typeof AuthedReceiptReviewReceiptIdRoute
+  '/api/receipt-image/receipt/$receiptId': typeof ApiReceiptImageReceiptReceiptIdRoute
+  '/api/receipt-image/room/$roomId': typeof ApiReceiptImageRoomRoomIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -138,6 +158,8 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/receipt/parce/$roomId'
     | '/receipt/review/$receiptId'
+    | '/api/receipt-image/receipt/$receiptId'
+    | '/api/receipt-image/room/$roomId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -151,6 +173,8 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/receipt/parce/$roomId'
     | '/receipt/review/$receiptId'
+    | '/api/receipt-image/receipt/$receiptId'
+    | '/api/receipt-image/room/$roomId'
   id:
     | '__root__'
     | '/'
@@ -165,6 +189,8 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/receipt/parce/$roomId'
     | '/_authed/receipt/review/$receiptId'
+    | '/api/receipt-image/receipt/$receiptId'
+    | '/api/receipt-image/room/$roomId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -175,6 +201,8 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   ReceiptParceRouteRoute: typeof ReceiptParceRouteRouteWithChildren
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiReceiptImageReceiptReceiptIdRoute: typeof ApiReceiptImageReceiptReceiptIdRoute
+  ApiReceiptImageRoomRoomIdRoute: typeof ApiReceiptImageRoomRoomIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -256,6 +284,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/receipt-image/room/$roomId': {
+      id: '/api/receipt-image/room/$roomId'
+      path: '/api/receipt-image/room/$roomId'
+      fullPath: '/api/receipt-image/room/$roomId'
+      preLoaderRoute: typeof ApiReceiptImageRoomRoomIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/receipt-image/receipt/$receiptId': {
+      id: '/api/receipt-image/receipt/$receiptId'
+      path: '/api/receipt-image/receipt/$receiptId'
+      fullPath: '/api/receipt-image/receipt/$receiptId'
+      preLoaderRoute: typeof ApiReceiptImageReceiptReceiptIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authed/receipt/review/$receiptId': {
       id: '/_authed/receipt/review/$receiptId'
       path: '/receipt/review/$receiptId'
@@ -303,6 +345,8 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   ReceiptParceRouteRoute: ReceiptParceRouteRouteWithChildren,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiReceiptImageReceiptReceiptIdRoute: ApiReceiptImageReceiptReceiptIdRoute,
+  ApiReceiptImageRoomRoomIdRoute: ApiReceiptImageRoomRoomIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

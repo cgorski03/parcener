@@ -1,10 +1,10 @@
-import type { GetReceiptResponse } from '../server/responses';
-import type { ReceiptDto } from '@/shared/dto/types';
 import type {
+  GetReceiptResponse,
   NotFoundResponse,
   ReceiptProcessingFailedResponse,
   ReceiptProcessingResponse,
-} from '@/shared/server/response-types';
+} from '../server/responses';
+import type { ReceiptDto } from '@/shared/dto/types';
 
 export function receiptNotFound(
   receipt: GetReceiptResponse,
