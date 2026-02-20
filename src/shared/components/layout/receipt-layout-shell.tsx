@@ -16,14 +16,18 @@ export function ReceiptLayoutShell({
   mainClassName,
 }: ReceiptLayoutShellProps) {
   const mainClasses = fullBleed
-    ? cn('flex-1 overflow-hidden flex flex-col min-h-0', mainClassName)
+    ? cn('flex-1 overflow-hidden flex flex-col min-h-0 h-full', mainClassName)
     : cn(
         'flex-1 container max-w-2xl mx-auto px-4 py-6 pb-32 md:pb-12',
         mainClassName,
       );
 
+  const shellClasses = fullBleed
+    ? 'h-[100dvh] overflow-hidden bg-gradient-to-b from-background to-muted/20 flex flex-col'
+    : 'min-h-screen bg-gradient-to-b from-background to-muted/20 flex flex-col';
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 flex flex-col">
+    <div className={shellClasses}>
       {/* Sticky Header */}
       <div className="sticky top-0 z-40 w-full">{header}</div>
 

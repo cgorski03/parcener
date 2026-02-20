@@ -16,6 +16,7 @@ import { ProcessingReceiptView } from '@/features/receipt-review/components/proc
 import { ErrorReceiptView } from '@/features/receipt-review/components/error-view';
 import ReceiptReviewLoadingView from '@/features/receipt-review/components/loading-view';
 
+type ReviewSearch = { view?: 'items' | 'image' };
 export const Route = createFileRoute('/_authed/receipt/review/$receiptId')({
   head: () => ({
     meta: [
@@ -23,6 +24,9 @@ export const Route = createFileRoute('/_authed/receipt/review/$receiptId')({
       { property: 'og:title', content: `Review Receipt | Parcener` },
     ],
   }),
+  validateSearch: (search: ReviewSearch) => {
+    return { view: search.view === 'items' ? 'items' : 'image' };
+  },
   loader: async ({ context, params }) => {
     // 1. Fetch data in parallel
     await Promise.all([

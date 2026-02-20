@@ -182,10 +182,7 @@ export function ReceiptEditorView({ initialReceipt }: ReceiptEditorProps) {
       }
     >
       {viewMode === 'image' ? (
-        <ReceiptImageViewer
-          receiptId={receipt.receiptId}
-          items={receiptItems}
-        />
+        <ReceiptImageViewer receiptId={receipt.receiptId} />
       ) : (
         <>
           <div className="space-y-2 mb-4">
