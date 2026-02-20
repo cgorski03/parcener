@@ -24,6 +24,9 @@ export function isFailed(
   return 'attempts' in receipt;
 }
 
-export function isComplete(receipt: GetReceiptResponse): receipt is ReceiptDto {
+export function hasData(
+  receipt: GetReceiptResponse | undefined,
+): receipt is ReceiptDto {
+  if (!receipt) return false;
   return 'id' in receipt;
 }
