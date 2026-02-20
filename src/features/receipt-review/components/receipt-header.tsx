@@ -1,21 +1,24 @@
-import { Loader2, Receipt, XCircle } from 'lucide-react';
+import { Image, List, Loader2, Receipt, XCircle } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import { AppHeader } from '@/shared/components/layout/app-header';
+import { Button } from '@/shared/components/ui/button';
 
 interface ReviewReceiptHeaderProps {
   title: string;
   itemCount: number;
-  grandTotal: number;
   receiptIsValidPending: boolean;
   receiptIsInvalid: boolean;
+  viewMode: 'items' | 'image';
+  onToggleView: () => void;
 }
 
 export function ReviewReceiptHeader({
   title,
   itemCount,
-  grandTotal,
   receiptIsValidPending,
   receiptIsInvalid,
+  viewMode,
+  onToggleView,
 }: ReviewReceiptHeaderProps) {
   const status = receiptIsValidPending
     ? 'pending'
@@ -78,19 +81,24 @@ export function ReviewReceiptHeader({
         </div>
       }
       right={
-        <div className="flex flex-col items-end justify-center">
-          <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider mb-0.5">
-            Total
-          </span>
-          <span
-            className={cn(
-              'text-xl font-bold leading-none tabular-nums tracking-tight',
-              receiptIsInvalid ? 'text-destructive' : 'text-foreground',
-            )}
-          >
-            ${grandTotal.toFixed(2)}
-          </span>
-        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-2"
+          onClick={onToggleView}
+        >
+          {viewMode === 'items' ? (
+            <>
+              <Image className="size-4" />
+              View Receipt
+            </>
+          ) : (
+            <>
+              <List className="size-4" />
+              View Items
+            </>
+          )}
+        </Button>
       }
     />
   );

@@ -14,6 +14,7 @@ import { ReviewReceiptHeader } from './receipt-header';
 import { ReceiptSummarySheet } from './receipt-summary-sheet';
 import ReceiptItemSheet from './edit-item-sheet';
 import { CreateRoomSheet } from './create-room-sheet';
+import { ReceiptImageViewer } from './receipt-image-viewer';
 import type { CreateReceiptItemDto, ReceiptItemDto } from '@/shared/dto/types';
 import type { ReceiptWithRoom } from '../server/get-receipt-service';
 import { Button } from '@/shared/components/ui/button';
@@ -39,6 +40,7 @@ export function ReceiptEditorView({ initialReceipt }: ReceiptEditorProps) {
     useReceiptIsValid(receipt.receiptId);
 
   // --- UI STATE ---
+  const [viewMode, setViewMode] = useState<'items' | 'image'>('items');
   const [showingItemSheet, setShowingItemSheet] = useState(false);
   const [showSummarySheet, setShowSummarySheet] = useState(false);
   const [showCreateRoomSheet, setShowCreateRoomSheet] = useState(false);
@@ -165,81 +167,96 @@ export function ReceiptEditorView({ initialReceipt }: ReceiptEditorProps) {
 
   return (
     <ReceiptLayoutShell
+      fullBleed={viewMode === 'image'}
       header={
         <ReviewReceiptHeader
           title={receipt.title ?? 'Set Title'}
           itemCount={receiptItems.length}
-          grandTotal={receipt.grandTotal}
           receiptIsInvalid={receiptNotValid}
           receiptIsValidPending={receiptValidFetching}
+          viewMode={viewMode}
+          onToggleView={() =>
+            setViewMode((current) => (current === 'items' ? 'image' : 'items'))
+          }
         />
       }
     >
-      <div className="space-y-2 mb-4">
-        {receiptItems.map((item) => (
-          <ReviewItemCard
-            key={item.receiptItemId}
-            item={item}
-            onEdit={() => handleEditItem(item)}
-          />
-        ))}
-      </div>
-
-      <Button
-        variant="outline"
-        size="lg"
-        className="w-full mb-6 border-dashed"
-        onClick={handleCreateCustomItem}
-      >
-        <Plus className="size-4 mr-2" />
-        Add Custom Item
-      </Button>
-
-      <div className="relative group mt-6 ">
-        <PriceBreakdown
-          subtotal={parseFloat(subtotal)}
-          tax={receipt.tax}
-          tip={receipt.tip}
-          grandTotal={receipt.grandTotal}
-          label="Receipt Totals"
-          onClick={() => setShowSummarySheet(true)}
-          errorMessage={
-            totalHasError ? 'Fix total mismatch before continuing' : undefined
-          }
-          actionButton={<ActionButton />}
-          className="pr-10 border-primary/20 active:bg-accent/50 transition-colors shadow-sm"
+      {viewMode === 'image' ? (
+        <ReceiptImageViewer
+          receiptId={receipt.receiptId}
+          items={receiptItems}
         />
-
-        <div className="absolute top-4 right-4 pointer-events-none">
-          <div className="bg-primary/10 p-2 rounded-full text-primary">
-            <Pencil className="size-4" />
+      ) : (
+        <>
+          <div className="space-y-2 mb-4">
+            {receiptItems.map((item) => (
+              <ReviewItemCard
+                key={item.receiptItemId}
+                item={item}
+                onEdit={() => handleEditItem(item)}
+              />
+            ))}
           </div>
-        </div>
-      </div>
 
-      <ReceiptItemSheet
-        key={receiptItemForSheet?.receiptItemId}
-        item={receiptItemForSheet}
-        showSheet={showingItemSheet}
-        closeSheet={() => setShowingItemSheet(false)}
-        handleDeleteItem={handleDeleteItem}
-        handleSaveItem={saveReceiptItem}
-      />
+          <Button
+            variant="outline"
+            size="lg"
+            className="w-full mb-6 border-dashed"
+            onClick={handleCreateCustomItem}
+          >
+            <Plus className="size-4 mr-2" />
+            Add Custom Item
+          </Button>
 
-      <ReceiptSummarySheet
-        showSheet={showSummarySheet}
-        receipt={receipt}
-        subtotal={subtotal}
-        closeSheet={() => setShowSummarySheet(false)}
-      />
+          <div className="relative group mt-6 ">
+            <PriceBreakdown
+              subtotal={parseFloat(subtotal)}
+              tax={receipt.tax}
+              tip={receipt.tip}
+              grandTotal={receipt.grandTotal}
+              label="Receipt Totals"
+              onClick={() => setShowSummarySheet(true)}
+              errorMessage={
+                totalHasError
+                  ? 'Fix total mismatch before continuing'
+                  : undefined
+              }
+              actionButton={<ActionButton />}
+              className="pr-10 border-primary/20 active:bg-accent/50 transition-colors shadow-sm"
+            />
 
-      <CreateRoomSheet
-        open={showCreateRoomSheet}
-        onOpenChange={setShowCreateRoomSheet}
-        onConfirm={handleFinalizeRoomCreation}
-        receiptTip={receipt.tip}
-        isCreating={isCreatingRoom}
-      />
+            <div className="absolute top-4 right-4 pointer-events-none">
+              <div className="bg-primary/10 p-2 rounded-full text-primary">
+                <Pencil className="size-4" />
+              </div>
+            </div>
+          </div>
+
+          <ReceiptItemSheet
+            key={receiptItemForSheet?.receiptItemId}
+            item={receiptItemForSheet}
+            showSheet={showingItemSheet}
+            closeSheet={() => setShowingItemSheet(false)}
+            handleDeleteItem={handleDeleteItem}
+            handleSaveItem={saveReceiptItem}
+          />
+
+          <ReceiptSummarySheet
+            showSheet={showSummarySheet}
+            receipt={receipt}
+            subtotal={subtotal}
+            closeSheet={() => setShowSummarySheet(false)}
+          />
+
+          <CreateRoomSheet
+            open={showCreateRoomSheet}
+            onOpenChange={setShowCreateRoomSheet}
+            onConfirm={handleFinalizeRoomCreation}
+            receiptTip={receipt.tip}
+            isCreating={isCreatingRoom}
+          />
+        </>
+      )}
     </ReceiptLayoutShell>
   );
 }
