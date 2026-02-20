@@ -23,6 +23,7 @@ import { useCreateReceiptRoom } from '@/features/room/hooks/use-room';
 import { ReviewItemCard } from '@/shared/components/item-card/review-item-card';
 import { PriceBreakdown } from '@/shared/components/price-breakdown';
 import { moneyValuesEqual } from '@/shared/lib/money-math';
+import { Route } from '@/routes/_authed/receipt.review.$receiptId';
 
 interface ReceiptEditorProps {
   initialReceipt: ReceiptWithRoom;
@@ -38,9 +39,9 @@ export function ReceiptEditorView({ initialReceipt }: ReceiptEditorProps) {
   // --- DATA HOOKS ---
   const { isError: receiptNotValid, isFetching: receiptValidFetching } =
     useReceiptIsValid(receipt.receiptId);
+  const { view } = Route.useSearch();
 
   // --- UI STATE ---
-  const [viewMode, setViewMode] = useState<'items' | 'image'>('items');
   const [showingItemSheet, setShowingItemSheet] = useState(false);
   const [showSummarySheet, setShowSummarySheet] = useState(false);
   const [showCreateRoomSheet, setShowCreateRoomSheet] = useState(false);
@@ -167,21 +168,17 @@ export function ReceiptEditorView({ initialReceipt }: ReceiptEditorProps) {
 
   return (
     <ReceiptLayoutShell
-      fullBleed={viewMode === 'image'}
+      fullBleed={view === 'image'}
       header={
         <ReviewReceiptHeader
           title={receipt.title ?? 'Set Title'}
           itemCount={receiptItems.length}
           receiptIsInvalid={receiptNotValid}
           receiptIsValidPending={receiptValidFetching}
-          viewMode={viewMode}
-          onToggleView={() =>
-            setViewMode((current) => (current === 'items' ? 'image' : 'items'))
-          }
         />
       }
     >
-      {viewMode === 'image' ? (
+      {view === 'image' ? (
         <ReceiptImageViewer receiptId={receipt.receiptId} />
       ) : (
         <>

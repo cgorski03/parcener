@@ -25,7 +25,7 @@ export const Route = createFileRoute('/_authed/receipt/review/$receiptId')({
     ],
   }),
   validateSearch: (search: ReviewSearch) => {
-    return { view: search.view === 'items' ? 'items' : 'image' };
+    return { view: search.view === 'image' ? 'image' : 'items' };
   },
   loader: async ({ context, params }) => {
     // 1. Fetch data in parallel

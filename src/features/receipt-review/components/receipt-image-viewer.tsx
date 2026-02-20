@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Image, List } from 'lucide-react';
+import { Maximize2, Minimize2 } from 'lucide-react';
 import { TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch';
 import { ReceiptImageItemsDrawer } from './receipt-image-items-drawer';
 import { Button } from '@/shared/components/ui/button';
@@ -34,20 +34,18 @@ export function ReceiptImageViewer({ receiptId }: ReceiptImageViewerProps) {
           panning={{ velocityDisabled: true }}
         >
           <>
-            <div className="absolute top-3 left-3 z-20 flex items-center gap-2 rounded-full border bg-background/90 px-3 py-1.5 shadow-sm backdrop-blur">
-              <Image className="size-4 text-muted-foreground" />
-              <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Receipt View
-              </span>
-            </div>
             <div className="absolute top-3 right-3 z-20">
               <Button
                 size="sm"
                 className="!h-auto !rounded-full border bg-background/90 px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground shadow-sm backdrop-blur hover:bg-background/90"
                 onClick={() => setShowItems((current) => !current)}
               >
-                <List className="size-4 text-muted-foreground" />
-                {showItems ? 'Hide Items' : 'Show Items'}
+                {showItems ? (
+                  <Maximize2 className="size-4 text-muted-foreground" />
+                ) : (
+                  <Minimize2 className="size-4 text-muted-foreground" />
+                )}
+                {showItems ? 'Expand Image' : 'Exit Fullscreen'}
               </Button>
             </div>
 
