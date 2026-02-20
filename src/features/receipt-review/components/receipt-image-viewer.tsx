@@ -69,7 +69,6 @@ export function ReceiptImageViewer({
 
     const observer = new ResizeObserver((entries) => {
       const entry = entries[0];
-      if (!entry) return;
       setContainerHeight(entry.contentRect.height);
     });
 
@@ -164,7 +163,7 @@ export function ReceiptImageViewer({
         </TransformWrapper>
 
         <Drawer
-          open
+          defaultOpen
           dismissible={false}
           modal={false}
           noBodyStyles
