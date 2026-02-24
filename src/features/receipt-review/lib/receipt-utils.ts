@@ -4,7 +4,6 @@ import type {
   ReceiptProcessingFailedResponse,
   ReceiptProcessingResponse,
 } from '../server/responses';
-import type { ReceiptDto } from '@/shared/dto/types';
 
 export function receiptNotFound(
   receipt: GetReceiptResponse,
@@ -22,11 +21,4 @@ export function isFailed(
   receipt: GetReceiptResponse,
 ): receipt is ReceiptProcessingFailedResponse {
   return 'attempts' in receipt;
-}
-
-export function hasData(
-  receipt: GetReceiptResponse | undefined,
-): receipt is ReceiptDto {
-  if (!receipt) return false;
-  return 'id' in receipt;
 }

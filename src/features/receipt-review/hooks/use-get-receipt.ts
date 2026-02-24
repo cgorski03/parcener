@@ -43,7 +43,7 @@ export function useGetReceiptReview(
 export function useReceiptItems(receiptId: string) {
   return useQuery({
     ...receiptOptions(receiptId),
-    select: (data) => ('items' in data ? data.items : []),
+    select: (data) => data.items,
   });
 }
 

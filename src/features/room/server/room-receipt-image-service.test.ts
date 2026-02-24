@@ -89,7 +89,7 @@ describe('room-receipt-image-service', () => {
       httpMetadata: { contentType: 'image/png' },
     });
 
-    mockSession({ id: owner.id, name: owner.name ?? undefined });
+    mockSession({ id: owner.id, name: owner.name });
 
     const request = new Request('http://localhost');
 
@@ -110,7 +110,7 @@ describe('room-receipt-image-service', () => {
     const { receipt } = await createTestReceipt(owner.id, {}, {}, testDb);
     const testRoom = await createTestRoom(testDb, receipt.id, owner.id);
 
-    mockSession({ id: otherUser.id, name: otherUser.name ?? undefined });
+    mockSession({ id: otherUser.id, name: otherUser.name });
 
     const request = new Request('http://localhost');
 
@@ -127,7 +127,7 @@ describe('room-receipt-image-service', () => {
 
   it('returns not_found when room does not exist', async () => {
     const user = await createTestUser(testDb);
-    mockSession({ id: user.id, name: user.name ?? undefined });
+    mockSession({ id: user.id, name: user.name });
 
     const request = new Request('http://localhost');
 
@@ -147,7 +147,7 @@ describe('room-receipt-image-service', () => {
     const { receipt } = await createTestReceipt(owner.id, {}, {}, testDb);
     const testRoom = await createTestRoom(testDb, receipt.id, owner.id);
 
-    mockSession({ id: owner.id, name: owner.name ?? undefined });
+    mockSession({ id: owner.id, name: owner.name });
 
     const request = new Request('http://localhost');
 

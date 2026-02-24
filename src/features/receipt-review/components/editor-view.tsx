@@ -1,8 +1,6 @@
 import { Pencil, Plus } from 'lucide-react';
-import {
-  useGetReceiptReview,
-  useReceiptIsValid,
-} from '../hooks/use-get-receipt';
+import { useReceiptIsValid } from '../hooks/use-get-receipt';
+import { useReadyReceipt } from '../hooks/use-ready-receipt';
 import { ReviewReceiptHeader } from './receipt-header';
 import { ReceiptImageViewer } from './receipt-image-viewer';
 import {
@@ -21,10 +19,10 @@ interface ReceiptEditorProps {
 }
 
 export function ReceiptEditorView({ initialReceipt }: ReceiptEditorProps) {
-  const { data } = useGetReceiptReview(initialReceipt.receiptId, {
-    initialData: initialReceipt,
-  });
-  const receipt = data && 'items' in data ? data : initialReceipt;
+  const receipt = useReadyReceipt(
+    initialReceipt.receiptId,
+    initialReceipt,
+  );
   const { isError: receiptNotValid, isFetching: receiptValidFetching } =
     useReceiptIsValid(receipt.receiptId);
   const { view } = Route.useSearch();

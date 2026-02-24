@@ -1,11 +1,7 @@
 import { useMemo } from 'react';
 import { Plus } from 'lucide-react';
-import {
-  useGetReceiptReview,
-  useReceiptIsValid,
-  useReceiptItems,
-} from '../hooks/use-get-receipt';
-import { hasData } from '../lib/receipt-utils';
+import { useReadyReceipt } from '../hooks/use-ready-receipt';
+import { useReceiptIsValid, useReceiptItems } from '../hooks/use-get-receipt';
 import { CompactReceiptItemCard } from './compact-receipt-item-card';
 import { ReceiptActionsPanel } from './receipt-actions-panel';
 import { useReceiptItemSheet } from './receipt-item-sheet-provider';
@@ -20,7 +16,7 @@ export function ReceiptImageItemsDrawer({
 }: ReceiptImageItemsDrawerProps) {
   const { openCreateItem, openEditItem } = useReceiptItemSheet();
   const { data: items, isLoading } = useReceiptItems(receiptId);
-  const { data: receipt } = useGetReceiptReview(receiptId);
+  const receipt = useReadyReceipt(receiptId);
   const { isError: receiptNotValid } = useReceiptIsValid(receiptId);
   const safeItems = items ?? [];
 
@@ -62,14 +58,12 @@ export function ReceiptImageItemsDrawer({
           </div>
         )}
 
-        {hasData(receipt) && (
-          <div className="pt-4 mt-4 border-t border-muted/40">
-            <ReceiptActionsPanel
-              receipt={receipt}
-              receiptNotValid={receiptNotValid}
-            />
-          </div>
-        )}
+        <div className="pt-4 mt-4 border-t border-muted/40">
+          <ReceiptActionsPanel
+            receipt={receipt}
+            receiptNotValid={receiptNotValid}
+          />
+        </div>
       </div>
     </div>
   );
