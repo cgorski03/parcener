@@ -1,4 +1,6 @@
 import { createFileRoute, notFound } from '@tanstack/react-router';
+import type { ReceiptWithRoom } from '@/features/receipt-review/server/get-receipt-service';
+import type { SearchSchemaInput } from '@tanstack/react-router';
 import { paymentMethodsOptions } from '@/features/payment-methods/hooks/use-payment-methods';
 import { ReviewNotFound } from '@/shared/components/layout/not-found';
 import { AppHeader } from '@/shared/components/layout/app-header';
@@ -16,7 +18,9 @@ import { ProcessingReceiptView } from '@/features/receipt-review/components/proc
 import { ErrorReceiptView } from '@/features/receipt-review/components/error-view';
 import ReceiptReviewLoadingView from '@/features/receipt-review/components/loading-view';
 
-type ReviewSearch = { view?: 'items' | 'image' };
+type ReviewSearchInput = { view?: 'items' | 'image' } & SearchSchemaInput;
+type ReviewSearchOutput = { view: 'items' | 'image' };
+
 export const Route = createFileRoute('/_authed/receipt/review/$receiptId')({
   head: () => ({
     meta: [
@@ -24,12 +28,17 @@ export const Route = createFileRoute('/_authed/receipt/review/$receiptId')({
       { property: 'og:title', content: `Review Receipt | Parcener` },
     ],
   }),
-  validateSearch: (search: ReviewSearch) => {
-    return { view: search.view === 'image' ? 'image' : 'items' } as {
-      view: 'image' | 'items';
-    };
+  validateSearch: (search: ReviewSearchInput): ReviewSearchOutput => {
+    return { view: search.view === 'image' ? 'image' : 'items' };
   },
-  loader: async ({ context, params }) => {
+  loader: async ({
+    context,
+    params,
+  }): Promise<
+    | { state: 'failed'; attempts: number }
+    | { state: 'processing' }
+    | { state: 'ready'; receipt: ReceiptWithRoom }
+  > => {
     const [receipt] = await Promise.all([
       context.queryClient.ensureQueryData(receiptOptions(params.receiptId)),
       context.queryClient.ensureQueryData(paymentMethodsOptions()),
@@ -66,9 +75,7 @@ function ReceiptReviewComponent() {
     );
   }
 
-  return (
-    <ReceiptReviewStatusGate receiptId={receiptId} />
-  );
+  return <ReceiptReviewStatusGate receiptId={receiptId} />;
 }
 
 function ReceiptReviewStatusGate({ receiptId }: { receiptId: string }) {

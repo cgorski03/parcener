@@ -40,13 +40,6 @@ export function useGetReceiptReview(
   });
 }
 
-export function useReceiptItems(receiptId: string) {
-  return useQuery({
-    ...receiptOptions(receiptId),
-    select: (data) => data.items,
-  });
-}
-
 export const useReceiptIsValid = (receiptId: string) =>
   useQuery({
     queryKey: ReceiptQueryKeys.valid(receiptId),

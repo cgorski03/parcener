@@ -5,7 +5,7 @@ import {
   useDeleteReceiptItem,
   useEditReceiptItem,
 } from '../hooks/use-edit-receipt';
-import { useReceiptItems } from '../hooks/use-get-receipt';
+import { useReadyReceipt } from '../hooks/use-ready-receipt';
 import type { CreateReceiptItemDto, ReceiptItemDto } from '@/shared/dto/types';
 import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
@@ -37,10 +37,11 @@ function ReceiptItemSheet({
 }: ReceiptItemSheetProps) {
   const isCreate = mode === 'create';
   const isEditing = mode === 'edit';
-  const { data: items } = useReceiptItems(receiptId);
+  const { items } = useReadyReceipt(receiptId);
+
   const item: ReceiptItemDto | null =
     isEditing && itemId
-      ? (items?.find((entry) => entry.receiptItemId === itemId) ?? null)
+      ? (items.find((entry) => entry.receiptItemId === itemId) ?? null)
       : null;
   const isEditLoading = isEditing && !item;
 

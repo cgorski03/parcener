@@ -5,13 +5,14 @@ export function useReadyReceipt(
   receiptId: string,
   initialReceipt?: ReceiptWithRoom,
 ) {
-  const { data } = useGetReceiptReview(receiptId, {
+  const query = useGetReceiptReview(receiptId, {
     initialData: initialReceipt,
   });
+  const { data, ...rest } = query;
 
-  if (!data) {
+  if (!data || !('items' in data)) {
     throw new Error('Receipt not available');
   }
 
-  return data;
+  return { data, items: data.items, ...rest };
 }

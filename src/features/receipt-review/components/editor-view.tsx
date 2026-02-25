@@ -19,21 +19,20 @@ interface ReceiptEditorProps {
 }
 
 export function ReceiptEditorView({ initialReceipt }: ReceiptEditorProps) {
-  const receipt = useReadyReceipt(
-    initialReceipt.receiptId,
-    initialReceipt,
-  );
+  const receiptId = initialReceipt.receiptId;
+  // this live receipt and using it from the cache allows the proliferation of optimistic updates
+  const { data: liveReceipt } = useReadyReceipt(receiptId, initialReceipt);
   const { isError: receiptNotValid, isFetching: receiptValidFetching } =
-    useReceiptIsValid(receipt.receiptId);
+    useReceiptIsValid(receiptId);
   const { view } = Route.useSearch();
 
   return (
     <ReceiptItemSheetProvider
-      receiptId={receipt.receiptId}
-      roomId={receipt.roomId ?? null}
+      receiptId={receiptId}
+      roomId={liveReceipt.roomId ?? null}
     >
       <ReceiptEditorContent
-        receipt={receipt}
+        receipt={liveReceipt}
         receiptNotValid={receiptNotValid}
         receiptValidFetching={receiptValidFetching}
         view={view}

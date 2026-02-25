@@ -2,7 +2,7 @@ import { and, eq } from 'drizzle-orm';
 import { resolveMembershipState } from './room-member-service';
 import type { ApplicationAuthClient } from '@/shared/auth/server';
 import type { DbType } from '@/shared/server/db';
-import type { ReceiptImageAccessResult } from '@/shared/server/receipt-image-types';
+import type { ReceiptImageAccessResult } from '@/features/receipt-review/server/internal-types';
 import { getServerSession } from '@/shared/auth/server/get-server-session';
 import { parseRoomIdentity } from '@/shared/auth/server/room-identity';
 import { receipt, room } from '@/shared/server/db';
