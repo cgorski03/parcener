@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { eq } from 'drizzle-orm';
 import { getReceiptState, getReceiptWithItems } from './get-receipt-service';
-import type { ReceiptState } from './get-receipt-service';
+import { NOT_FOUND, RECEIPT_PROCESSING } from './responses';
 import type { GetReceiptResponse } from './responses';
+import type { ReceiptState } from './get-receipt-service';
 import { testDb } from '@/test/setup';
 import { createTestUser } from '@/test/factories/user';
 import {
@@ -11,7 +12,6 @@ import {
   createSuccessfulReceipt,
   createTestReceipt,
 } from '@/test/factories/receipt';
-import { NOT_FOUND, RECEIPT_PROCESSING } from '@/shared/server/response-types';
 import { computeReceiptValidity } from '@/shared/lib/receipt-validity';
 import { receipt } from '@/shared/server/db';
 

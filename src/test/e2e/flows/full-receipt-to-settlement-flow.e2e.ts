@@ -94,7 +94,7 @@ test.describe('Full Receipt to Settlement Flow', () => {
     await expect(page.getByText('Edit Totals')).not.toBeVisible({
       timeout: 5000,
     });
-    await expect(page.locator('text=/\\$33\\.00/i')).toHaveCount(2);
+    await expect(page.locator('text=/\\$33\\.00/i')).toHaveCount(1);
 
     // ============================================
     // ACT 4: Create Room

@@ -1,7 +1,8 @@
 import type { ReceiptWithRoom } from './get-receipt-service';
-import type { NotFoundResponse } from '@/shared/server/response-types';
 
+export type NotFoundResponse = { error: true; code: 'NOT_FOUND' };
 export type ReceiptProcessingResponse = { error: true; code: 'PROCESSING' };
+
 export type ReceiptProcessingFailedResponse = {
   error: true;
   code: 'FAILED';
@@ -23,6 +24,8 @@ export const RECEIPT_PROCESSING: ReceiptProcessingResponse = {
   error: true,
   code: 'PROCESSING',
 };
+export const NOT_FOUND: NotFoundResponse = { error: true, code: 'NOT_FOUND' };
+
 export const RECEIPT_PROCESSING_FAILED = (
   attempts: number,
 ): ReceiptProcessingFailedResponse => ({

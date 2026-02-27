@@ -1,11 +1,13 @@
-import { Loader2, Receipt, XCircle } from 'lucide-react';
+import { Image, List, Loader2, Receipt, XCircle } from 'lucide-react';
+import { Link } from '@tanstack/react-router';
 import { cn } from '@/shared/lib/utils';
 import { AppHeader } from '@/shared/components/layout/app-header';
+import { Button } from '@/shared/components/ui/button';
+import { Route } from '@/routes/_authed/receipt.review.$receiptId';
 
 interface ReviewReceiptHeaderProps {
   title: string;
   itemCount: number;
-  grandTotal: number;
   receiptIsValidPending: boolean;
   receiptIsInvalid: boolean;
 }
@@ -13,15 +15,17 @@ interface ReviewReceiptHeaderProps {
 export function ReviewReceiptHeader({
   title,
   itemCount,
-  grandTotal,
   receiptIsValidPending,
   receiptIsInvalid,
 }: ReviewReceiptHeaderProps) {
+  const { receiptId } = Route.useParams();
+  const { view } = Route.useSearch();
   const status = receiptIsValidPending
     ? 'pending'
     : receiptIsInvalid
       ? 'invalid'
       : 'valid';
+  const nextView = view === 'items' ? 'image' : 'items';
 
   const statusConfig = {
     pending: {
@@ -78,19 +82,25 @@ export function ReviewReceiptHeader({
         </div>
       }
       right={
-        <div className="flex flex-col items-end justify-center">
-          <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider mb-0.5">
-            Total
-          </span>
-          <span
-            className={cn(
-              'text-xl font-bold leading-none tabular-nums tracking-tight',
-              receiptIsInvalid ? 'text-destructive' : 'text-foreground',
-            )}
+        <Button variant="outline" size="sm" className="gap-2" asChild>
+          <Link
+            to="/receipt/review/$receiptId"
+            params={{ receiptId }}
+            search={{ view: nextView }}
           >
-            ${grandTotal.toFixed(2)}
-          </span>
-        </div>
+            {view === 'items' ? (
+              <>
+                <Image className="size-4" />
+                Image
+              </>
+            ) : (
+              <>
+                <List className="size-4" />
+                Items
+              </>
+            )}
+          </Link>
+        </Button>
       }
     />
   );
