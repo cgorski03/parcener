@@ -50,7 +50,7 @@ export async function getRoomReceiptImageAccess(
     });
 
     if (!ownedReceipt) {
-      return { type: 'forbidden' };
+      return { type: 'not_found' };
     }
   }
 

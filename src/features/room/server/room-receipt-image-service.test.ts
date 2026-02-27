@@ -104,7 +104,8 @@ describe('room-receipt-image-service', () => {
     expect(result.type).toBe('ok');
   });
 
-  it('returns forbidden for non-owner user without membership', async () => {
+  // We want to return not_found to not leak room ids, that a rool exists
+  it('returns notfound for non-owner user without membership', async () => {
     const owner = await createTestUser(testDb);
     const otherUser = await createTestUser(testDb);
     const { receipt } = await createTestReceipt(owner.id, {}, {}, testDb);
@@ -122,7 +123,7 @@ describe('room-receipt-image-service', () => {
       auth: {} as any,
     });
 
-    expect(result.type).toBe('forbidden');
+    expect(result.type).toBe('not_found');
   });
 
   it('returns not_found when room does not exist', async () => {
