@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getReceiptIsValidRpc, getReceiptRpc } from '../server/rpc-get-receipt';
 import { isProcessing } from '../lib/receipt-utils';
 import type { ReceiptWithRoom } from '../server/get-receipt-service';
+import type { GetReceiptResponse } from '../server/responses';
 
 export const ReceiptQueryKeys = {
   all: ['receipts'] as const,
@@ -22,20 +23,23 @@ export const receiptOptions = (receiptId: string) => ({
   staleTime: 1000,
 });
 
+export const receiptReviewOptions = (receiptId: string) => ({
+  ...receiptOptions(receiptId),
+  refetchInterval: (query: { state: { data?: GetReceiptResponse } }) => {
+    const data = query.state.data;
+    if (data && isProcessing(data)) {
+      return 1500;
+    }
+    return false;
+  },
+});
+
 export function useGetReceiptReview(
   receiptId: string,
   options: { enabled?: boolean; initialData?: ReceiptWithRoom } = {},
 ) {
   return useQuery({
-    ...receiptOptions(receiptId),
-    refetchInterval: (query) => {
-      const data = query.state.data;
-      if (data && isProcessing(data)) {
-        return 1500;
-      }
-      return false;
-    },
-
+    ...receiptReviewOptions(receiptId),
     ...options,
   });
 }

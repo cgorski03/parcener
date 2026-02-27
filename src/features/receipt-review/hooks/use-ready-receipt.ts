@@ -1,14 +1,15 @@
-import { useGetReceiptReview } from './use-get-receipt';
+import { useSuspenseQuery } from '@tanstack/react-query';
+import { receiptReviewOptions } from './use-get-receipt';
 import type { ReceiptWithRoom } from '../server/get-receipt-service';
 
 export function useReadyReceipt(
   receiptId: string,
   initialReceipt?: ReceiptWithRoom,
 ) {
-  const query = useGetReceiptReview(receiptId, {
+  const { data, ...rest } = useSuspenseQuery({
+    ...receiptReviewOptions(receiptId),
     initialData: initialReceipt,
   });
-  const { data, ...rest } = query;
 
   if (!data || !('items' in data)) {
     throw new Error('Receipt not available');

@@ -15,7 +15,7 @@ export function ReceiptImageItemsDrawer({
   receiptId,
 }: ReceiptImageItemsDrawerProps) {
   const { openCreateItem, openEditItem } = useReceiptItemSheet();
-  const { items, data: receipt, isLoading } = useReadyReceipt(receiptId);
+  const { items, data: receipt } = useReadyReceipt(receiptId);
   const { isError: receiptNotValid } = useReceiptIsValid(receiptId);
 
   const itemCountLabel = useMemo(() => {
@@ -23,7 +23,10 @@ export function ReceiptImageItemsDrawer({
   }, [items.length]);
 
   return (
-    <div className="flex h-full min-h-0 flex-col">
+    <div
+      className="flex h-full min-h-0 flex-col"
+      data-testid="receipt-image-items-drawer"
+    >
       <div className="flex items-center justify-between gap-4 px-4 pb-2 pt-3">
         <div>
           <div className="text-sm font-semibold">Items</div>
@@ -36,11 +39,7 @@ export function ReceiptImageItemsDrawer({
       </div>
 
       <div className="flex-1 min-h-0 overflow-y-auto px-4 pb-6">
-        {isLoading ? (
-          <div className="py-8 text-center text-xs text-muted-foreground">
-            Loading items...
-          </div>
-        ) : items.length === 0 ? (
+        {items.length === 0 ? (
           <div className="py-8 text-center text-xs text-muted-foreground">
             No items yet.
           </div>
