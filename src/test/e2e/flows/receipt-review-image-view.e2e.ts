@@ -5,6 +5,10 @@ import { e2eDb } from '@/test/e2e/db';
 import { expect, test } from '@/test/e2e/fixtures';
 
 test.describe('Receipt Review Image View', () => {
+  test.use({
+    viewport: { width: 390, height: 844 },
+  });
+
   test('shows receipt image view and item drawer actions', async ({
     page,
     authenticateAsUploader,
@@ -12,9 +16,10 @@ test.describe('Receipt Review Image View', () => {
     await authenticateAsUploader();
 
     await page.goto('/upload');
-    await expect(page.getByText('Split a Receipt')).toBeVisible();
 
     const fileInput = page.locator('#receipt');
+    await expect(fileInput).toBeAttached();
+
     const testImagePath = path.join(
       process.cwd(),
       'src/test/fixtures/valid-receipt.jpg',

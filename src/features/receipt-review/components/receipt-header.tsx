@@ -4,6 +4,7 @@ import { cn } from '@/shared/lib/utils';
 import { AppHeader } from '@/shared/components/layout/app-header';
 import { Button } from '@/shared/components/ui/button';
 import { Route } from '@/routes/_authed/receipt.review.$receiptId';
+import { useIsMobile } from '@/shared/hooks/use-mobile';
 
 interface ReviewReceiptHeaderProps {
   title: string;
@@ -19,6 +20,7 @@ export function ReviewReceiptHeader({
   receiptIsInvalid,
 }: ReviewReceiptHeaderProps) {
   const { receiptId } = Route.useParams();
+  const isMobile = useIsMobile();
   const { view } = Route.useSearch();
   const status = receiptIsValidPending
     ? 'pending'
@@ -82,25 +84,27 @@ export function ReviewReceiptHeader({
         </div>
       }
       right={
-        <Button variant="outline" size="sm" className="gap-2" asChild>
-          <Link
-            to="/receipt/review/$receiptId"
-            params={{ receiptId }}
-            search={{ view: nextView }}
-          >
-            {view === 'items' ? (
-              <>
-                <Image className="size-4" />
-                Image
-              </>
-            ) : (
-              <>
-                <List className="size-4" />
-                Items
-              </>
-            )}
-          </Link>
-        </Button>
+        isMobile && (
+          <Button variant="outline" size="sm" className="gap-2" asChild>
+            <Link
+              to="/receipt/review/$receiptId"
+              params={{ receiptId }}
+              search={{ view: nextView }}
+            >
+              {view === 'items' ? (
+                <>
+                  <Image className="size-4" />
+                  Image
+                </>
+              ) : (
+                <>
+                  <List className="size-4" />
+                  Items
+                </>
+              )}
+            </Link>
+          </Button>
+        )
       }
     />
   );
