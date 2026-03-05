@@ -1,6 +1,10 @@
 import { and, eq } from 'drizzle-orm';
 import { isFailed, isProcessing, receiptNotFound } from '../lib/receipt-utils';
-import { RECEIPT_PROCESSING, RECEIPT_PROCESSING_FAILED } from './responses';
+import {
+  NOT_FOUND,
+  RECEIPT_PROCESSING,
+  RECEIPT_PROCESSING_FAILED,
+} from './responses';
 import type { GetReceiptResponse } from './responses';
 import type { DbType, ReceiptProcessingState } from '@/shared/server/db';
 import type { ReceiptDto } from '@/shared/dto/types';
@@ -8,7 +12,6 @@ import type { ValidityState } from '@/shared/lib/receipt-validity';
 import { computeReceiptValidity } from '@/shared/lib/receipt-validity';
 import { receipt } from '@/shared/server/db';
 import { receiptWithItemsToDto } from '@/shared/dto/mappers';
-import { NOT_FOUND } from '@/shared/server/response-types';
 
 export type ReceiptWithRoom = ReceiptDto & { roomId?: string };
 
@@ -105,6 +108,18 @@ export async function getReceiptState(
     validity: computeReceiptValidity(foundReceipt),
     receipt: foundReceipt,
   };
+}
+
+export type ReceiptImageObject = Exclude<
+  Awaited<ReturnType<Env['parcener_receipt_images']['get']>>,
+  null
+>;
+
+export async function getReceiptImageObject(
+  env: Env,
+  receiptId: string,
+): Promise<ReceiptImageObject | null> {
+  return await env.parcener_receipt_images.get(receiptId);
 }
 
 async function getReceiptWithRelationsHelper(

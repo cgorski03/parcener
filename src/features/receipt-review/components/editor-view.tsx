@@ -1,245 +1,111 @@
-import { Pencil, Plus, Share2, Users } from 'lucide-react';
-import { Link, useNavigate } from '@tanstack/react-router';
-import { useMemo, useState } from 'react';
-import {
-  useGetReceiptReview,
-  useReceiptIsValid,
-} from '../hooks/use-get-receipt';
-import {
-  useCreateReceiptItem,
-  useDeleteReceiptItem,
-  useEditReceiptItem,
-} from '../hooks/use-edit-receipt';
+import { Pencil, Plus } from 'lucide-react';
+import { useReceiptIsValid } from '../hooks/use-get-receipt';
+import { useReadyReceipt } from '../hooks/use-ready-receipt';
 import { ReviewReceiptHeader } from './receipt-header';
-import { ReceiptSummarySheet } from './receipt-summary-sheet';
-import ReceiptItemSheet from './edit-item-sheet';
-import { CreateRoomSheet } from './create-room-sheet';
-import type { CreateReceiptItemDto, ReceiptItemDto } from '@/shared/dto/types';
+import { ReceiptImageViewer } from './receipt-image-viewer';
+import {
+  ReceiptItemSheetProvider,
+  useReceiptItemSheet,
+} from './receipt-item-sheet-provider';
+import { ReceiptActionsPanel } from './receipt-actions-panel';
 import type { ReceiptWithRoom } from '../server/get-receipt-service';
 import { Button } from '@/shared/components/ui/button';
 import { ReceiptLayoutShell } from '@/shared/components/layout/receipt-layout-shell';
-import { useCreateReceiptRoom } from '@/features/room/hooks/use-room';
 import { ReviewItemCard } from '@/shared/components/item-card/review-item-card';
-import { PriceBreakdown } from '@/shared/components/price-breakdown';
-import { moneyValuesEqual } from '@/shared/lib/money-math';
+import { Route } from '@/routes/_authed/receipt.review.$receiptId';
 
 interface ReceiptEditorProps {
   initialReceipt: ReceiptWithRoom;
 }
 
 export function ReceiptEditorView({ initialReceipt }: ReceiptEditorProps) {
-  const navigate = useNavigate();
-  const { data } = useGetReceiptReview(initialReceipt.receiptId, {
-    initialData: initialReceipt,
-  });
-  const receipt = data && 'items' in data ? data : initialReceipt;
-  const receiptItems = receipt.items;
-  // --- DATA HOOKS ---
+  const receiptId = initialReceipt.receiptId;
+  // this live receipt and using it from the cache allows the proliferation of optimistic updates
+  const { data: liveReceipt } = useReadyReceipt(receiptId, initialReceipt);
   const { isError: receiptNotValid, isFetching: receiptValidFetching } =
-    useReceiptIsValid(receipt.receiptId);
+    useReceiptIsValid(receiptId);
+  const { view } = Route.useSearch();
 
-  // --- UI STATE ---
-  const [showingItemSheet, setShowingItemSheet] = useState(false);
-  const [showSummarySheet, setShowSummarySheet] = useState(false);
-  const [showCreateRoomSheet, setShowCreateRoomSheet] = useState(false);
-  const [receiptItemForSheet, setReceiptItemForSheet] =
-    useState<ReceiptItemDto | null>(null);
-
-  // --- MUTATIONS ---
-  const { mutateAsync: editReceiptItem } = useEditReceiptItem(
-    receipt.receiptId,
-    receipt.roomId ?? null,
+  return (
+    <ReceiptItemSheetProvider
+      receiptId={receiptId}
+      roomId={liveReceipt.roomId ?? null}
+    >
+      <ReceiptEditorContent
+        receipt={liveReceipt}
+        receiptNotValid={receiptNotValid}
+        receiptValidFetching={receiptValidFetching}
+        view={view}
+      />
+    </ReceiptItemSheetProvider>
   );
-  const { mutateAsync: deleteReceiptItem } = useDeleteReceiptItem(
-    receipt.roomId ?? null,
-  );
-  const { mutateAsync: createReceiptItem } = useCreateReceiptItem(
-    receipt.roomId ?? null,
-  );
-  const { mutateAsync: createReceiptRoom, isPending: isCreatingRoom } =
-    useCreateReceiptRoom();
+}
 
-  // --- CALCULATIONS ---
-  const subtotal = useMemo(() => {
-    return receiptItems.reduce((sum, item) => sum + item.price, 0).toFixed(2);
-  }, [receiptItems]);
-
-  const totalHasError = useMemo(() => {
-    const calculated = Number(subtotal) + receipt.tip + receipt.tax;
-    return !moneyValuesEqual(calculated, receipt.grandTotal);
-  }, [subtotal, receipt]);
-
-  // --- HANDLERS ---
-  // (Notice: No more setReceiptItems logic. Just clean mutation calls)
-
-  const handleCreateCustomItem = () => {
-    setReceiptItemForSheet(null);
-    setShowingItemSheet(true);
-  };
-
-  const handleEditItem = (item: ReceiptItemDto) => {
-    setReceiptItemForSheet(item);
-    setShowingItemSheet(true);
-  };
-
-  const handleDeleteItem = async (updatedItem: ReceiptItemDto) => {
-    setShowingItemSheet(false);
-    await deleteReceiptItem({
-      receiptId: receipt.receiptId,
-      item: updatedItem,
-    });
-  };
-
-  const saveReceiptItem = async (
-    updatedItem: ReceiptItemDto | CreateReceiptItemDto,
-  ) => {
-    setShowingItemSheet(false);
-    if ('receiptItemId' in updatedItem) {
-      await editReceiptItem(updatedItem);
-    } else {
-      await createReceiptItem({
-        receiptId: receipt.receiptId,
-        item: updatedItem,
-      });
-    }
-  };
-
-  const handleFinalizeRoomCreation = async (sharePayment: boolean) => {
-    const response = await createReceiptRoom({
-      receiptId: receipt.receiptId,
-      sharePayment,
-    });
-
-    if ('success' in response && 'room' in response) {
-      setShowCreateRoomSheet(false);
-      navigate({
-        to: '/receipt/parce/$roomId',
-        params: { roomId: response.room.roomId },
-        search: { view: 'items' },
-      });
-    }
-  };
-
-  // --- COMPONENTS ---
-  const ActionButton = () => {
-    if (totalHasError) {
-      return (
-        <Button
-          className="w-full h-11"
-          size="lg"
-          onClick={() => setShowingItemSheet(true)}
-        >
-          <Pencil className="size-4 mr-2" />
-          Edit Receipt Totals
-        </Button>
-      );
-    }
-
-    if (receipt.roomId) {
-      return (
-        <Link
-          to="/receipt/parce/$roomId"
-          params={{ roomId: receipt.roomId }}
-          search={{ view: 'items' }}
-        >
-          <Button className="w-full h-11" size="lg">
-            <Users className="size-4 mr-2" />
-            Go To Room
-          </Button>
-        </Link>
-      );
-    }
-
-    return (
-      <Button
-        className="w-full h-11"
-        size="lg"
-        disabled={receiptNotValid}
-        onClick={() => setShowCreateRoomSheet(true)}
-      >
-        <Share2 className="size-4 mr-2" />
-        Create Room
-      </Button>
-    );
-  };
+function ReceiptEditorContent({
+  receipt,
+  receiptNotValid,
+  receiptValidFetching,
+  view,
+}: {
+  receipt: ReceiptWithRoom;
+  receiptNotValid: boolean;
+  receiptValidFetching: boolean;
+  view: 'items' | 'image';
+}) {
+  const { openCreateItem, openEditItem } = useReceiptItemSheet();
+  const receiptItems = receipt.items;
 
   return (
     <ReceiptLayoutShell
+      fullBleed={view === 'image'}
       header={
         <ReviewReceiptHeader
           title={receipt.title ?? 'Set Title'}
           itemCount={receiptItems.length}
-          grandTotal={receipt.grandTotal}
           receiptIsInvalid={receiptNotValid}
           receiptIsValidPending={receiptValidFetching}
         />
       }
     >
-      <div className="space-y-2 mb-4">
-        {receiptItems.map((item) => (
-          <ReviewItemCard
-            key={item.receiptItemId}
-            item={item}
-            onEdit={() => handleEditItem(item)}
-          />
-        ))}
-      </div>
-
-      <Button
-        variant="outline"
-        size="lg"
-        className="w-full mb-6 border-dashed"
-        onClick={handleCreateCustomItem}
-      >
-        <Plus className="size-4 mr-2" />
-        Add Custom Item
-      </Button>
-
-      <div className="relative group mt-6 ">
-        <PriceBreakdown
-          subtotal={parseFloat(subtotal)}
-          tax={receipt.tax}
-          tip={receipt.tip}
-          grandTotal={receipt.grandTotal}
-          label="Receipt Totals"
-          onClick={() => setShowSummarySheet(true)}
-          errorMessage={
-            totalHasError ? 'Fix total mismatch before continuing' : undefined
-          }
-          actionButton={<ActionButton />}
-          className="pr-10 border-primary/20 active:bg-accent/50 transition-colors shadow-sm"
-        />
-
-        <div className="absolute top-4 right-4 pointer-events-none">
-          <div className="bg-primary/10 p-2 rounded-full text-primary">
-            <Pencil className="size-4" />
+      {view === 'image' ? (
+        <ReceiptImageViewer receiptId={receipt.receiptId} />
+      ) : (
+        <>
+          <div className="space-y-2 mb-4">
+            {receiptItems.map((item) => (
+              <ReviewItemCard
+                key={item.receiptItemId}
+                item={item}
+                onEdit={() => openEditItem(item.receiptItemId)}
+              />
+            ))}
           </div>
-        </div>
-      </div>
 
-      <ReceiptItemSheet
-        key={receiptItemForSheet?.receiptItemId}
-        item={receiptItemForSheet}
-        showSheet={showingItemSheet}
-        closeSheet={() => setShowingItemSheet(false)}
-        handleDeleteItem={handleDeleteItem}
-        handleSaveItem={saveReceiptItem}
-      />
+          <Button
+            variant="outline"
+            size="lg"
+            className="w-full mb-6 border-dashed"
+            onClick={openCreateItem}
+          >
+            <Plus className="size-4 mr-2" />
+            Add Custom Item
+          </Button>
 
-      <ReceiptSummarySheet
-        showSheet={showSummarySheet}
-        receipt={receipt}
-        subtotal={subtotal}
-        closeSheet={() => setShowSummarySheet(false)}
-      />
+          <div className="relative group mt-6">
+            <ReceiptActionsPanel
+              receipt={receipt}
+              receiptNotValid={receiptNotValid}
+              className="pr-10 border-primary/20 active:bg-accent/50 transition-colors shadow-sm"
+            />
 
-      <CreateRoomSheet
-        open={showCreateRoomSheet}
-        onOpenChange={setShowCreateRoomSheet}
-        onConfirm={handleFinalizeRoomCreation}
-        receiptTip={receipt.tip}
-        isCreating={isCreatingRoom}
-      />
+            <div className="absolute top-4 right-4 pointer-events-none">
+              <div className="bg-primary/10 p-2 rounded-full text-primary">
+                <Pencil className="size-4" />
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </ReceiptLayoutShell>
   );
 }

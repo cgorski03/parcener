@@ -8,4 +8,4 @@
  * - features/room (getReceiptIsValid)
  */
 
-export { getReceiptState } from './get-receipt-service';
+export { getReceiptState, getReceiptImageObject } from './get-receipt-service';
