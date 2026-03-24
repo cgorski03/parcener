@@ -100,7 +100,7 @@ export function LandingPage() {
                 className="px-3 py-1 rounded-full text-xs font-medium border border-primary/10 bg-primary/5 text-primary"
               >
                 <Lock className="w-3 h-3 mr-2" />
-                Private Beta
+                Public Beta
               </Badge>
 
               <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tighter text-foreground max-w-4xl mx-auto leading-[0.95]">
@@ -277,9 +277,7 @@ export function LandingPage() {
                 Privacy
               </Link>
               <span>·</span>
-              <span>
-                © {new Date().getFullYear()} Parcener. MIT License.
-              </span>
+              <span>© {new Date().getFullYear()} Parcener. MIT License.</span>
             </div>
             <div className="flex items-center gap-4">
               <a
