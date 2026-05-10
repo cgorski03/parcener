@@ -52,35 +52,32 @@ export function PriceBreakdown({
         className,
       )}
     >
-      <div className="pt-2 mt-1 mb-3">
-        <div className="w-full overflow-hidden font-mono text-xs text-muted-foreground/70 leading-none mb-2 whitespace-nowrap">
-          {('='.repeat(80))}
-        </div>
+      <div className="pt-2 mb-3">
         <div className="flex items-center justify-between">
           <h4 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-[0.18em]">
             {label}
           </h4>
-        {items && items.length > 0 ? (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-6 text-xs text-muted-foreground hover:text-foreground px-2"
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowItems(!showItems);
-            }}
-          >
-            {showItems ? 'Hide Items' : 'View Items'}
-            {showItems ? (
-              <ChevronUp className="ml-1 h-3 w-3" />
-            ) : (
-              <ChevronDown className="ml-1 h-3 w-3" />
-            )}
-          </Button>
-        ) : (
-          /* Prevent Layout Shift */
-          <div className="h-6" />
-        )}
+          {items && items.length > 0 ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 text-xs text-muted-foreground hover:text-foreground px-2"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowItems(!showItems);
+              }}
+            >
+              {showItems ? 'Hide Items' : 'View Items'}
+              {showItems ? (
+                <ChevronUp className="ml-1 h-3 w-3" />
+              ) : (
+                <ChevronDown className="ml-1 h-3 w-3" />
+              )}
+            </Button>
+          ) : (
+            /* Prevent Layout Shift */
+            <div className="h-6" />
+          )}
         </div>
       </div>
 
@@ -110,15 +107,12 @@ export function PriceBreakdown({
         <Row label="Tip" amount={tip} muted />
       </div>
 
-      <div className="pt-3 mt-3">
-        <div className="w-full overflow-hidden font-mono text-xs text-muted-foreground/70 leading-none mb-2 whitespace-nowrap">
-          {('='.repeat(80))}
-        </div>
+      <div className="pt-4 mt-3">
         <div className="flex justify-between items-end">
-        <span className="font-semibold text-foreground">Total</span>
-        <span className="text-xl font-bold tracking-tight tabular-nums text-foreground">
-          ${grandTotal.toFixed(2)}
-        </span>
+          <span className="font-semibold text-foreground">Total</span>
+          <span className="text-xl font-bold tracking-tight tabular-nums text-foreground">
+            ${grandTotal.toFixed(2)}
+          </span>
         </div>
         {metadataText && (
           <div className="mt-4 text-center font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground/45">

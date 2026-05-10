@@ -10,6 +10,7 @@ import {
   SheetTrigger,
 } from '@/shared/components/ui/sheet';
 import { Button } from '@/shared/components/ui/button';
+import { useIsMobile } from '@/shared/hooks/use-mobile';
 
 interface QrShareSheetProps {
   title?: string;
@@ -36,6 +37,7 @@ export function QrShareSheet({
   const isControlled = open !== undefined;
   const isOpen = isControlled ? open : internalOpen;
   const setIsOpen = isControlled ? onOpenChange : setInternalOpen;
+  const isMobile = useIsMobile();
 
   const handleCopy = () => {
     navigator.clipboard.writeText(value);
@@ -46,7 +48,10 @@ export function QrShareSheet({
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       {trigger && <SheetTrigger asChild>{trigger}</SheetTrigger>}
-      <SheetContent side="bottom" className="rounded-t-xl">
+      <SheetContent
+        side={isMobile ? 'bottom' : 'right'}
+        className={`${isMobile ? 'rounded-t-2xl' : 'rounded-l-2xl'} p-6`}
+      >
         <SheetHeader className="mb-6">
           <SheetTitle>{title}</SheetTitle>
         </SheetHeader>

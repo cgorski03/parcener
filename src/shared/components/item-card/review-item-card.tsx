@@ -13,6 +13,7 @@ export function ReviewItemCard({ item, onEdit }: ReviewItemCardProps) {
       item={item}
       onClick={onEdit}
       variant="default"
+      showPrefixColumn={false}
       rightElement={
         <ChevronRight className="h-5 w-5 text-muted-foreground/50" />
       }

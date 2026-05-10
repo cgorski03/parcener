@@ -12,6 +12,7 @@ import {
 } from '@/shared/components/ui/sheet';
 import { Input } from '@/shared/components/ui/input';
 import { Button } from '@/shared/components/ui/button';
+import { useIsMobile } from '@/shared/hooks/use-mobile';
 
 const calculateAmount = (
   inputValue: string,
@@ -37,6 +38,7 @@ export function ReceiptSummarySheet(props: {
   const { showSheet, receipt, subtotal, closeSheet } = props;
   const { mutateAsync: saveReceiptTotal, isPending: savingReceiptTotal } =
     useFinalizeReceipt(receipt.roomId ?? null);
+  const isMobile = useIsMobile();
 
   const [taxMode, setTaxMode] = useState<TipTaxMode>('absolute');
   const [tipMode, setTipMode] = useState<TipTaxMode>('absolute');
@@ -98,8 +100,8 @@ export function ReceiptSummarySheet(props: {
         onOpenAutoFocus={(e) => {
           e.preventDefault();
         }}
-        side="bottom"
-        className="rounded-t-2xl  p-6"
+        side={isMobile ? 'bottom' : 'right'}
+        className={`${isMobile ? 'rounded-t-2xl' : 'rounded-l-2xl'} p-6`}
       >
         <SheetHeader className="pl-0">
           <SheetTitle className="text-xl">Edit Totals</SheetTitle>

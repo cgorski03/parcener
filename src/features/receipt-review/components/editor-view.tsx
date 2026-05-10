@@ -9,9 +9,12 @@ import {
 } from './receipt-item-sheet-provider';
 import { ReceiptActionsPanel } from './receipt-actions-panel';
 import type { ReceiptWithRoom } from '../server/get-receipt-service';
-import { Button } from '@/shared/components/ui/button';
 import { ReceiptLayoutShell } from '@/shared/components/layout/receipt-layout-shell';
 import { ReviewItemCard } from '@/shared/components/item-card/review-item-card';
+import {
+  ReceiptPaper,
+  ReceiptPaperSectionBreak,
+} from '@/shared/components/receipt-paper';
 import { Route } from '@/routes/_authed/receipt.review.$receiptId';
 
 interface ReceiptEditorProps {
@@ -71,7 +74,7 @@ function ReceiptEditorContent({
         <ReceiptImageViewer receiptId={receipt.receiptId} />
       ) : (
         <>
-          <div className="space-y-2 mb-4">
+          <ReceiptPaper className="mb-4">
             {receiptItems.map((item) => (
               <ReviewItemCard
                 key={item.receiptItemId}
@@ -79,31 +82,30 @@ function ReceiptEditorContent({
                 onEdit={() => openEditItem(item.receiptItemId)}
               />
             ))}
-          </div>
 
-          <Button
-            variant="outline"
-            size="lg"
-            className="w-full mb-6 border-dashed"
-            onClick={openCreateItem}
-          >
-            <Plus className="size-4 mr-2" />
-            Add Custom Item
-          </Button>
+            <button
+              type="button"
+              className="flex w-full items-center justify-center gap-3 px-4 py-6 font-mono text-sm transition-colors hover:bg-muted/20"
+              onClick={openCreateItem}
+            >
+              <Plus className="size-4" />
+              Add Custom Item
+            </button>
 
-          <div className="relative group mt-6">
-            <ReceiptActionsPanel
-              receipt={receipt}
-              receiptNotValid={receiptNotValid}
-              className="pr-10 border-primary/20 active:bg-accent/50 transition-colors shadow-sm"
-            />
+            <ReceiptPaperSectionBreak>
+              <ReceiptActionsPanel
+                receipt={receipt}
+                receiptNotValid={receiptNotValid}
+                className="rounded-none border-0 bg-transparent px-4 py-5 pr-10 shadow-none transition-colors active:bg-accent/50"
+              />
 
-            <div className="absolute top-4 right-4 pointer-events-none">
-              <div className="bg-primary/10 p-2 rounded-full text-primary">
-                <Pencil className="size-4" />
+              <div className="absolute top-4 right-4 pointer-events-none">
+                <div className="bg-primary/10 p-2 rounded-full text-primary">
+                  <Pencil className="size-4" />
+                </div>
               </div>
-            </div>
-          </div>
+            </ReceiptPaperSectionBreak>
+          </ReceiptPaper>
         </>
       )}
     </ReceiptLayoutShell>

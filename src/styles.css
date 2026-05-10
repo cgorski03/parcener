@@ -189,15 +189,6 @@ body {
   overscroll-behavior-y: none;
 }
 
-.receipt-paper-edge {
-  height: 8px;
-  background:
-    linear-gradient(135deg, transparent 6px, hsl(var(--background)) 0) 0 0 /
-      12px 8px repeat-x,
-    linear-gradient(225deg, transparent 6px, hsl(var(--background)) 0) 6px 0 /
-      12px 8px repeat-x;
-}
-
 .scrollbar-none {
   scrollbar-width: none;
 }

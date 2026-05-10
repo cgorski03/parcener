@@ -11,6 +11,10 @@ import { ReceiptLayoutShell } from '@/shared/components/layout/receipt-layout-sh
 import { CollaborativeRoomHeader } from '@/shared/components/layout/collaborative-room-header';
 import { CollabItemCard } from '@/shared/components/item-card/collab-item-card';
 import { PriceBreakdown } from '@/shared/components/price-breakdown';
+import {
+  ReceiptPaper,
+  ReceiptPaperSectionBreak,
+} from '@/shared/components/receipt-paper';
 import { Button } from '@/shared/components/ui/button';
 
 function formatReceiptDate(date: Date | null) {
@@ -85,36 +89,30 @@ export function ActiveRoomScreen({
         />
       }
     >
-      <div className="relative">
-        <div className="receipt-paper-edge absolute inset-x-px top-px z-10 rotate-180" />
-        <div className="receipt-paper-edge absolute inset-x-px bottom-px z-10" />
-        <div className="relative overflow-hidden rounded-sm border border-border/70 bg-background">
-          {itemsWithClaims.map((data) => (
-            <CollabItemCard
-              key={data.item.receiptItemId}
-              data={data}
-              roomId={room.roomId}
-              memberId={member.roomMemberId}
-              currentMember={currentMember}
-              disabled={isLocked}
-            />
-          ))}
-          <div className="relative border-t border-dashed border-border/70">
-            <div className="pointer-events-none absolute -left-3 -top-3 h-6 w-6 rounded-full border border-border/70 bg-muted" />
-            <div className="pointer-events-none absolute -right-3 -top-3 h-6 w-6 rounded-full border border-border/70 bg-muted" />
-            <PriceBreakdown
-              subtotal={room.receipt.subtotal}
-              tax={room.receipt.tax}
-              tip={room.receipt.tip}
-              grandTotal={room.receipt.grandTotal}
-              label="Receipt Totals"
-              className="rounded-none border-0 bg-transparent px-4 py-4 shadow-none"
-              errorMessage={getReceiptErrorMessage(room.receiptIsValid, isHost)}
-              metadataText={receiptMeta}
-            />
-          </div>
-        </div>
-      </div>
+      <ReceiptPaper>
+        {itemsWithClaims.map((data) => (
+          <CollabItemCard
+            key={data.item.receiptItemId}
+            data={data}
+            roomId={room.roomId}
+            memberId={member.roomMemberId}
+            currentMember={currentMember}
+            disabled={isLocked}
+          />
+        ))}
+        <ReceiptPaperSectionBreak>
+          <PriceBreakdown
+            subtotal={room.receipt.subtotal}
+            tax={room.receipt.tax}
+            tip={room.receipt.tip}
+            grandTotal={room.receipt.grandTotal}
+            label="Receipt Totals"
+            className="rounded-none border-0 bg-transparent p-6 shadow-none"
+            errorMessage={getReceiptErrorMessage(room.receiptIsValid, isHost)}
+            metadataText={receiptMeta}
+          />
+        </ReceiptPaperSectionBreak>
+      </ReceiptPaper>
       <div className="mx-auto max-w-2xl px-4 pt-4 pb-6">
         {!room.receiptIsValid && isHost ? (
           <Link
