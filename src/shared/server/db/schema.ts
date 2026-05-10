@@ -43,7 +43,7 @@ export const receipt = pgTable('receipt', {
   grandTotal: numeric('grand_total', { precision: 10, scale: 2 })
     .notNull()
     .default('0'),
-  createdAt: timestamp('created_at').defaultNow(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
 export const receiptProcessingInformation = pgTable(

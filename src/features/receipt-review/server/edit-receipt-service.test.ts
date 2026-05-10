@@ -109,7 +109,7 @@ describe('edit-receipt-service', () => {
       );
     });
   });
-  it('will remove a claim entirely when pruning ', async () => {
+  it('will remove a claim entirely when pruning', async () => {
     const user1 = await createTestUser(testDb);
     const user2 = await createTestUser(testDb);
     const { receipt: seededReceipt, items } = await createSuccessfulReceipt(

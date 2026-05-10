@@ -18,16 +18,12 @@ export function ReceiptLayoutShell({
   const mainClasses = fullBleed
     ? cn('flex-1 overflow-hidden flex flex-col min-h-0 h-full', mainClassName)
     : cn(
-        'flex-1 container max-w-2xl mx-auto px-4 py-6 pb-32 md:pb-12',
+        'scrollbar-none flex-1 overflow-y-auto container max-w-2xl mx-auto px-4 py-6 pb-8 md:pb-12',
         mainClassName,
       );
 
-  const shellClasses = fullBleed
-    ? 'h-[100dvh] overflow-hidden bg-gradient-to-b from-background to-muted/20 flex flex-col'
-    : 'min-h-screen bg-gradient-to-b from-background to-muted/20 flex flex-col';
-
   return (
-    <div className={shellClasses}>
+    <div className="h-[100dvh] overflow-hidden bg-gradient-to-b from-background to-muted/20 flex flex-col">
       {/* Sticky Header */}
       <div className="sticky top-0 z-40 w-full">{header}</div>
 
@@ -44,7 +40,7 @@ export function ReceiptLayoutShell({
 
       {/* Sticky Mobile Footer (Optional - typically for Action Buttons) */}
       {footer && (
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/80 backdrop-blur border-t md:hidden z-50 pb-8">
+        <div className="shrink-0 p-4 bg-background/80 backdrop-blur border-t md:hidden z-50 pb-8">
           <div className="max-w-2xl mx-auto">{footer}</div>
         </div>
       )}

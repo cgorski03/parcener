@@ -24,6 +24,7 @@ interface PriceBreakdownProps {
   errorMessage?: string;
   actionButton?: React.ReactNode;
   groupClassName?: string;
+  metadataText?: string;
 }
 
 export function PriceBreakdown({
@@ -38,6 +39,7 @@ export function PriceBreakdown({
   errorMessage,
   actionButton,
   groupClassName,
+  metadataText,
 }: PriceBreakdownProps) {
   const [showItems, setShowItems] = useState(false);
 
@@ -45,15 +47,19 @@ export function PriceBreakdown({
     <div
       onClick={onClick}
       className={cn(
-        'p-4 rounded-lg border bg-card text-card-foreground shadow-sm',
-        onClick && 'cursor-pointer hover:bg-accent/50 transition-colors',
+        'px-4 py-3 rounded-2xl border border-dashed bg-background text-card-foreground',
+        onClick && 'cursor-pointer hover:bg-muted/20 transition-colors',
         className,
       )}
     >
-      <div className="flex items-center justify-between mb-3">
-        <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-          {label}
-        </h4>
+      <div className="pt-2 mt-1 mb-3">
+        <div className="w-full overflow-hidden font-mono text-xs text-muted-foreground/70 leading-none mb-2 whitespace-nowrap">
+          {('='.repeat(80))}
+        </div>
+        <div className="flex items-center justify-between">
+          <h4 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-[0.18em]">
+            {label}
+          </h4>
         {items && items.length > 0 ? (
           <Button
             variant="ghost"
@@ -75,11 +81,12 @@ export function PriceBreakdown({
           /* Prevent Layout Shift */
           <div className="h-6" />
         )}
+        </div>
       </div>
 
       {/* Itemized List Section */}
       {items && showItems && (
-        <div className="space-y-2 mb-4 animate-in slide-in-from-top-2 fade-in duration-200">
+        <div className="space-y-2 mb-4 py-1 animate-in slide-in-from-top-2 fade-in duration-200">
           {items.map((item) => (
             <div key={item.id} className="flex justify-between text-sm">
               <span className="text-muted-foreground">
@@ -93,21 +100,31 @@ export function PriceBreakdown({
               <span>${(item.price * item.quantity).toFixed(2)}</span>
             </div>
           ))}
-          <Separator className="my-2" />
+          <Separator className="my-2 border-dashed border-muted-foreground/40" />
         </div>
       )}
 
-      <div className="space-y-1">
+      <div className="space-y-1 py-1">
         <Row label="Subtotal" amount={subtotal} />
         <Row label="Tax" amount={tax} muted />
         <Row label="Tip" amount={tip} muted />
       </div>
 
-      <div className="pt-3 mt-3 border-t flex justify-between items-end">
-        <span className="font-semibold">Total</span>
-        <span className="text-xl font-bold tracking-tight">
+      <div className="pt-3 mt-3">
+        <div className="w-full overflow-hidden font-mono text-xs text-muted-foreground/70 leading-none mb-2 whitespace-nowrap">
+          {('='.repeat(80))}
+        </div>
+        <div className="flex justify-between items-end">
+        <span className="font-semibold text-foreground">Total</span>
+        <span className="text-xl font-bold tracking-tight tabular-nums text-foreground">
           ${grandTotal.toFixed(2)}
         </span>
+        </div>
+        {metadataText && (
+          <div className="mt-4 text-center font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground/45">
+            {metadataText}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -145,8 +162,8 @@ function Row({
   return (
     <div
       className={cn(
-        'flex justify-between text-sm',
-        muted ? 'text-muted-foreground' : 'text-foreground',
+        'flex justify-between text-sm font-normal',
+        muted ? 'text-muted-foreground' : 'text-foreground/70',
       )}
     >
       <span>{label}</span>

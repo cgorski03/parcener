@@ -25,12 +25,12 @@ export function QuantityControl({
   const othersPercent = (othersQuantity / totalQuantity) * 100;
 
   return (
-    <div className=" pt-3 border-t border-dashed border-border/60">
+    <div className="pt-1.5">
       <div className="flex items-end justify-between gap-4">
         {/* Left Side: Capacity & Progress */}
-        <div className="flex-1 pb-1.5 min-w-0">
+        <div className="flex-1 pb-0.5 min-w-0">
           {/* Text Labels */}
-          <div className="flex justify-between text-[10px] mb-2 font-medium">
+          <div className="flex justify-between text-[10px] mb-1.5 font-medium">
             <span
               className={cn(
                 'transition-colors flex items-center gap-1.5',
@@ -44,7 +44,7 @@ export function QuantityControl({
             </span>
 
             {remaining > 0 ? (
-              <span className="text-primary/80">{remaining} left</span>
+              <span className="text-primary/70">{remaining} left</span>
             ) : (
               <span className="text-green-600 flex items-center gap-1">
                 <Check className="h-3 w-3" /> Done
@@ -76,7 +76,7 @@ export function QuantityControl({
         </div>
 
         {/* Right Side: Stepper Controls */}
-        <div className="flex items-center gap-3 bg-background border rounded-full px-1.5 py-1 shadow-sm shrink-0">
+        <div className="flex items-center gap-3 bg-background border rounded-full px-1.5 py-1 shrink-0">
           <Button
             variant="ghost"
             size="icon"

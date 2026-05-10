@@ -47,7 +47,7 @@ export const receiptDtoSchema = z.object({
   tax: z.number().nonnegative(),
   tip: z.number().nonnegative(),
   grandTotal: z.number().nonnegative(),
-  createdAt: z.date().nullable(),
+  createdAt: z.date(),
   items: z.array(receiptItemDtoSchema),
 });
 

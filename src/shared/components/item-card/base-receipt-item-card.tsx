@@ -1,13 +1,11 @@
-import { DollarSign } from 'lucide-react';
 import type { ReceiptItemDto } from '@/shared/dto/types';
-import { Card } from '@/shared/components/ui/card';
 import { cn } from '@/shared/lib/utils';
 
 export interface BaseItemCardProps {
   item: ReceiptItemDto;
   onClick?: () => void;
   variant?: 'default' | 'active' | 'dimmed';
-  rightElement?: React.ReactNode;
+  prefixElement?: React.ReactNode;
   footerElement?: React.ReactNode;
   className?: string;
 }
@@ -16,70 +14,58 @@ export function BaseReceiptItemCard({
   item,
   onClick,
   variant = 'default',
-  rightElement,
+  prefixElement,
   footerElement,
   className,
 }: BaseItemCardProps) {
   const variantStyles = {
-    default: 'bg-card border-border hover:border-muted-foreground/30',
-    active: 'bg-orange-50/60 border-orange-400 shadow-sm',
-    dimmed: 'opacity-60 bg-muted/30 border-transparent grayscale-[0.5]',
+    default: 'bg-transparent',
+    active: 'bg-orange-50/70',
+    dimmed: 'bg-transparent',
   };
 
   return (
-    <Card
+    <button
       onClick={onClick}
+      type="button"
       className={cn(
-        'relative p-3 transition-all duration-200 border-l-4 overflow-hidden',
+        'relative block w-full text-left overflow-hidden after:pointer-events-none after:absolute after:inset-x-4 after:bottom-0 after:border-b-2 after:border-dashed after:border-foreground/35 first:rounded-t-none last:rounded-b-none last:after:hidden',
+        'px-4 py-5 transition-colors duration-300',
         onClick && 'cursor-pointer ',
         variantStyles[variant],
         className,
       )}
     >
-      {/* Visual Glow for Active State */}
       {variant === 'active' && (
-        <div className="absolute top-0 right-0 w-24 h-24 bg-primary/10 rounded-full blur-xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 w-24 bg-orange-400/10 blur-2xl" />
       )}
-
-      <div className="relative">
-        <div className="flex items-start justify-between gap-3">
-          {/* Left: Text Data */}
-          <div className="flex-1 min-w-0">
-            <div className="font-semibold leading-snug text-foreground">
-              {item.quantity > 1 && (
-                <span className="text-muted-foreground font-normal mr-1">
-                  {item.quantity}x
-                </span>
-              )}
-              {item.interpretedText}
-            </div>
-
-            {/* Price Row */}
-            <div className="flex items-center gap-1 mt-1.5">
-              <DollarSign className="h-3 w-3 text-muted-foreground" />
-              <span
-                className={cn(
-                  'font-bold text-lg',
-                  variant === 'dimmed' && 'text-muted-foreground',
-                )}
-              >
-                {item.price.toFixed(2)}
-              </span>
-              {item.quantity > 1 && (
-                <span className="text-xs text-muted-foreground ml-2">
-                  (${(item.price / item.quantity).toFixed(2)} / unit)
-                </span>
-              )}
+      <div
+        className={cn(
+          'relative',
+          variant === 'dimmed' && 'opacity-55 grayscale-[0.35]',
+        )}
+      >
+        <div className="grid grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3">
+          <div className="flex items-center justify-start">
+            {prefixElement}
+          </div>
+          <div className="min-w-0">
+            <div className="text-[15px] leading-snug text-foreground font-mono truncate">
+              <span className="font-semibold">{item.interpretedText}</span>
             </div>
           </div>
-
-          {/* Right: Slot (Avatars, Edit Icon, etc) */}
-          {rightElement && <div className="shrink-0 ml-2">{rightElement}</div>}
+          <span className="shrink-0 text-[15px] font-normal tabular-nums text-muted-foreground">
+            ${item.price.toFixed(2)}
+          </span>
         </div>
 
         {/* Bottom: Slot (Controls, Raw Text, etc) */}
-        {footerElement && <div className="mt-2 pt-1">{footerElement}</div>}
+        {footerElement && (
+          <div className="mt-2 pl-0.5">
+            {footerElement}
+          </div>
+        )}
       </div>
-    </Card>
+    </button>
   );
 }
