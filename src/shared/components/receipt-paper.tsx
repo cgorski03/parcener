@@ -40,14 +40,16 @@ export function ReceiptPaper({
   children,
   className,
   bodyClassName,
+  showTopEdge = true,
 }: {
   children: React.ReactNode;
   className?: string;
   bodyClassName?: string;
+  showTopEdge?: boolean;
 }) {
   return (
     <div className={cn('relative bg-background', className)}>
-      <ReceiptTornEdge />
+      {showTopEdge && <ReceiptTornEdge />}
       <div
         className={cn(
           'relative overflow-hidden border-x border-border/70',
@@ -71,7 +73,7 @@ export function ReceiptPaperSectionBreak({
   return (
     <div
       className={cn(
-        'relative border-t-2 border-dashed border-foreground/35',
+        'relative',
         className,
       )}
     >

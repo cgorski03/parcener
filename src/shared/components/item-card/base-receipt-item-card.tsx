@@ -10,6 +10,7 @@ export interface BaseItemCardProps {
   footerElement?: React.ReactNode;
   className?: string;
   showPrefixColumn?: boolean;
+  hideSeparator?: boolean;
 }
 
 export function BaseReceiptItemCard({
@@ -21,6 +22,7 @@ export function BaseReceiptItemCard({
   footerElement,
   className,
   showPrefixColumn = true,
+  hideSeparator = false,
 }: BaseItemCardProps) {
   const variantStyles = {
     default: 'bg-transparent',
@@ -41,7 +43,8 @@ export function BaseReceiptItemCard({
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
       className={cn(
-        'relative block w-full text-left overflow-hidden after:pointer-events-none after:absolute after:inset-x-4 after:bottom-0 after:border-b-2 after:border-dashed after:border-foreground/35 first:rounded-t-none last:rounded-b-none last:after:hidden',
+        'relative block w-full text-left overflow-hidden after:pointer-events-none after:absolute after:inset-x-4 after:bottom-0 after:border-b-2 after:border-dashed after:border-foreground/35 first:rounded-t-none last:rounded-b-none',
+        hideSeparator && 'after:hidden',
         'px-4 py-5 transition-colors duration-300',
         onClick && 'cursor-pointer ',
         variantStyles[variant],

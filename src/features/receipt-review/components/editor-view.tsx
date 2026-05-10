@@ -85,7 +85,7 @@ function ReceiptEditorContent({
 
             <button
               type="button"
-              className="flex w-full items-center justify-center gap-3 px-4 py-6 font-mono text-sm transition-colors hover:bg-muted/20"
+              className="relative flex w-full items-center justify-center gap-3 px-4 py-6 font-mono text-sm transition-colors hover:bg-muted/20 after:pointer-events-none after:absolute after:inset-x-4 after:bottom-0 after:border-b-2 after:border-dashed after:border-foreground/35"
               onClick={openCreateItem}
             >
               <Plus className="size-4" />
