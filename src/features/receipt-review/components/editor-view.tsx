@@ -7,7 +7,8 @@ import {
   ReceiptItemSheetProvider,
   useReceiptItemSheet,
 } from './receipt-item-sheet-provider';
-import { ReceiptActionsPanel } from './receipt-actions-panel';
+import { ReceiptRoomAction } from './receipt-room-action';
+import { ReceiptTotalsPanel } from './receipt-totals-panel';
 import type { ReceiptWithRoom } from '../server/get-receipt-service';
 import { ReceiptLayoutShell } from '@/shared/components/layout/receipt-layout-shell';
 import { ReviewItemCard } from '@/shared/components/item-card/review-item-card';
@@ -93,9 +94,8 @@ function ReceiptEditorContent({
             </button>
 
             <ReceiptPaperSectionBreak>
-              <ReceiptActionsPanel
+              <ReceiptTotalsPanel
                 receipt={receipt}
-                receiptNotValid={receiptNotValid}
                 className="rounded-none border-0 bg-transparent px-4 py-5 pr-10 shadow-none transition-colors active:bg-accent/50"
               />
 
@@ -106,6 +106,11 @@ function ReceiptEditorContent({
               </div>
             </ReceiptPaperSectionBreak>
           </ReceiptPaper>
+
+          <ReceiptRoomAction
+            receipt={receipt}
+            receiptNotValid={receiptNotValid}
+          />
         </>
       )}
     </ReceiptLayoutShell>

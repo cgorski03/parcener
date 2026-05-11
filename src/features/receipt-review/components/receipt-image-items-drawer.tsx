@@ -3,7 +3,8 @@ import { Plus } from 'lucide-react';
 import { useReadyReceipt } from '../hooks/use-ready-receipt';
 import { useReceiptIsValid } from '../hooks/use-get-receipt';
 import { CompactReceiptItemCard } from './compact-receipt-item-card';
-import { ReceiptActionsPanel } from './receipt-actions-panel';
+import { ReceiptRoomAction } from './receipt-room-action';
+import { ReceiptTotalsPanel } from './receipt-totals-panel';
 import { useReceiptItemSheet } from './receipt-item-sheet-provider';
 import { Button } from '@/shared/components/ui/button';
 
@@ -56,10 +57,13 @@ export function ReceiptImageItemsDrawer({
         )}
 
         <div className="pt-4 mt-4 border-t border-muted/40">
-          <ReceiptActionsPanel
-            receipt={receipt}
-            receiptNotValid={receiptNotValid}
-          />
+          <div className="space-y-4">
+            <ReceiptTotalsPanel receipt={receipt} />
+            <ReceiptRoomAction
+              receipt={receipt}
+              receiptNotValid={receiptNotValid}
+            />
+          </div>
         </div>
       </div>
     </div>
