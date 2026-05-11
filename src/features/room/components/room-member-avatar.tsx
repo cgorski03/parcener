@@ -8,13 +8,14 @@ export type RoomMemberAvatarProps = {
   id: string;
   avatarUrl: string | null;
   displayName: string | null;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'xs' | 'sm' | 'md' | 'lg';
 };
 
 export function RoomMemberAvatar(props: RoomMemberAvatarProps) {
   const { id, avatarUrl, displayName, size = 'md' } = props;
 
   const sizeClasses = {
+    xs: 'h-7 w-7',
     sm: 'h-8 w-8',
     md: 'h-10 w-10',
     lg: 'h-12 w-12',

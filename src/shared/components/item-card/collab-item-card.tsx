@@ -1,6 +1,11 @@
+import { useRef } from 'react';
 import { BaseReceiptItemCard } from './base-receipt-item-card';
-import { QuantityControl } from './quantity-control';
-import type { ItemWithClaims } from '@/features/room/hooks/use-claims';
+import { ClaimQuantityControl } from './claim-quantity-control';
+import type {
+  EnrichedClaim,
+  ItemWithClaims,
+} from '@/features/room/hooks/use-claims';
+import type { RoomMemberDto } from '@/shared/dto/types';
 import { RoomMemberAvatar } from '@/features/room/components/room-member-avatar';
 import { useDebouncedClaim } from '@/features/room/hooks/use-debounced-claim';
 
@@ -8,11 +13,13 @@ export function CollabItemCard({
   data,
   roomId,
   memberId,
+  currentMember,
   disabled = false,
 }: {
   data: ItemWithClaims;
   roomId: string;
   memberId: string;
+  currentMember: RoomMemberDto;
   disabled?: boolean;
 }) {
   const { item, myClaim, otherClaims, otherClaimedQty } = data;
@@ -29,6 +36,18 @@ export function CollabItemCard({
 
   const isFullyClaimed = remaining <= 0;
   const isDimmed = (isFullyClaimed && !isMine) || disabled;
+  const optimisticClaimedAtRef = useRef<Date>(new Date());
+  const liveMyClaim: EnrichedClaim | null =
+    myClaim || quantity > 0
+      ? {
+          memberId,
+          avatarUrl: currentMember.avatarUrl,
+          displayName: currentMember.displayName ?? memberId,
+          quantity,
+          claimedAt: myClaim?.claimedAt ?? optimisticClaimedAtRef.current,
+          isMe: true,
+        }
+      : null;
 
   return (
     <BaseReceiptItemCard
@@ -44,29 +63,41 @@ export function CollabItemCard({
           updateQuantity(isMine ? 0 : 1);
         }
       }}
-      rightElement={
-        otherClaims.length > 0 && (
-          <div className="flex items-center gap-1">
-            {otherClaims.slice(0, 3).map((claim) => (
-              <div key={claim.memberId} className="relative">
-                <RoomMemberAvatar
-                  id={claim.memberId}
-                  avatarUrl={claim.avatarUrl}
-                  displayName={claim.displayName}
-                />
-                {/* Show count badge if they took more than 1 */}
-                {claim.quantity > 1 && (
-                  <div className="absolute -bottom-1 -right-1 bg-background text-[9px] font-bold border rounded-full h-4 w-4 flex items-center justify-center shadow-sm">
-                    {claim.quantity}
-                  </div>
-                )}
-              </div>
-            ))}
-            {otherClaims.length > 3 && (
-              <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-[10px] font-medium border-2 border-background">
-                +{otherClaims.length - 3}
-              </div>
-            )}
+      prefixElement={
+        item.quantity === 1 ? (
+          isMine && liveMyClaim ? (
+            <div className="relative flex h-8 w-8 items-center justify-center rounded-full border border-muted-foreground/35 bg-background overflow-hidden">
+              <RoomMemberAvatar
+                id={liveMyClaim.memberId}
+                avatarUrl={liveMyClaim.avatarUrl}
+                displayName={liveMyClaim.displayName}
+                size="xs"
+              />
+            </div>
+          ) : otherClaims.length > 0 ? (
+            <div className="flex items-center gap-1">
+              {otherClaims.slice(0, 3).map((claim) => (
+                <div key={claim.memberId} className="relative">
+                  <RoomMemberAvatar
+                    id={claim.memberId}
+                    avatarUrl={claim.avatarUrl}
+                    displayName={claim.displayName}
+                    size="xs"
+                  />
+                </div>
+              ))}
+              {otherClaims.length > 3 && (
+                <div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center text-[9px] font-medium border-2 border-background">
+                  +{otherClaims.length - 3}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="h-8 w-8 rounded-full border border-muted-foreground/30 bg-background" />
+          )
+        ) : (
+          <div className="flex h-8 w-8 items-center justify-center rounded-full border border-muted-foreground/35 bg-background font-mono text-sm font-semibold text-muted-foreground">
+            {item.quantity}x
           </div>
         )
       }
@@ -74,10 +105,15 @@ export function CollabItemCard({
       footerElement={
         item.quantity > 1 &&
         !disabled && (
-          <QuantityControl
+          <ClaimQuantityControl
             totalQuantity={item.quantity}
             myQuantity={quantity}
             othersQuantity={otherClaimedQty}
+            myClaim={liveMyClaim}
+            otherClaims={otherClaims}
+            onPunchTap={(delta) => {
+              updateQuantity(Math.max(0, quantity + delta));
+            }}
             onIncrement={() => updateQuantity(quantity + 1)}
             onDecrement={() => updateQuantity(quantity - 1)}
           />

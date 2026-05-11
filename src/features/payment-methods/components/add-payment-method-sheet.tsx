@@ -12,6 +12,7 @@ import {
   SheetTitle,
 } from '@/shared/components/ui/sheet';
 import { cn } from '@/shared/lib/utils';
+import { useIsMobile } from '@/shared/hooks/use-mobile';
 
 interface AddPaymentMethodSheetProps {
   open: boolean;
@@ -29,6 +30,7 @@ export function AddPaymentMethodSheet({
   const [hasVerified, setHasVerified] = useState(false);
   const [isReady, setIsReady] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const isMobile = useIsMobile();
 
   // Delay rendering the input until sheet animation is done
   useEffect(() => {
@@ -68,9 +70,9 @@ export function AddPaymentMethodSheet({
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
-        side="bottom"
+        side={isMobile ? 'bottom' : 'right'}
+        className={`${isMobile ? 'rounded-t-2xl' : 'rounded-l-2xl'} max-h-[92svh] flex flex-col p-6 gap-6 outline-none`}
         onOpenAutoFocus={(e) => e.preventDefault()}
-        className="rounded-t-[20px] max-h-[92svh] flex flex-col p-6 gap-6 outline-none"
       >
         <SheetHeader className="text-left space-y-1">
           <SheetTitle>Link Venmo Account</SheetTitle>

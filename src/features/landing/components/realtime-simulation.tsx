@@ -23,6 +23,7 @@ function SimulatedItemCard({
   // Determine if fully claimed (for visual dimming)
   const claimedQty = others.reduce((acc, curr) => acc + curr.quantity, 0);
   const isFullyClaimed = claimedQty >= item.quantity;
+  const owner = others[0];
 
   return (
     <BaseReceiptItemCard
@@ -31,23 +32,18 @@ function SimulatedItemCard({
       variant={isFullyClaimed ? 'dimmed' : 'default'}
       // Disable click for this auto-playing demo
       className="pointer-events-none"
-      rightElement={
-        others.length > 0 && (
-          <div className="flex items-center gap-1 transition-all duration-500 ease-in-out">
-            {others.map((claim) => (
-              <div
-                key={claim.memberId}
-                className="relative animate-in zoom-in slide-in-from-bottom-2 duration-500 fade-in"
-              >
-                <RoomMemberAvatar
-                  id={claim.memberId}
-                  avatarUrl={claim.avatarUrl}
-                  displayName={claim.displayName}
-                  size="sm"
-                />
-              </div>
-            ))}
+      prefixElement={
+        owner ? (
+          <div className="relative flex h-8 w-8 animate-in zoom-in slide-in-from-bottom-2 fade-in items-center justify-center overflow-hidden rounded-full border border-muted-foreground/35 bg-background duration-500">
+            <RoomMemberAvatar
+              id={owner.memberId}
+              avatarUrl={owner.avatarUrl}
+              displayName={owner.displayName}
+              size="xs"
+            />
           </div>
+        ) : (
+          <div className="h-8 w-8 rounded-full border border-muted-foreground/30 bg-background" />
         )
       }
     />

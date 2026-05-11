@@ -192,6 +192,11 @@ export function LandingPage() {
                         price: 28.0,
                         rawText: '2 OLD FASH',
                       }}
+                      prefixElement={
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full border border-muted-foreground/35 bg-background font-mono text-sm font-semibold text-muted-foreground">
+                          2x
+                        </div>
+                      }
                     />
                   </div>
                 </div>

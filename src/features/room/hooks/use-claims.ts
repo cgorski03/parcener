@@ -9,12 +9,13 @@ import type {
 } from '@/shared/dto/types';
 import { generateIdNotCryptographicallySecure } from '@/shared/lib/utils';
 
-type EnrichedClaim = {
+export type EnrichedClaim = {
   quantity: number;
   memberId: string;
   displayName: string;
   avatarUrl: string | null;
   isMe: boolean;
+  claimedAt: Date;
 };
 
 export type ItemWithClaims = {
@@ -50,6 +51,10 @@ export function useClaimItem(myMembershipId: string) {
         (old: FullRoomInfoDto) => {
           // Manually inject the fake claim into the 'claims' array
           // This makes the UI update INSTANTLY without waiting for the server
+          const existingClaim = old.claims.find(
+            (claim) =>
+              claim.receiptItemId == receiptItemId && claim.memberId == _memId,
+          );
           const filteredClaims = old.claims.filter(
             (claim) =>
               !(
@@ -68,7 +73,7 @@ export function useClaimItem(myMembershipId: string) {
                       roomId,
                       receiptItemId,
                       memberId: _memId,
-                      claimedAt: new Date(),
+                      claimedAt: existingClaim?.claimedAt ?? new Date(),
                       quantity: quantity.toFixed(2),
                     },
                   ],
@@ -104,7 +109,14 @@ export const useEnrichedClaimItems = (
   const itemsWithClaims = useMemo(() => {
     const claimsByItem = new Map<string, Array<EnrichedClaim>>();
 
-    currentClaims.forEach((claim) => {
+    // Sort once in the beginning to ensure that claims will be auto-sorted when looped through
+    const sortedClaims = [...currentClaims].sort((a, b) => {
+      const aTime = a.claimedAt ? a.claimedAt.getTime() : new Date().getTime();
+      const bTime = b.claimedAt ? b.claimedAt.getTime() : new Date().getTime();
+      return aTime - bTime;
+    });
+
+    sortedClaims.forEach((claim) => {
       const memberInfo = memberMap.get(claim.memberId);
       const enriched: EnrichedClaim = {
         quantity: parseFloat(claim.quantity),
@@ -112,6 +124,7 @@ export const useEnrichedClaimItems = (
         displayName: memberInfo?.displayName ?? 'Unknown',
         avatarUrl: memberInfo?.avatarUrl ?? null,
         isMe: claim.memberId === myMembership.roomMemberId,
+        claimedAt: claim.claimedAt ?? new Date(),
       };
       const existingClaims = claimsByItem.get(claim.receiptItemId) || [];
       existingClaims.push(enriched);
@@ -119,9 +132,9 @@ export const useEnrichedClaimItems = (
     });
 
     return room.receipt.items.map((item) => {
-      const claims = claimsByItem.get(item.receiptItemId) || [];
-      const myClaim = claims.find((c) => c.isMe);
-      const otherClaims = claims.filter((c) => !c.isMe);
+      const itemClaims = claimsByItem.get(item.receiptItemId) || [];
+      const myClaim = itemClaims.find((c) => c.isMe);
+      const otherClaims = itemClaims.filter((c) => !c.isMe);
 
       const otherClaimedQty = otherClaims.reduce(
         (sum, c) => sum + c.quantity,

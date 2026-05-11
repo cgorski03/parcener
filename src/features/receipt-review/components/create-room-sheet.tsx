@@ -13,6 +13,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/shared/components/ui/sheet';
+import { useIsMobile } from '@/shared/hooks/use-mobile';
 
 interface CreateRoomSheetProps {
   open: boolean;
@@ -32,11 +33,13 @@ export function CreateRoomSheet({
   // We keep the *preference* state here, but the data fetching is pushed down
   const [sharePayment, setSharePayment] = useState(true);
 
+  const isMobile = useIsMobile();
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
-        side="bottom"
-        className="rounded-t-[20px] p-6 max-h-[90vh] flex flex-col outline-none"
+        side={isMobile ? 'bottom' : 'right'}
+        className={`${isMobile ? 'rounded-t-2xl' : 'rounded-l-2xl'} max-h-[90vh] flex flex-col outline-none p-6`}
       >
         <SheetHeader className="text-left p-0 space-y-1">
           <SheetTitle className="text-xl">Create Room</SheetTitle>

@@ -1,25 +1,22 @@
 import { useMemo, useState } from 'react';
 import { Pencil, Share2, Users } from 'lucide-react';
 import { Link, useNavigate } from '@tanstack/react-router';
-import { ReceiptSummarySheet } from './receipt-summary-sheet';
 import { CreateRoomSheet } from './create-room-sheet';
+import { ReceiptSummarySheet } from './receipt-summary-sheet';
 import type { ReceiptWithRoom } from '../server/get-receipt-service';
-import { PriceBreakdown } from '@/shared/components/price-breakdown';
 import { Button } from '@/shared/components/ui/button';
 import { moneyValuesEqual } from '@/shared/lib/money-math';
 import { useCreateReceiptRoom } from '@/features/room/hooks/use-room';
 
-interface ReceiptActionsPanelProps {
+interface ReceiptRoomActionProps {
   receipt: ReceiptWithRoom;
   receiptNotValid: boolean;
-  className?: string;
 }
 
-export function ReceiptActionsPanel({
+export function ReceiptRoomAction({
   receipt,
   receiptNotValid,
-  className,
-}: ReceiptActionsPanelProps) {
+}: ReceiptRoomActionProps) {
   const navigate = useNavigate();
   const [showSummarySheet, setShowSummarySheet] = useState(false);
   const [showCreateRoomSheet, setShowCreateRoomSheet] = useState(false);
@@ -51,9 +48,9 @@ export function ReceiptActionsPanel({
     }
   };
 
-  const ActionButton = () => {
-    if (totalHasError) {
-      return (
+  return (
+    <>
+      {totalHasError ? (
         <Button
           className="w-full h-11"
           size="lg"
@@ -62,11 +59,7 @@ export function ReceiptActionsPanel({
           <Pencil className="size-4 mr-2" />
           Edit Receipt Totals
         </Button>
-      );
-    }
-
-    if (receipt.roomId) {
-      return (
+      ) : receipt.roomId ? (
         <Link
           to="/receipt/parce/$roomId"
           params={{ roomId: receipt.roomId }}
@@ -77,37 +70,17 @@ export function ReceiptActionsPanel({
             Go To Room
           </Button>
         </Link>
-      );
-    }
-
-    return (
-      <Button
-        className="w-full h-11"
-        size="lg"
-        disabled={receiptNotValid}
-        onClick={() => setShowCreateRoomSheet(true)}
-      >
-        <Share2 className="size-4 mr-2" />
-        Create Room
-      </Button>
-    );
-  };
-
-  return (
-    <>
-      <PriceBreakdown
-        subtotal={parseFloat(subtotal)}
-        tax={receipt.tax}
-        tip={receipt.tip}
-        grandTotal={receipt.grandTotal}
-        label="Receipt Totals"
-        onClick={() => setShowSummarySheet(true)}
-        errorMessage={
-          totalHasError ? 'Fix total mismatch before continuing' : undefined
-        }
-        actionButton={<ActionButton />}
-        className={className}
-      />
+      ) : (
+        <Button
+          className="w-full h-11"
+          size="lg"
+          disabled={receiptNotValid}
+          onClick={() => setShowCreateRoomSheet(true)}
+        >
+          <Share2 className="size-4 mr-2" />
+          Create Room
+        </Button>
+      )}
 
       <ReceiptSummarySheet
         showSheet={showSummarySheet}

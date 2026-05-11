@@ -1,0 +1,27 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": [
+    "import",
+    "jsx-a11y",
+    "oxc",
+    "react",
+    "typescript",
+    "unicorn",
+    "vitest"
+  ],
+  "env": {
+    "browser": true,
+    "node": true
+  },
+  "ignorePatterns": [
+    ".wrangler/**",
+    "dist/**",
+    "node_modules/**",
+    "src/routeTree.gen.ts",
+    "worker-configuration.d.ts"
+  ],
+  "rules": {
+    "no-debugger": "error",
+    "no-unused-vars": "warn"
+  }
+}

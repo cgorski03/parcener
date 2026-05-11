@@ -188,3 +188,11 @@ html,
 body {
   overscroll-behavior-y: none;
 }
+
+.scrollbar-none {
+  scrollbar-width: none;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}

@@ -1,0 +1,1 @@
+ALTER TABLE "receipt" ALTER COLUMN "created_at" SET NOT NULL;
