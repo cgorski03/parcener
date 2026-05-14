@@ -153,7 +153,7 @@ export const useEnrichedClaimItems = (
   const claimStats = useMemo(() => {
     let totalQty = 0;
     let claimedQty = 0;
-    let unclaimedAmount = 0;
+    let unclaimedSubtotal = 0;
 
     for (const itemData of itemsWithClaims) {
       const { item, myClaim, otherClaimedQty } = itemData;
@@ -163,14 +163,23 @@ export const useEnrichedClaimItems = (
 
       totalQty += item.quantity;
       claimedQty += Math.min(totalClaimed, item.quantity);
-      unclaimedAmount += unclaimed * unitPrice;
+      unclaimedSubtotal += unclaimed * unitPrice;
     }
 
     const allItemsClaimed = claimedQty >= totalQty;
     const claimProgress = totalQty > 0 ? (claimedQty / totalQty) * 100 : 0;
+    const feesTotal = room.receipt.fees.reduce(
+      (sum, fee) => sum + fee.amount,
+      0,
+    );
+    const safeSubtotal = room.receipt.subtotal || 1;
+    const unclaimedRatio = unclaimedSubtotal / safeSubtotal;
+    const unclaimedAmount =
+      unclaimedSubtotal +
+      (room.receipt.tax + room.receipt.tip + feesTotal) * unclaimedRatio;
 
     return { allItemsClaimed, claimProgress, unclaimedAmount };
-  }, [itemsWithClaims]);
+  }, [itemsWithClaims, room.receipt]);
 
   return { itemsWithClaims, ...claimStats };
 };

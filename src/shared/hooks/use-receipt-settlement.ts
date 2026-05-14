@@ -8,6 +8,12 @@ export interface UserSettlement {
   subtotal: number;
   taxShare: number;
   tipShare: number;
+  feeShare: number;
+  feeShares: Array<{
+    id: string;
+    label: string;
+    amount: number;
+  }>;
   totalOwed: number;
   claimedItemsCount: number;
   // Store the raw items for passing to PriceBreakdown
@@ -68,20 +74,31 @@ export function useSettlementCalculation(room: FullRoomInfoDto | undefined) {
 
     // 3. Calculate ratios
     const safeSubtotal = receipt.subtotal || 1;
+    const feesTotal = receipt.fees.reduce((sum, fee) => sum + fee.amount, 0);
 
     // 4. Generate settlements
     const settlements: Array<UserSettlement> = members.map((member) => {
       const mySubtotal = memberSubtotals.get(member.roomMemberId) || 0;
       const ratio = mySubtotal / safeSubtotal;
+      const taxShare = receipt.tax * ratio;
+      const tipShare = receipt.tip * ratio;
+      const feeShares = receipt.fees.map((fee) => ({
+        id: fee.receiptFeeId,
+        label: fee.label,
+        amount: fee.amount * ratio,
+      }));
+      const feeShare = feesTotal * ratio;
 
       return {
         userId: member.roomMemberId,
         displayName: member.displayName || 'Guest',
         avatarUrl: member.avatarUrl,
         subtotal: mySubtotal,
-        taxShare: receipt.tax * ratio,
-        tipShare: receipt.tip * ratio,
-        totalOwed: mySubtotal + receipt.tax * ratio + receipt.tip * ratio,
+        taxShare,
+        tipShare,
+        feeShare,
+        feeShares,
+        totalOwed: mySubtotal + taxShare + tipShare + feeShare,
         claimedItemsCount: memberItemCounts.get(member.roomMemberId) || 0,
         claimedItems: memberClaimedItems.get(member.roomMemberId) || [],
       };

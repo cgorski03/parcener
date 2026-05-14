@@ -42,12 +42,14 @@ export function SettlementMembersList({ members }: SettlementMembersListProps) {
 function MemberCard({ member }: { member: UserSettlement }) {
   const [expanded, setExpanded] = useState(false);
 
-  const items = member.claimedItems.map(({ claimId, item, quantityClaimed }) => ({
-    id: claimId,
-    name: item.interpretedText,
-    unitPrice: item.price / item.quantity,
-    quantity: quantityClaimed,
-  }));
+  const items = member.claimedItems.map(
+    ({ claimId, item, quantityClaimed }) => ({
+      id: claimId,
+      name: item.interpretedText,
+      unitPrice: item.price / item.quantity,
+      quantity: quantityClaimed,
+    }),
+  );
 
   return (
     <div className="rounded-lg border bg-card overflow-hidden">
@@ -112,19 +114,35 @@ function MemberCard({ member }: { member: UserSettlement }) {
             <div className="space-y-1 pt-2 border-t text-sm">
               <div className="flex justify-between text-muted-foreground">
                 <span>Subtotal</span>
-                <span className="tabular-nums">${member.subtotal.toFixed(2)}</span>
+                <span className="tabular-nums">
+                  ${member.subtotal.toFixed(2)}
+                </span>
               </div>
               <div className="flex justify-between text-muted-foreground">
                 <span>Tax</span>
-                <span className="tabular-nums">${member.taxShare.toFixed(2)}</span>
+                <span className="tabular-nums">
+                  ${member.taxShare.toFixed(2)}
+                </span>
               </div>
               <div className="flex justify-between text-muted-foreground">
                 <span>Tip</span>
-                <span className="tabular-nums">${member.tipShare.toFixed(2)}</span>
+                <span className="tabular-nums">
+                  ${member.tipShare.toFixed(2)}
+                </span>
               </div>
+              {member.feeShare > 0 && (
+                <div className="flex justify-between text-muted-foreground">
+                  <span>Fees</span>
+                  <span className="tabular-nums">
+                    ${member.feeShare.toFixed(2)}
+                  </span>
+                </div>
+              )}
               <div className="flex justify-between font-semibold pt-1">
                 <span>Total</span>
-                <span className="tabular-nums">${member.totalOwed.toFixed(2)}</span>
+                <span className="tabular-nums">
+                  ${member.totalOwed.toFixed(2)}
+                </span>
               </div>
             </div>
           </div>

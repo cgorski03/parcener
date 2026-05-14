@@ -106,6 +106,11 @@ export function ActiveRoomScreen({
             tax={room.receipt.tax}
             tip={room.receipt.tip}
             grandTotal={room.receipt.grandTotal}
+            fees={room.receipt.fees.map((fee) => ({
+              id: fee.receiptFeeId,
+              label: fee.label,
+              amount: fee.amount,
+            }))}
             label="Receipt Totals"
             className="rounded-none border-0 bg-transparent p-6 shadow-none"
             errorMessage={getReceiptErrorMessage(room.receiptIsValid, isHost)}

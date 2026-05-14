@@ -105,6 +105,7 @@ export function SettlementView({
             tax={mySettlement.taxShare}
             tip={mySettlement.tipShare}
             grandTotal={mySettlement.totalOwed}
+            fees={mySettlement.feeShares}
             items={myItems}
             className="border-primary/20 bg-primary/[0.02]"
           />
