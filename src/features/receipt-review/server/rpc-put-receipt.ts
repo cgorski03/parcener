@@ -4,11 +4,13 @@ import {
   deleteReceiptItem,
   editReceiptItem,
   finalizeReceiptTotals,
+  updateReceiptFees,
 } from './edit-receipt-service';
 import { nameTransaction } from '@/shared/observability/server/sentry-middleware';
 import { protectedFunctionMiddleware } from '@/shared/auth/server/middleware';
 import {
   createReceiptItemRequestSchema,
+  receiptFeesUpdateSchema,
   receiptItemDtoSchema,
   receiptTotalsSchema,
 } from '@/shared/dto/dtos';
@@ -91,5 +93,23 @@ export const finalizeReceiptTotalsRpc = createServerFn({ method: 'POST' })
         userId: context.user.id,
       });
       throwRpcError('Failed to finalize receipt totals');
+    }
+  });
+
+export const updateReceiptFeesRpc = createServerFn({ method: 'POST' })
+  .middleware([
+    nameTransaction('updateReceiptFeesRpc'),
+    protectedFunctionMiddleware,
+  ])
+  .inputValidator(receiptFeesUpdateSchema)
+  .handler(async ({ data, context }) => {
+    try {
+      return await updateReceiptFees(context.db, data, context.user.id);
+    } catch (error) {
+      logger.error(error, SENTRY_EVENTS.RECEIPT_EDIT.UPDATE_FEES, {
+        receiptId: data.receiptId,
+        userId: context.user.id,
+      });
+      throwRpcError('Failed to update receipt fees');
     }
   });

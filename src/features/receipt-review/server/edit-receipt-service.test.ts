@@ -5,6 +5,7 @@ import {
   deleteReceiptItem,
   editReceiptItem,
   finalizeReceiptTotals,
+  updateReceiptFees,
 } from './edit-receipt-service';
 import { testDb } from '@/test/setup';
 import { createTestUser } from '@/test/factories/user';
@@ -18,7 +19,13 @@ import {
   createTestRoom,
   createTestRoomMember,
 } from '@/test/factories/room';
-import { claim, receipt, receiptItem, room } from '@/shared/server/db';
+import {
+  claim,
+  receipt,
+  receiptFees,
+  receiptItem,
+  room,
+} from '@/shared/server/db';
 
 const toMoneyStr = (num: number) => num.toFixed(2);
 
@@ -258,6 +265,73 @@ describe('deleteReceiptItem', () => {
   });
 });
 
+describe('updateReceiptFees', () => {
+  it('replaces fees for a receipt', async () => {
+    const user = await createTestUser(testDb);
+    const { receipt: seededReceipt } = await createSuccessfulReceipt(
+      user.id,
+      [{ interpretedText: 'Item 1', price: 10 }],
+      testDb,
+    );
+
+    await testDb.insert(receiptFees).values({
+      receiptId: seededReceipt.id,
+      label: 'Old Fee',
+      amount: '1.00',
+      orderIndex: 0,
+    });
+
+    await updateReceiptFees(
+      testDb,
+      {
+        receiptId: seededReceipt.id,
+        fees: [
+          {
+            rawText: 'Large party fee 2.50',
+            label: 'Large Party Fee',
+            amount: 2.5,
+          },
+          { rawText: null, label: 'Admin Fee', amount: 1.25 },
+        ],
+      },
+      user.id,
+    );
+
+    const updatedFees = await testDb.query.receiptFees.findMany({
+      where: eq(receiptFees.receiptId, seededReceipt.id),
+      orderBy: (fees, { asc }) => [asc(fees.orderIndex)],
+    });
+
+    expect(updatedFees).toHaveLength(2);
+    expect(updatedFees.map((fee) => fee.label)).toEqual([
+      'Large Party Fee',
+      'Admin Fee',
+    ]);
+    expect(updatedFees.map((fee) => fee.amount)).toEqual(['2.50', '1.25']);
+  });
+
+  it('throws when updating another users receipt', async () => {
+    const owner = await createTestUser(testDb);
+    const otherUser = await createTestUser(testDb);
+    const { receipt: seededReceipt } = await createSuccessfulReceipt(
+      owner.id,
+      [{ interpretedText: 'Item 1', price: 10 }],
+      testDb,
+    );
+
+    await expect(
+      updateReceiptFees(
+        testDb,
+        {
+          receiptId: seededReceipt.id,
+          fees: [{ rawText: null, label: 'Admin Fee', amount: 1.25 }],
+        },
+        otherUser.id,
+      ),
+    ).rejects.toThrow('Receipt not found or unauthorized');
+  });
+});
+
 describe('finalizeReceiptTotals', () => {
   it('finalizes receipt totals successfully', async () => {
     const user = await createTestUser(testDb);
@@ -442,5 +516,36 @@ describe('finalizeReceiptTotals', () => {
     );
 
     expect(result).toEqual({ success: false, error: 'checksum_failed' });
+  });
+
+  it('includes existing fees in the server grand total checksum', async () => {
+    const user = await createTestUser(testDb);
+    const { receipt: seededReceipt, items } = await createSuccessfulReceipt(
+      user.id,
+      [{ interpretedText: 'Item 1', price: 20 }],
+      testDb,
+    );
+
+    await testDb.insert(receiptFees).values({
+      receiptId: seededReceipt.id,
+      label: 'Service Charge',
+      amount: '3.00',
+      orderIndex: 0,
+    });
+
+    const subtotal = items.reduce((sum, item) => sum + Number(item.price), 0);
+    const result = await finalizeReceiptTotals(
+      testDb,
+      {
+        receiptId: seededReceipt.id,
+        subtotal,
+        tax: 1,
+        tip: 2,
+        grandTotal: subtotal + 1 + 2 + 3,
+      },
+      user.id,
+    );
+
+    expect(result).toEqual({ success: true });
   });
 });

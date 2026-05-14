@@ -27,10 +27,14 @@ export function ReceiptRoomAction({
     return receipt.items.reduce((sum, item) => sum + item.price, 0).toFixed(2);
   }, [receipt.items]);
 
+  const feesTotal = useMemo(() => {
+    return receipt.fees.reduce((sum, fee) => sum + fee.amount, 0);
+  }, [receipt.fees]);
+
   const totalHasError = useMemo(() => {
-    const calculated = Number(subtotal) + receipt.tip + receipt.tax;
+    const calculated = Number(subtotal) + receipt.tip + receipt.tax + feesTotal;
     return !moneyValuesEqual(calculated, receipt.grandTotal);
-  }, [subtotal, receipt]);
+  }, [feesTotal, receipt, subtotal]);
 
   const handleFinalizeRoomCreation = async (sharePayment: boolean) => {
     const response = await createReceiptRoom({

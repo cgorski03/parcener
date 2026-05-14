@@ -11,6 +11,7 @@ export const ReceiptQueryKeys = {
   deleteItem: ['deleteItem'] as const,
   createItem: ['createItem'] as const,
   updateItem: ['updateItem'] as const,
+  updateFees: ['updateFees'] as const,
   finalize: ['finalizeReceipt'] as const,
   recents: () => [...ReceiptQueryKeys.all, 'recents'] as const,
   detail: (id: string) => [...ReceiptQueryKeys.all, id] as const,

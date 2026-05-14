@@ -3,10 +3,11 @@ import { getReceiptState } from './get-receipt-service';
 import type { DbTxType, DbType } from '@/shared/server/db';
 import type {
   CreateReceiptItemDto,
+  ReceiptFeesUpdateDto,
   ReceiptItemDto,
   ReceiptTotalsDto,
 } from '@/shared/dto/types';
-import { receipt, receiptItem } from '@/shared/server/db/schema';
+import { receipt, receiptFees, receiptItem } from '@/shared/server/db/schema';
 import {
   pruneExcessClaimsHelper,
   touchRoomFromReceipt,
@@ -120,6 +121,41 @@ export async function deleteReceiptItem(
   });
 }
 
+export async function updateReceiptFees(
+  db: DbType,
+  receiptFeesUpdate: ReceiptFeesUpdateDto,
+  userId: string,
+) {
+  const { receiptId, fees } = receiptFeesUpdate;
+
+  const [ownedReceipt] = await db
+    .select({ id: receipt.id })
+    .from(receipt)
+    .where(and(eq(receipt.id, receiptId), eq(receipt.userId, userId)));
+
+  if (!ownedReceipt) {
+    throw new Error('Receipt not found or unauthorized');
+  }
+
+  return await db.transaction(async (tx) => {
+    await tx.delete(receiptFees).where(eq(receiptFees.receiptId, receiptId));
+
+    if (fees.length > 0) {
+      await tx.insert(receiptFees).values(
+        fees.map((fee, index) => ({
+          receiptId,
+          rawText: fee.rawText,
+          label: fee.label,
+          amount: fee.amount.toString(),
+          orderIndex: index,
+        })),
+      );
+    }
+
+    await touchRoomFromReceipt(tx, receiptId);
+  });
+}
+
 type FinalizeReceiptResponse =
   | { success: true }
   | { success: false; error: 'invalid_receipt' }
@@ -150,7 +186,11 @@ export async function finalizeReceiptTotals(
       error: 'checksum_failed',
     };
   }
-  const calculatedGrandTotal = subtotal + tip + tax;
+  const feesTotal = receiptEntity.fees.reduce(
+    (sum, fee) => sum + fee.amount,
+    0,
+  );
+  const calculatedGrandTotal = subtotal + tip + tax + feesTotal;
 
   // The clients desired grand total must match what the server calculates it to be
   // If it exists. The client is also free to just submit a request and have the server do the math

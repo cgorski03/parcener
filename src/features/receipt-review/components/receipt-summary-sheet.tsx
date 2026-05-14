@@ -78,11 +78,12 @@ export function ReceiptSummarySheet(props: {
     receipt.tip.toFixed(2),
   );
   const subtotalFloat = parseFloat(subtotal);
+  const feesAmount = receipt.fees.reduce((sum, fee) => sum + fee.amount, 0);
 
   const taxAmount = calculateAmount(taxInputValue, taxMode, subtotalFloat);
   const tipAmount = calculateAmount(tipInputValue, tipMode, subtotalFloat);
 
-  const grandTotal = subtotalFloat + taxAmount + tipAmount;
+  const grandTotal = subtotalFloat + taxAmount + tipAmount + feesAmount;
   const handleSaveReceiptTotals = async () => {
     await saveReceiptTotal({
       receiptId: receipt.receiptId,
@@ -243,6 +244,24 @@ export function ReceiptSummarySheet(props: {
                 <span>Tip</span>
                 <span className="font-medium">${tipAmount.toFixed(2)}</span>
               </div>
+              {receipt.fees.length > 0 && (
+                <>
+                  <div className="flex justify-between border-t border-dashed border-border pt-3 mb-2">
+                    <span className="font-medium text-foreground">Fees</span>
+                    <span className="font-medium text-foreground">
+                      ${feesAmount.toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="space-y-1 pl-3 border-l border-dashed border-border/70">
+                    {receipt.fees.map((fee) => (
+                      <div key={fee.receiptFeeId} className="flex justify-between">
+                        <span>{fee.label}</span>
+                        <span>${fee.amount.toFixed(2)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
             <div className="flex items-center justify-between ">
               <span className="text-base font-medium">Grand Total</span>

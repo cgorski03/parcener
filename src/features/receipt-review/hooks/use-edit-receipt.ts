@@ -4,11 +4,13 @@ import {
   deleteReceiptItemRpc,
   editReceiptItemRpc,
   finalizeReceiptTotalsRpc,
+  updateReceiptFeesRpc,
 } from '../server/rpc-put-receipt';
 import { ReceiptQueryKeys } from './use-get-receipt';
 import type { ReceiptWithRoom } from '../server/get-receipt-service';
 import type {
   CreateReceiptItemDto,
+  ReceiptFeesUpdateDto,
   ReceiptItemDto,
   ReceiptTotalsDto,
 } from '@/shared/dto/types';
@@ -190,6 +192,53 @@ export function useFinalizeReceipt(roomId: string | null) {
       if (_linkedRoom) {
         queryClient.invalidateQueries({
           queryKey: RoomQueryKeys.detail(_linkedRoom),
+        });
+      }
+    },
+  });
+}
+
+export function useUpdateReceiptFees(roomId: string | null) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationKey: ReceiptQueryKeys.updateFees,
+    mutationFn: async (data: ReceiptFeesUpdateDto) => {
+      return await updateReceiptFeesRpc({ data });
+    },
+    onMutate: async (data) => {
+      const queryKey = ReceiptQueryKeys.detail(data.receiptId);
+      await queryClient.cancelQueries({ queryKey });
+      const previousData = queryClient.getQueryData<ReceiptWithRoom>(queryKey);
+
+      updateReceiptCache(queryClient, data.receiptId, (old) => ({
+        ...old,
+        fees: data.fees.map((fee, index) => ({
+          receiptFeeId: `optimistic-fee-${index}`,
+          ...fee,
+        })),
+      }));
+
+      return { previousData };
+    },
+    onError: (_, data, context) => {
+      if (context?.previousData) {
+        queryClient.setQueryData(
+          ReceiptQueryKeys.detail(data.receiptId),
+          context.previousData,
+        );
+      }
+    },
+    onSettled: (_, __, data) => {
+      queryClient.invalidateQueries({
+        queryKey: ReceiptQueryKeys.detail(data.receiptId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: ReceiptQueryKeys.valid(data.receiptId),
+      });
+      if (roomId) {
+        queryClient.invalidateQueries({
+          queryKey: RoomQueryKeys.detail(roomId),
         });
       }
     },
