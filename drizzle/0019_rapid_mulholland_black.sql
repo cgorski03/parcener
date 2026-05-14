@@ -1,0 +1,1 @@
+ALTER TABLE "receipt_tax_code" ADD COLUMN "tax_code_source" "tax_classification_source" DEFAULT 'model' NOT NULL;

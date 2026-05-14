@@ -133,6 +133,9 @@ async function getReceiptWithRelationsHelper(
       items: {
         orderBy: (items, { asc }) => [asc(items.orderIndex)],
       },
+      fees: {
+        orderBy: (fees, { asc }) => [asc(fees.orderIndex)],
+      },
       room: true,
       processingInfo: true,
     },

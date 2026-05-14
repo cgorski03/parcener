@@ -3,6 +3,7 @@ import type * as schema from './dtos.ts';
 import type { Claim } from '@/shared/server/db/schema';
 
 export type ReceiptItemDto = z.infer<typeof schema.receiptItemDtoSchema>;
+export type ReceiptFeeDto = z.infer<typeof schema.receiptFeeDtoSchema>;
 export type CreateReceiptItemDto = z.infer<
   typeof schema.createReceiptItemSchema
 >;
@@ -11,6 +12,9 @@ export type SaveReceiptItemDto = z.infer<
 >;
 export type ReceiptDto = z.infer<typeof schema.receiptDtoSchema>;
 export type ReceiptTotalsDto = z.infer<typeof schema.receiptTotalsSchema>;
+export type ReceiptFeesUpdateDto = z.infer<
+  typeof schema.receiptFeesUpdateSchema
+>;
 export type RoomMemberDto = z.infer<typeof schema.baseRoomMemberSchema>;
 export type RoomMembership = z.infer<typeof schema.roomMembershipSchema>;
 export type RoomDto = z.infer<typeof schema.roomSchema>;

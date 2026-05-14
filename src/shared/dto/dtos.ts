@@ -18,6 +18,19 @@ export const receiptItemDtoSchema = createReceiptItemSchema.extend({
   receiptItemId: receiptItemIdSchema,
 });
 
+export const receiptFeeDtoSchema = z.object({
+  receiptFeeId: z.uuid({ version: 'v4' }),
+  rawText: z.string().nullable(),
+  label: z.string(),
+  amount: z.number().nonnegative(),
+});
+
+export const editableReceiptFeeSchema = z.object({
+  rawText: z.string().nullable(),
+  label: z.string().min(1, 'Fee name required'),
+  amount: z.number().nonnegative(),
+});
+
 export const receiptIdSchema = z.uuid({ version: 'v4' });
 
 // For create operations where id can be null
@@ -40,6 +53,11 @@ export const receiptTotalsSchema = z.object({
   grandTotal: z.number().positive(),
 });
 
+export const receiptFeesUpdateSchema = z.object({
+  receiptId: receiptIdSchema,
+  fees: z.array(editableReceiptFeeSchema),
+});
+
 export const receiptDtoSchema = z.object({
   receiptId: receiptIdSchema,
   title: z.string().nullable(),
@@ -49,6 +67,7 @@ export const receiptDtoSchema = z.object({
   grandTotal: z.number().nonnegative(),
   createdAt: z.date(),
   items: z.array(receiptItemDtoSchema),
+  fees: z.array(receiptFeeDtoSchema),
 });
 
 export const paymentMethodTypeSchema = z.enum(paymentMethodTypeEnum.enumValues);

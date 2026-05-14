@@ -118,10 +118,22 @@ describe('modelParsedReceiptSchema', () => {
     };
 
     const result = modelParsedReceiptSchema.parse(validReceipt);
-    expect(result).toEqual(validReceipt);
+    expect(result).toEqual({
+      ...validReceipt,
+      items: [
+        {
+          ...validReceipt.items[0],
+          taxCode: null,
+          itemizedTaxStatus: null,
+        },
+      ],
+      taxAllocationMode: 'receipt_level',
+      taxCodes: [],
+      miscFees: [],
+    });
   });
 
-  it('defaults tax and tip to 0 when not provided', () => {
+  it('defaults optional fields when not provided', () => {
     const receipt = {
       items: [
         {
@@ -138,6 +150,11 @@ describe('modelParsedReceiptSchema', () => {
     const result = modelParsedReceiptSchema.parse(receipt);
     expect(result.tax).toBe(0);
     expect(result.tip).toBe(0);
+    expect(result.taxCodes).toEqual([]);
+    expect(result.miscFees).toEqual([]);
+    expect(result.items[0].taxCode).toBeNull();
+    expect(result.items[0].itemizedTaxStatus).toBeNull();
+    expect(result.taxAllocationMode).toBe('receipt_level');
   });
 
   it('defaults quantity to 1 when not provided', () => {
@@ -155,6 +172,151 @@ describe('modelParsedReceiptSchema', () => {
 
     const result = modelParsedReceiptSchema.parse(receipt);
     expect(result.items[0].quantity).toBe(1);
+  });
+
+  it('accepts optional itemized tax codes and misc fees', () => {
+    const receipt = {
+      items: [
+        {
+          rawText: '1819440 KS GOLF V3.0 29.99 A',
+          interpreted: 'KS Golf V3.0',
+          price: 29.99,
+          quantity: 1,
+          taxCode: 'A',
+          itemizedTaxStatus: 'taxable',
+        },
+        {
+          rawText: 'YOGGIES 30CT 12.89',
+          interpreted: 'Yoggies 30ct',
+          price: 12.89,
+          quantity: 1,
+          taxCode: null,
+          itemizedTaxStatus: 'exempt',
+        },
+      ],
+      taxAllocationMode: 'itemized',
+      taxCodes: [
+        {
+          code: 'A',
+          label: 'A 6.35% TAX',
+          rateBps: 635,
+        },
+      ],
+      miscFees: [
+        {
+          rawText: 'CC FEE 1.25',
+          interpreted: 'Credit card fee',
+          amount: 1.25,
+        },
+      ],
+      subtotal: 42.88,
+      tax: 1.9,
+      tip: 0,
+      total: 46.03,
+    };
+
+    const result = modelParsedReceiptSchema.parse(receipt);
+    expect(result.taxCodes).toEqual(receipt.taxCodes);
+    expect(result.miscFees).toEqual(receipt.miscFees);
+    expect(result.taxAllocationMode).toBe('itemized');
+    expect(result.items[0].taxCode).toBe('A');
+    expect(result.items[0].itemizedTaxStatus).toBe('taxable');
+    expect(result.items[1].taxCode).toBeNull();
+    expect(result.items[1].itemizedTaxStatus).toBe('exempt');
+  });
+
+  it('accepts tax code without a visible rate', () => {
+    const receipt = {
+      items: [
+        {
+          rawText: 'Item 10.00 T',
+          interpreted: 'Item',
+          price: 10,
+          taxCode: 'T',
+          itemizedTaxStatus: 'unknown',
+        },
+      ],
+      taxAllocationMode: 'itemized',
+      taxCodes: [
+        {
+          code: 'T',
+          label: 'Taxable',
+        },
+      ],
+      subtotal: 10,
+      tax: 1,
+      total: 11,
+    };
+
+    const result = modelParsedReceiptSchema.parse(receipt);
+    expect(result.taxCodes[0]).toEqual({
+      code: 'T',
+      label: 'Taxable',
+      rateBps: null,
+    });
+    expect(result.items[0].itemizedTaxStatus).toBe('unknown');
+  });
+
+  it('rejects invalid tax allocation values, tax codes, and misc fees', () => {
+    const baseReceipt = {
+      items: [
+        {
+          rawText: 'Item',
+          interpreted: 'Item',
+          price: 10,
+        },
+      ],
+      subtotal: 10,
+      total: 10,
+    };
+
+    expect(() =>
+      modelParsedReceiptSchema.parse({
+        ...baseReceipt,
+        taxAllocationMode: 'partial_itemized',
+      }),
+    ).toThrow();
+
+    expect(() =>
+      modelParsedReceiptSchema.parse({
+        ...baseReceipt,
+        items: [
+          {
+            rawText: 'Item',
+            interpreted: 'Item',
+            price: 10,
+            itemizedTaxStatus: 'maybe',
+          },
+        ],
+      }),
+    ).toThrow();
+
+    expect(() =>
+      modelParsedReceiptSchema.parse({
+        ...baseReceipt,
+        taxCodes: [{ code: '', label: 'Tax', rateBps: 100 }],
+      }),
+    ).toThrow();
+
+    expect(() =>
+      modelParsedReceiptSchema.parse({
+        ...baseReceipt,
+        taxCodes: [{ code: 'A', label: 'Tax', rateBps: 10.5 }],
+      }),
+    ).toThrow();
+
+    expect(() =>
+      modelParsedReceiptSchema.parse({
+        ...baseReceipt,
+        miscFees: [
+          {
+            rawText: 'CC FEE -1.25',
+            interpreted: 'Credit card fee',
+            amount: -1.25,
+          },
+        ],
+      }),
+    ).toThrow();
   });
 
   it('rejects receipt with no items', () => {

@@ -142,6 +142,9 @@ export async function GetFullRoomInfo(db: DbType, roomId: string) {
       receipt: {
         with: {
           items: true,
+          fees: {
+            orderBy: (fees, { asc }) => [asc(fees.orderIndex)],
+          },
         },
       },
       members: {

@@ -8,6 +8,7 @@ describe('receipt-validity', () => {
       subtotal: 15,
       tax: 1.5,
       tip: 3,
+      fees: [],
       grandTotal: 19.5,
     };
 
@@ -22,6 +23,7 @@ describe('receipt-validity', () => {
       subtotal: 20,
       tax: 1.5,
       tip: 3,
+      fees: [],
       grandTotal: 24.5,
     };
 
@@ -40,6 +42,7 @@ describe('receipt-validity', () => {
       subtotal: 15,
       tax: 1.5,
       tip: 3,
+      fees: [],
       grandTotal: 25,
     };
 
@@ -58,6 +61,7 @@ describe('receipt-validity', () => {
       subtotal: 10,
       tax: 0,
       tip: 0,
+      fees: [],
       grandTotal: 10,
     };
 
@@ -72,11 +76,46 @@ describe('receipt-validity', () => {
       subtotal: 16.48,
       tax: 1.48,
       tip: 3.3,
+      fees: [],
       grandTotal: 21.26,
     };
 
     const result = computeReceiptValidity(receipt);
 
     expect(result).toEqual({ status: 'valid' });
+  });
+
+  it('includes fees in grand total validation', () => {
+    const receipt = {
+      items: [{ price: 10 } as any],
+      subtotal: 10,
+      tax: 1,
+      tip: 2,
+      fees: [{ amount: 1.25 }],
+      grandTotal: 14.25,
+    };
+
+    const result = computeReceiptValidity(receipt);
+
+    expect(result).toEqual({ status: 'valid' });
+  });
+
+  it('returns grand total mismatch when fees do not reconcile', () => {
+    const receipt = {
+      items: [{ price: 10 } as any],
+      subtotal: 10,
+      tax: 1,
+      tip: 2,
+      fees: [{ amount: 1.25 }],
+      grandTotal: 13,
+    };
+
+    const result = computeReceiptValidity(receipt);
+
+    expect(result).toEqual({
+      status: 'grandtotal_mismatch',
+      clientGrandTotal: 14.25,
+      serverGrandTotal: 13,
+    });
   });
 });

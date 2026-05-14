@@ -1,14 +1,18 @@
 import { eq } from 'drizzle-orm';
 import type { GoogleThinkingLevel, ModelParsedReceiptType } from './types';
-import type {
-  DbType,
-  NewReceiptItem,
-  ReceiptValidityState,
-} from '@/shared/server/db';
+import {
+  buildReceiptFeeRows,
+  buildReceiptItemRows,
+  buildTaxCodeRows,
+} from './parsed-receipt-mappers';
+import type { DbType, ReceiptValidityState } from '@/shared/server/db';
 import {
   receipt,
+  receiptFees,
   receiptItem,
+  receiptItemTaxClassification,
   receiptProcessingInformation,
+  taxCode,
 } from '@/shared/server/db';
 
 // Returns what is effectively the processing run ID
@@ -88,27 +92,50 @@ export async function saveReceiptInformation(
   request: SaveReceiptRequest,
 ) {
   const { id, parsedReceipt } = request;
-  await db
-    .update(receipt)
-    .set({
-      title: parsedReceipt.metadata.restaurant ?? 'No Title',
-      subtotal: parsedReceipt.subtotal.toString(),
-      tax: parsedReceipt.tax.toString(),
-      tip: parsedReceipt.tip.toString(),
-      grandTotal: parsedReceipt.total.toString(),
-    })
-    .where(eq(receipt.id, id));
+  await db.transaction(async (tx) => {
+    await tx
+      .update(receipt)
+      .set({
+        title: parsedReceipt.metadata.restaurant ?? 'No Title',
+        subtotal: parsedReceipt.subtotal.toString(),
+        tax: parsedReceipt.tax.toString(),
+        tip: parsedReceipt.tip.toString(),
+        grandTotal: parsedReceipt.total.toString(),
+        taxAllocationMode: parsedReceipt.taxAllocationMode,
+      })
+      .where(eq(receipt.id, id));
 
-  const itemDbObject: Array<NewReceiptItem> = parsedReceipt.items.map(
-    (item, index) => ({
-      receiptId: id,
-      price: item.price.toString(),
-      rawText: item.rawText,
-      interpretedText: item.interpreted,
-      modelInterpretedText: item.interpreted,
-      quantity: item.quantity.toString(),
-      orderIndex: index,
-    }),
-  );
-  await db.insert(receiptItem).values(itemDbObject);
+    const newTaxCodes = buildTaxCodeRows(id, parsedReceipt.taxCodes);
+    const insertedTaxCodes =
+      newTaxCodes.length > 0
+        ? await tx.insert(taxCode).values(newTaxCodes).returning()
+        : [];
+
+    const taxCodeIdByCode = new Map(
+      insertedTaxCodes.map((insertedCode) => [
+        insertedCode.code,
+        insertedCode.id,
+      ]),
+    );
+
+    const { newReceiptItems, newReceiptItemTaxClassifications } =
+      buildReceiptItemRows({
+        receiptId: id,
+        parsedReceipt,
+        taxCodeIdByCode,
+      });
+
+    await tx.insert(receiptItem).values(newReceiptItems);
+
+    if (newReceiptItemTaxClassifications.length > 0) {
+      await tx
+        .insert(receiptItemTaxClassification)
+        .values(newReceiptItemTaxClassifications);
+    }
+
+    const newReceiptFees = buildReceiptFeeRows(id, parsedReceipt.miscFees);
+    if (newReceiptFees.length > 0) {
+      await tx.insert(receiptFees).values(newReceiptFees);
+    }
+  });
 }

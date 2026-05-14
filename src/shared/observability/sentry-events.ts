@@ -27,6 +27,7 @@ export const SENTRY_EVENTS = {
     UPDATE_ITEM: 'receipt_edit.update_item',
     DELETE_ITEM: 'receipt_edit.delete_item',
     CREATE_ITEM: 'receipt_edit.create_item',
+    UPDATE_FEES: 'receipt_edit.update_fees',
     FINALIZE: 'receipt_edit.finalize_totals',
   },
   ROOM: {

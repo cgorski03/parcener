@@ -127,6 +127,20 @@
       "when": 1778462604405,
       "tag": "0017_dizzy_franklin_richards",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1778634442653,
+      "tag": "0018_great_iron_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1778637181153,
+      "tag": "0019_rapid_mulholland_black",
+      "breakpoints": true
     }
   ]
 }

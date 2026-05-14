@@ -3,6 +3,7 @@ import type { ReceiptValidityState } from '@/shared/server/db';
 
 export type ReceiptLikeForValidation = {
   items: Array<{ price: number }>;
+  fees: Array<{ amount: number }>;
   subtotal: number;
   tax: number;
   tip: number;
@@ -30,6 +31,10 @@ function validateReceiptCalculations(
   receipt: ReceiptLikeForValidation,
 ): ReceiptValidationResult {
   const calculatedSubtotal = calculateItemTotal(receipt.items);
+  const calculatedFeesTotal = receipt.fees.reduce(
+    (sum, fee) => sum + fee.amount,
+    0,
+  );
 
   if (!moneyValuesEqual(receipt.subtotal, calculatedSubtotal)) {
     return {
@@ -42,7 +47,8 @@ function validateReceiptCalculations(
     };
   }
 
-  const calculatedGrandTotal = receipt.subtotal + receipt.tax + receipt.tip;
+  const calculatedGrandTotal =
+    receipt.subtotal + receipt.tax + receipt.tip + calculatedFeesTotal;
 
   if (!moneyValuesEqual(receipt.grandTotal, calculatedGrandTotal)) {
     return {

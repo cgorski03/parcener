@@ -73,6 +73,7 @@ export async function processReceipt(request: ProcessReceiptRequest) {
     // Track whether the model got the receipt validity correct on the first try
     const validity = computeReceiptValidity({
       items: data.items,
+      fees: data.miscFees,
       subtotal: data.subtotal,
       tax: data.tax,
       tip: data.tip,
@@ -89,7 +90,11 @@ export async function processReceipt(request: ProcessReceiptRequest) {
     logger.info(
       'Receipt processed successfully',
       SENTRY_EVENTS.RECEIPT.PROCESS_JOB.SUCCESS,
-      { receiptId, tokens: executionState.tokenUsage },
+      {
+        receiptId,
+        tokens: executionState.tokenUsage,
+        validity,
+      },
     );
 
     return { receiptId };

@@ -10,6 +10,7 @@ import type {
   PaymentMethodDto,
   PaymentMethodPayToDto,
   ReceiptDto,
+  ReceiptFeeDto,
   ReceiptItemDto,
 } from './types';
 import type { GetFullRoomInfoResponseType } from '@/features/room/server/room-service';
@@ -31,6 +32,17 @@ export const receiptItemEntityToDtoHelper = (
   };
 };
 
+export const receiptFeeEntityToDtoHelper = (
+  fee: ReceiptEntityWithItems['fees'][number],
+): ReceiptFeeDto => {
+  return {
+    receiptFeeId: fee.id,
+    rawText: fee.rawText,
+    label: fee.label,
+    amount: parseFloat(fee.amount),
+  };
+};
+
 export const receiptWithItemsToDto = (
   entity: ReceiptEntityWithItems,
 ): ReceiptDto => {
@@ -43,6 +55,7 @@ export const receiptWithItemsToDto = (
     grandTotal: parseNullable(entity.grandTotal) ?? 0,
     createdAt: entity.createdAt,
     items: entity.items.map(receiptItemEntityToDtoHelper),
+    fees: entity.fees.map(receiptFeeEntityToDtoHelper),
   };
   // Validation happens here, keeping the schema active on server
   return receiptDtoSchema.parse(transformed);

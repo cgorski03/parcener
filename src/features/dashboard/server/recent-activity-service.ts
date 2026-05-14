@@ -66,6 +66,7 @@ export async function getUserRecentReceiptsHelper(
     limit,
     with: {
       items: true,
+      fees: true,
       processingInfo: true,
     },
   });
