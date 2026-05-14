@@ -15,7 +15,7 @@ export default defineWorkersConfig({
       workers: {
         singleWorker: true,
         isolatedStorage: false,
-        wrangler: { configPath: './wrangler.jsonc' },
+        wrangler: { configPath: './wrangler.jsonc', environment: 'test' },
         miniflare: {
           r2Buckets: ['parcener_receipt_images'],
           queueProducers: { RECEIPT_QUEUE: 'parcener-receipt-queue' },

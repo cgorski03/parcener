@@ -13,7 +13,19 @@ beforeAll(() => {
 });
 
 // Create test database connection
-const client = postgres(env.HYPERDRIVE.connectionString, {
+const testDatabaseConnectionString = env.HYPERDRIVE.connectionString;
+const testDatabaseName = new URL(testDatabaseConnectionString).pathname.slice(
+  1,
+);
+const isTestDatabase = testDatabaseName === 'split_test';
+
+if (!isTestDatabase) {
+  throw new Error(
+    `Refusing to run tests against non-test database: ${testDatabaseConnectionString}`,
+  );
+}
+
+const client = postgres(testDatabaseConnectionString, {
   onnotice: () => {},
 });
 export const testDb = drizzle(client, {
